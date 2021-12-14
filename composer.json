@@ -1,0 +1,25 @@
+{
+    "name": "basis-company/nats",
+    "description": "nats client for php",
+    "require": {
+        "php": ">=8"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "monolog/monolog": "^2.3.5"
+    },
+    "license": "mit",
+    "autoload": {
+        "psr-4": {
+            "Basis\\Nats\\Tests\\": "tests/",
+            "Basis\\Nats\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "dmitry krokhin",
+            "email": "nekufa@gmail.com"
+        }
+    ],
+    "suggest": {}
+}
