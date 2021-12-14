@@ -16,5 +16,6 @@ jobs:
     services:
       nats:
         image: nats
+        options: --entrypoint '-js'
         ports:
           - '4222:4222'
