@@ -48,8 +48,7 @@ $client->ping(); // true
 
 ```php
 $client->subscribe('hello', function ($message) {
-    $this->assertSame($message, 'tester');
-    $this->tested = true;
+    var_dump('got message', $message); // tester
 });
 
 $client->publish('hello', 'tester');
