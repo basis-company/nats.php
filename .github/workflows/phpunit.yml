@@ -10,3 +10,8 @@ jobs:
         with:
           bootstrap: vendor/autoload.php
           args: tests
+    services:
+      nats:
+        image: nats
+        ports:
+          - 4222:4222
