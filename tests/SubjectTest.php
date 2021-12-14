@@ -12,7 +12,9 @@ class SubjectTest extends Test
     public function testPerformance()
     {
         $client = $this->createClient();
-        $this->limit = 100000;
+        $client->setLogger(null);
+
+        $this->limit = 100_000;
         $this->counter = 0;
 
         $client->subscribe('hello', function ($n) {

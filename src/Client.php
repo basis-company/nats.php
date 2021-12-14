@@ -169,7 +169,7 @@ class Client
         return $this;
     }
 
-    public function setLogger(LoggerInterface $logger): self
+    public function setLogger(?LoggerInterface $logger): self
     {
         $this->logger = $logger;
         return $this;
