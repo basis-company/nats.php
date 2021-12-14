@@ -101,7 +101,7 @@ $greeter->handle(function ($address) {
 });
 
 $goodbyer = $stream->getConsumer('goodbyer');
-$goodbyer->getConfiguration()->setSubjectFilter('mailer.buy');
+$goodbyer->getConfiguration()->setSubjectFilter('mailer.bye');
 $goodbyer->create();
 $goodbyer->handle(function ($address) {
     mail($address, "See you later");
