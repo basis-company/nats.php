@@ -1,7 +1,7 @@
 {
     "name": "basis-company/nats",
     "description": "nats client for php",
-    "keywords": ["php", "nats", "client", "streaming", "jetstream", "queue"],
+    "keywords": ["php", "nats", "client", "streaming", "jetstream", "queue", "messaging"],
     "require": {
         "php": ">=8"
     },
