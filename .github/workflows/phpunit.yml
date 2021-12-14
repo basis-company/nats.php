@@ -16,7 +16,5 @@ jobs:
     services:
       nats:
         image: nats
-        options: >-
-          --command '-js'
         ports:
           - '4222:4222'
