@@ -16,6 +16,7 @@ use Closure;
 use Exception;
 use LogicException;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 class Client
 {
@@ -207,8 +208,12 @@ class Client
                 return $this->processMessage();
         }
 
-
-        $message = Factory::create(trim($line));
+        try {
+            $message = Factory::create(trim($line));
+        } catch (Throwable $exception) {
+            $this->logger?->debug($line);
+            throw $exception;
+        }
 
         switch (get_class($message)) {
             case Info::class:
