@@ -9,13 +9,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: php-actions/composer@v6
+      - run: docker run -d -p 4222:4222 nats --js
       - uses: php-actions/phpunit@v3
         with:
           bootstrap: vendor/autoload.php
           args: tests
-    services:
-      nats:
-        image: nats
-        options: --entrypoint '-js'
-        ports:
-          - '4222:4222'
