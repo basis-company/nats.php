@@ -6,6 +6,7 @@
     </include>
     <report>
       <clover outputFile="coverage.clover"/>
+      <clover outputFile="coverage.txt"/>
     </report>
   </coverage>
   <php>
