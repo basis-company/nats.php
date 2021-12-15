@@ -4,14 +4,12 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      - run: docker run -d -p 4222:4222 nats --js
       - uses: shivammathur/setup-php@v2
         with:
           php-version: 8.1
           extensions: xdebug
-      - uses: actions/checkout@v2
-      - uses: php-actions/composer@v6
-      - run: docker run -d -p 4222:4222 nats --js
-      - uses: php-actions/phpunit@v3
-        with:
-          bootstrap: vendor/autoload.php
-          args: tests
+          tools: phpunit, composer:v2
+      - run: php --modules
+      - run: vendor/bin/phpunit tests
