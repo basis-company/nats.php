@@ -11,5 +11,5 @@ jobs:
           php-version: 8.1
           extensions: xdebug
           tools: phpunit, composer:v2
-      - run: php --modules
+      - run: composer install
       - run: vendor/bin/phpunit tests
