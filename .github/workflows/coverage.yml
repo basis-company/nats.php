@@ -14,4 +14,3 @@ jobs:
       - run: composer install
       - run: vendor/bin/phpunit tests
       - run: cat ./coverage.txt
-      - run: cat ./coverage.clover
