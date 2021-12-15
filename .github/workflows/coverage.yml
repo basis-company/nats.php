@@ -1,14 +1,13 @@
 name: coverage
 on: [push]
 jobs:
-  test:
+  coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: 8.1
-          extensions: mbstring, dom, fileinfo
-          coverage: xdebug
+          extensions: xdebug
       - uses: actions/checkout@v2
       - uses: php-actions/composer@v6
       - run: docker run -d -p 4222:4222 nats --js
