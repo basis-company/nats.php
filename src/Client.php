@@ -28,7 +28,6 @@ class Client
     private float $pong;
     private $socket;
 
-
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
         private ?LoggerInterface $logger = null,
