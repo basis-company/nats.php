@@ -13,5 +13,5 @@ jobs:
           tools: phpunit, composer:v2
       - run: composer install
       - run: vendor/bin/phpunit tests
-      - run: cat coverage.clover
-      - run: cat coverage.txt
+      - run: cat ./coverage.txt
+      - run: cat ./coverage.clover
