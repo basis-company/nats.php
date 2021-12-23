@@ -22,6 +22,17 @@ class Configuration
     ) {
     }
 
+    public function fromArray(array $array): self
+    {
+        return $this
+            ->setDiscardPolicy($array['discard'])
+            ->setMaxConsumers($array['max_consumers'])
+            ->setReplicas($array['replicas'])
+            ->setRetentionPolicy($array['retention'])
+            ->setStorageBackend($array['storage'])
+            ->setSubjects($array['subjects']);
+    }
+
     public function getName()
     {
         return strtoupper($this->name);

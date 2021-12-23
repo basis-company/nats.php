@@ -47,6 +47,17 @@ class StreamTest extends Test
 
         $stream->getConfiguration()->setSubjects(['tester.greet', 'tester.bye']);
         $stream->update();
+
+        $api = $this->createClient()->getApi();
+
+        $api->getStream('tester')
+            ->getConfiguration()
+            ->fromArray($stream->getConfiguration()->toArray());
+
+        $configuration = $api->getStream('tester')->getConfiguration();
+        $this->assertSame($configuration->getRetentionPolicy(), 'workqueue');
+        $this->assertSame($configuration->getStorageBackend(), 'memory');
+        $this->assertSame($configuration->getSubjects(), ['tester.greet', 'tester.bye']);
     }
 
     public function testConsumer()
