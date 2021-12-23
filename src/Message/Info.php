@@ -20,6 +20,9 @@ class Info extends Prototype
     public int $client_id;
     public string $client_ip;
 
+    public ?string $cluster = null;
+    public ?array $connect_urls = null;
+
     public function __toString()
     {
         return 'INFO ' . json_encode($this);
