@@ -79,11 +79,11 @@ class StreamTest extends Test
         $consumer->create();
 
         $this->assertNull($this->called);
-        $consumer->handle($this->persistMessage(...), 1);
+        $consumer->handle($this->persistMessage(...), 1, 0);
 
         $this->assertNull($this->called);
         $stream->put('tester.greet', [ 'name' => 'nekufa' ]);
-        $consumer->handle($this->persistMessage(...), 1);
+        $consumer->handle($this->persistMessage(...), 1, 0);
 
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->name, 'nekufa');
@@ -94,7 +94,7 @@ class StreamTest extends Test
         $consumer->create();
 
         $stream->put('tester.greet', [ 'name' => 'nekufa' ]);
-        $consumer->handle($this->persistMessage(...), 1);
+        $consumer->handle($this->persistMessage(...), 1, 0);
 
         $this->assertNull($this->called);
     }

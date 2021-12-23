@@ -58,7 +58,7 @@ class Consumer
         return $this->exists = in_array($this->getName(), $consumers);
     }
 
-    public function handle(Closure $handler, int $limit = PHP_INT_MAX)
+    public function handle(Closure $handler, int $limit = PHP_INT_MAX, float $delay = 1)
     {
         $method = 'consumer.msg.next.' . $this->getStream() . '.' . $this->getName();
 
@@ -68,9 +68,11 @@ class Consumer
         ];
 
         while ($limit--) {
-            $this->client->api($method, $args, function ($message) use ($handler) {
+            $this->client->api($method, $args, function ($message) use ($handler, $delay) {
                 if ($message) {
                     $handler($message);
+                } else {
+                    usleep((int) floor($delay * 1_000_000));
                 }
             });
         }
