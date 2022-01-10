@@ -10,26 +10,12 @@ use Basis\Nats\Client;
 class Consumer
 {
     private ?bool $exists = null;
+    private int $batch = 1;
 
     public function __construct(
         public readonly Client $client,
         private readonly Configuration $configuration,
     ) {
-    }
-
-    public function getConfiguration(): Configuration
-    {
-        return $this->configuration;
-    }
-
-    public function getName(): string
-    {
-        return $this->getConfiguration()->getName();
-    }
-
-    public function getStream(): string
-    {
-        return $this->getConfiguration()->getStream();
     }
 
     public function create(): self
@@ -58,23 +44,74 @@ class Consumer
         return $this->exists = in_array($this->getName(), $consumers);
     }
 
-    public function handle(Closure $handler, int $limit = PHP_INT_MAX, float $delay = 1)
+    public function getConfiguration(): Configuration
+    {
+        return $this->configuration;
+    }
+
+    public function getName(): string
+    {
+        return $this->getConfiguration()->getName();
+    }
+
+    public function getStream(): string
+    {
+        return $this->getConfiguration()->getStream();
+    }
+
+    public function handle(Closure $handler, int $limit = PHP_INT_MAX, float $delay = 1): int
     {
         $method = 'consumer.msg.next.' . $this->getStream() . '.' . $this->getName();
+        $requestSubject = strtoupper("\$js.api.$method");
 
         $args = [
-            'batch' => 1,
+            'batch' => $this->batch,
             'no_wait' => true,
         ];
 
+        $handlerSubject = 'inbox.' . bin2hex(random_bytes(4));
+
+        $runtime = (object) [
+            'processed' => 0,
+            'empty' => false,
+        ];
+
+        $this->client->subscribe($handlerSubject, function ($message) use ($handler, $runtime) {
+            if ($message) {
+                $runtime->processed++;
+                $handler($message);
+            } else {
+                $runtime->empty = true;
+            }
+        });
+
         while ($limit--) {
-            $this->client->api($method, $args, function ($message) use ($handler, $delay) {
-                if ($message) {
-                    $handler($message);
-                } else {
-                    usleep((int) floor($delay * 1_000_000));
+            $this->client->publish($requestSubject, $args, $handlerSubject);
+
+            $runtime->empty = false;
+
+            foreach (range(1, $this->batch) as $_) {
+                $this->client->processMessage();
+
+                if ($runtime->empty) {
+                    break;
                 }
-            });
+            }
+
+            if ($limit && $runtime->empty) {
+                usleep((int) floor($delay * 1_000_000));
+            }
         }
+
+        $this->client->unsubscribe($handlerSubject);
+
+        return $runtime->processed;
+    }
+
+    public function setBatching(int $batch): self
+    {
+        $this->batch = $batch;
+
+        return $this;
     }
 }

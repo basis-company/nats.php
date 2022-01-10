@@ -18,7 +18,7 @@ class Configuration
     private int $replicas = 1;
 
     public function __construct(
-        private readonly string $name
+        public readonly string $name
     ) {
     }
 

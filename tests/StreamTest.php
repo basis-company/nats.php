@@ -91,6 +91,7 @@ class StreamTest extends Test
         $this->called = null;
         $consumer = $stream->getConsumer('bye');
         $consumer->getConfiguration()->setSubjectFilter('tester.bye');
+        $consumer->getConfiguration()->setAckPolicy('explicit');
         $consumer->create();
 
         $stream->put('tester.greet', [ 'name' => 'nekufa' ]);
@@ -102,5 +103,48 @@ class StreamTest extends Test
     public function persistMessage($message)
     {
         $this->called = $message;
+    }
+
+    public function testBatching()
+    {
+        $client = $this->createClient();
+        $stream = $client->getApi()->getStream('tester_' . rand(111, 999));
+        $name = $stream->getConfiguration()->name;
+        $stream->getConfiguration()->setSubjects([$name]);
+        $stream->create();
+
+        foreach (range(1, 10) as $tid) {
+            $stream->put($name, ['tid' => $tid]);
+        }
+
+        $consumer = $stream->getConsumer('test');
+        $consumer->getConfiguration()->setSubjectFilter($name);
+        $consumer->create();
+        // [1] using 1 iteration
+        $this->assertSame(1, $consumer->handle($this->persistMessage(...), 1));
+        $this->assertNotNull($this->called);
+        $this->assertSame($this->called->tid, 1);
+
+        // [2], [3] using 2 iterations
+        $this->assertSame(2, $consumer->handle($this->persistMessage(...), 2));
+        $this->assertNotNull($this->called);
+        $this->assertSame($this->called->tid, 3);
+
+        // [4, 5] using 1 iteration
+        $consumer->setBatching(2);
+        $this->assertSame(2, $consumer->handle($this->persistMessage(...), 1));
+        $this->assertNotNull($this->called);
+        $this->assertSame($this->called->tid, 5);
+
+        // [6, 7], [8, 9] using 2 iterations
+        $consumer->setBatching(2);
+        $this->assertSame(4, $consumer->handle($this->persistMessage(...), 2));
+
+        // [10] using 1 iteration
+        $consumer->setBatching(1);
+        $this->assertSame(1, $consumer->handle($this->persistMessage(...), 1));
+
+        // no more messages
+        $this->assertSame(0, $consumer->handle($this->persistMessage(...), 1));
     }
 }
