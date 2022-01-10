@@ -10,7 +10,7 @@ use Basis\Nats\Client;
 class Configuration
 {
     private ?string $subjectFilter = null;
-    private string $ackPolicy = 'explicit';
+    private string $ackPolicy = AckPolicy::EXPLICIT;
 
     public function __construct(
         private readonly string $stream,
@@ -40,7 +40,7 @@ class Configuration
 
     public function setAckPolicy(string $ackPolicy): self
     {
-        $this->ackPolicy = $ackPolicy;
+        $this->ackPolicy = AckPolicy::validate($ackPolicy);
         return $this;
     }
 
