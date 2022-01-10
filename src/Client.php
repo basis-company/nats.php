@@ -25,22 +25,13 @@ class Client
     public readonly Api $api;
 
     private array $handlers = [];
-    private float $pong;
+    private float $pong = 0;
     private $socket;
 
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
         private ?LoggerInterface $logger = null,
     ) {
-        $dsn = "tcp://$configuration->host:$configuration->port";
-
-        $this->socket = stream_socket_client($dsn, $errno, $errstr, $configuration->timeout);
-        $this->setTimeout($configuration->timeout);
-
-        $this->connect = new Connect($configuration->getOptions());
-        $this->send($this->connect);
-        $this->processMessage();
-
         $this->api = new Api($this);
     }
 
@@ -64,6 +55,28 @@ class Client
         }
 
         return $result;
+    }
+
+    public function connect()
+    {
+        if (!$this->socket) {
+            $config = $this->configuration;
+
+            $dsn = "tcp://$config->host:$config->port";
+            $flags = STREAM_CLIENT_CONNECT;
+            $this->socket = @stream_socket_client($dsn, $errno, $errstr, $config->timeout, $flags);
+
+            if (!$this->socket) {
+                throw new Exception($errstr, $errno);
+            }
+
+            $this->setTimeout($config->timeout);
+
+            $this->connect = new Connect($config->getOptions());
+            $this->send($this->connect);
+
+            $this->processMessage();
+        }
     }
 
     public function decode(string $value)
@@ -250,6 +263,8 @@ class Client
         $length = strlen($line);
 
         $this->logger?->debug('send', compact('line'));
+
+        $this->connect();
 
         while (strlen($line)) {
             $written = fwrite($this->socket, $line);

@@ -12,4 +12,16 @@ class ClientTest extends Test
     {
         $this->assertTrue($this->createClient()->ping());
     }
+
+    public function testLazyConnection()
+    {
+        $this->createClient(['port' => -1]);
+        $this->assertTrue(true);
+    }
+
+    public function testInvalidConnection()
+    {
+        $this->expectExceptionMessage("Connection refused");
+        $this->createClient(['port' => -1])->ping();
+    }
 }

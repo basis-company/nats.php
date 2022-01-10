@@ -26,15 +26,16 @@ abstract class Test extends TestCase
         return $this->logger;
     }
 
-    public function createClient(): Client
+    public function createClient(array $options = []): Client
     {
+        $configuration = $this->getConfiguration($options);
+
+        $logger = null;
         if (getenv('NATS_CLIENT_LOG')) {
-            $client = new Client($this->getConfiguration(), $this->getLogger());
-        } else {
-            $client = new Client($this->getConfiguration());
+            $logger = $this->getLogger();
         }
 
-        return $client;
+        return new Client($configuration, $logger);
     }
 
     protected ?Client $client = null;
@@ -46,10 +47,10 @@ abstract class Test extends TestCase
 
     public function getConfiguration(array $options = []): Configuration
     {
-        return new Configuration(array_merge($options, [
+        return new Configuration(array_merge([
             'host' => getenv('NATS_HOST'),
             'port' => +getenv('NATS_PORT'),
-        ]));
+        ], $options));
     }
 
     public function setup(): void
