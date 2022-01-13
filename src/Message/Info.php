@@ -19,6 +19,7 @@ class Info extends Prototype
     public bool $jetstream;
     public int $client_id;
     public string $client_ip;
+    public bool $auth_required;
 
     public ?string $cluster = null;
     public ?array $connect_urls = null;
