@@ -43,7 +43,7 @@ class Payload
     {
         $values = $this->getValues();
 
-        if (property_exists($values, $name)) {
+        if (is_object($values) && property_exists($values, $name)) {
             return $values->$name;
         }
 
@@ -80,6 +80,9 @@ class Payload
         $values = $this->getValues() ?: (object) [];
 
         foreach (explode('.', $key) as $property) {
+            if (!is_object($values)) {
+                return;
+            }
             if (!property_exists($values, $property)) {
                 return;
             }
