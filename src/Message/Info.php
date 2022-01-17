@@ -24,7 +24,7 @@ class Info extends Prototype
     public ?string $cluster = null;
     public ?array $connect_urls = null;
 
-    public function __toString()
+    public function render(): string
     {
         return 'INFO ' . json_encode($this);
     }

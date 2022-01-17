@@ -12,6 +12,7 @@ Feel free to contribute or give any feedback.
 - [Publish Subscribe](#publish-subscribe)
 - [Request Response](#request-response)
 - [JetStream Api Usage](#jetstream-api-usage)
+- [Key Value Storage](#key-value-storage)
 
 ## Installation
 The recommended way to install the library is through [Composer](http://getcomposer.org):
@@ -52,7 +53,7 @@ $client->subscribe('hello', function ($message) {
 });
 
 $client->publish('hello', 'tester');
-$client->processMessage();
+$client->process();
 ```
 
 ## Request Response
@@ -66,7 +67,7 @@ $client->request('hello.request', 'Nekufa1', function ($response) {
     var_dump($response); // Hello, Nekufa1
 });
 
-$client->processMessage(); // process request
+$client->process(); // process request
 
 // sync interaction (block until response get back)
 $client->dispatch('hello.request', 'Nekufa2'); // Hello, Nekufa2
@@ -107,4 +108,27 @@ $goodbyer->handle(function ($address) {
     mail($address, "See you later");
 });
 
+```
+
+## Key Value Storage
+```php
+$bucket = $client->getApi()->getBucket('bucket_name');
+
+// put get
+$bucket->put('username', 'nekufa');
+echo $bucket->get('username'); // nekufa
+
+// update given revision
+$entry = $bucket->getEntry('username');
+echo $entry->value; // nekufa
+$bucket->update('username', 'bazyaba', $entry->revision);
+
+// delete value
+$bucket->delete('username');
+
+// purge value history
+$bucket->purge('username');
+
+// get bucket stats
+var_dump($bucket->getStatus());
 ```

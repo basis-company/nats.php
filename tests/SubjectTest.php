@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Basis\Nats\Tests;
 
 use Basis\Nats\Client;
+use Basis\Nats\Message\Payload;
 use ReflectionProperty;
 
 class SubjectTest extends Test
@@ -36,7 +37,7 @@ class SubjectTest extends Test
 
         $processing = microtime(true);
         while ($this->counter < $this->limit) {
-            $client->processMessage();
+            $client->process();
         }
         $processing = microtime(true) - $processing;
 
@@ -56,12 +57,12 @@ class SubjectTest extends Test
 
         $client = $this->createClient();
         $client->subscribe('hello', function ($message) {
-            $this->assertSame($message, 'tester');
+            $this->assertSame($message->body, 'tester');
             $this->tested = true;
         });
 
         $client->publish('hello', 'tester');
-        $client->processMessage();
+        $client->process(true);
 
         $this->assertTrue($this->tested);
     }
@@ -70,7 +71,7 @@ class SubjectTest extends Test
     {
         $client = $this->createClient();
         $client->subscribe('hello.sync', $this->greet(...));
-        $this->assertSame($client->dispatch('hello.sync', 'Dmitry'), 'Hello, Dmitry');
+        $this->assertSame($client->dispatch('hello.sync', 'Dmitry')->body, 'Hello, Dmitry');
     }
 
     public function testRequestResponse()
@@ -78,17 +79,28 @@ class SubjectTest extends Test
         $client = $this->createClient();
 
         $client->subscribe('hello.request', $this->greet(...));
+        $this->responseCounter = 0;
 
-        $client->request('hello.request', 'Nekufa1', function ($response) {
-            $this->assertEquals($response, 'Hello, Nekufa1');
+        $client->request('hello.request', 'Nekufa1', function ($response) use ($client) {
+            $this->assertEquals($response->body, 'Hello, Nekufa1');
+            $this->responseCounter++;
         });
 
-        $client->request('hello.request', 'Nekufa2', function ($response) {
-            $this->assertEquals($response, 'Hello, Nekufa2');
+        $client->request('hello.request', 'Nekufa2', function ($response) use ($client) {
+            $this->assertEquals($response->body, 'Hello, Nekufa2');
+            $this->responseCounter++;
         });
 
-        // process request
-        $client->processMessage();
+        // processing requests
+        // handler 1 was called during request 2
+        $this->assertSame($this->responseCounter, 1);
+
+        // process request 2
+        $client->process(true);
+        // get request 2 response
+        $client->process(true);
+
+        $this->assertSame($this->responseCounter, 2);
     }
 
     public function testUnsubscribe()
@@ -110,8 +122,8 @@ class SubjectTest extends Test
         $this->assertCount(0, $property->getValue($client));
     }
 
-    public function greet(string $name): string
+    public function greet(Payload $payload): string
     {
-        return 'Hello, ' . $name;
+        return 'Hello, ' . $payload->body;
     }
 }

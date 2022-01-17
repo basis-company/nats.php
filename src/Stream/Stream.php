@@ -24,10 +24,18 @@ class Stream
         return $this->client->api(...func_get_args());
     }
 
-    public function create()
+    public function create(): self
     {
         $this->api("stream.create." . $this->getName(), $this->configuration->toArray());
 
+        return $this;
+    }
+
+    public function createIfNotExists(): self
+    {
+        if (!$this->exists()) {
+            return $this->create();
+        }
         return $this;
     }
 
@@ -65,6 +73,13 @@ class Stream
         return $this->api('consumer.names.' . $this->getName())->consumers;
     }
 
+    public function getLastMessage(string $subject)
+    {
+        return $this->api('stream.msg.get.' . $this->getName(), [
+            'last_by_subj' => $subject
+        ]);
+    }
+
     public function getName(): string
     {
         return $this->configuration->getName();
@@ -75,11 +90,15 @@ class Stream
         return $this->api("stream.info." . $this->getName());
     }
 
-    public function put(string $subject, array $data): self
+    public function put(string $subject, mixed $payload): self
     {
-        $this->configuration->validateSubject($subject);
-        $this->client->publish($subject, $data);
+        $this->client->publish($subject, $payload);
         return $this;
+    }
+
+    public function publish(string $subject, mixed $payload)
+    {
+        return $this->client->dispatch($subject, $payload);
     }
 
     public function update()

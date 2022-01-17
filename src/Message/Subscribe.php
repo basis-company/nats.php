@@ -10,7 +10,7 @@ class Subscribe extends Prototype
     public string $subject;
     public ?string $group = null;
 
-    public function __toString()
+    public function render(): string
     {
         $args = ['SUB', $this->subject];
 

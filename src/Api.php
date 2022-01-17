@@ -4,14 +4,25 @@ declare(strict_types=1);
 
 namespace Basis\Nats;
 
+use Basis\Nats\KeyValue\Bucket;
 use Basis\Nats\Stream\Stream;
 
 class Api
 {
     private array $streams = [];
+    private array $buckets = [];
 
     public function __construct(public readonly Client $client)
     {
+    }
+
+    public function getBucket(string $name): Bucket
+    {
+        if (!array_key_exists($name, $this->buckets)) {
+            $this->buckets[$name] = new Bucket($this->client, $name);
+        }
+
+        return $this->buckets[$name];
     }
 
     public function getInfo()

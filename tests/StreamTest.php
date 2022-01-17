@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Basis\Nats\Tests;
 
 use Basis\Nats\Client;
+use Basis\Nats\Message\Payload;
 use Basis\Nats\Stream\RetentionPolicy;
 use Basis\Nats\Stream\StorageBackend;
 use ReflectionProperty;
@@ -74,7 +75,7 @@ class StreamTest extends Test
         $stream->create();
 
         $this->called = null;
-        $consumer = $stream->getConsumer('my_consumer');
+        $consumer = $stream->getConsumer('greet_consumer');
         $consumer->getConfiguration()->setSubjectFilter('tester.greet');
         $consumer->create();
 
@@ -100,9 +101,9 @@ class StreamTest extends Test
         $this->assertNull($this->called);
     }
 
-    public function persistMessage($message)
+    public function persistMessage(Payload $message)
     {
-        $this->called = $message;
+        $this->called = $message->isEmpty() ? null : $message;
     }
 
     public function testBatching()
@@ -120,6 +121,7 @@ class StreamTest extends Test
         $consumer = $stream->getConsumer('test');
         $consumer->getConfiguration()->setSubjectFilter($name);
         $consumer->create();
+
         // [1] using 1 iteration
         $this->assertSame(1, $consumer->handle($this->persistMessage(...), 1));
         $this->assertNotNull($this->called);

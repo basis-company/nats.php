@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Basis\Nats\Tests;
+
+use Basis\Nats\Client;
+use Basis\Nats\Stream\RetentionPolicy;
+use Basis\Nats\Stream\StorageBackend;
+use ReflectionProperty;
+
+class BucketTest extends Test
+{
+    public function testBasics()
+    {
+        $bucket = $this->createClient()
+            ->getApi()
+            ->getBucket('test_bucket');
+
+        $this->assertSame(0, $bucket->getStatus()->values);
+
+        $bucket->put('username', 'nekufa');
+
+        $this->assertSame(1, $bucket->getStatus()->values);
+        $this->assertSame($bucket->get('username'), 'nekufa');
+
+        // invalid update
+        $bucket->update('username', 'bazyaba', 100_500);
+        $this->assertSame($bucket->get('username'), 'nekufa');
+        $this->assertSame(1, $bucket->getStatus()->values);
+
+        $bucket->update('username', 'bazyaba', $bucket->getEntry('username')->revision);
+        $this->assertSame($bucket->get('username'), 'bazyaba');
+        $this->assertSame(2, $bucket->getStatus()->values);
+
+        $bucket->delete('username');
+
+        // username null value in history
+        $this->assertSame($bucket->get('username'), null);
+        $this->assertSame(3, $bucket->getStatus()->values);
+
+        // purge key logs
+        $bucket->purge('username');
+
+        // username purged
+        $this->assertSame($bucket->get('username'), null);
+        $this->assertSame(1, $bucket->getStatus()->values);
+    }
+}

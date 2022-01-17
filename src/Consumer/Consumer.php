@@ -69,7 +69,7 @@ class Consumer
             'no_wait' => true,
         ];
 
-        $handlerSubject = 'inbox.' . bin2hex(random_bytes(4));
+        $handlerSubject = 'handler.' . bin2hex(random_bytes(4));
 
         $runtime = (object) [
             'processed' => 0,
@@ -77,21 +77,22 @@ class Consumer
         ];
 
         $this->client->subscribe($handlerSubject, function ($message) use ($handler, $runtime) {
-            if ($message) {
+            if ($message->isEmpty()) {
+                $runtime->empty = true;
+            } else {
                 $runtime->processed++;
                 $handler($message);
-            } else {
-                $runtime->empty = true;
             }
         });
 
         while ($limit--) {
             $this->client->publish($requestSubject, $args, $handlerSubject);
+            $this->client->process(true);
 
             $runtime->empty = false;
 
             foreach (range(1, $this->batch) as $_) {
-                $this->client->processMessage();
+                $this->client->process();
 
                 if ($runtime->empty) {
                     break;

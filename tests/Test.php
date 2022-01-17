@@ -20,7 +20,15 @@ abstract class Test extends TestCase
     {
         if (!$this->logger) {
             $reflection = new ReflectionClass(get_class($this));
-            $this->logger = new Logger($reflection->getShortName());
+            $name = $reflection->getShortName();
+            foreach (debug_backtrace() as $trace) {
+                if ($trace['class'] == __CLASS__) {
+                    continue;
+                }
+                $name .= '.' . $trace['function'];
+                break;
+            }
+            $this->logger = new Logger($name);
             $this->logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
         }
         return $this->logger;
@@ -50,6 +58,8 @@ abstract class Test extends TestCase
         return new Configuration(array_merge([
             'host' => getenv('NATS_HOST'),
             'port' => +getenv('NATS_PORT'),
+            'timeout' => 0.5,
+            'verbose' => false,
         ], $options));
     }
 
@@ -64,6 +74,7 @@ abstract class Test extends TestCase
     {
         $api = $this->createClient()->getApi();
 
+        $api->client->logger = null;
         foreach ($api->getStreamNames() as $name) {
             $api->getStream($name)->delete();
         }

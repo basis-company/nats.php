@@ -8,15 +8,17 @@ use InvalidArgumentException;
 
 abstract class Prototype
 {
-    abstract public function __toString();
+    abstract public function render(): string;
 
     public static function create(string $data): self
     {
-        return new static(json_decode($data, true) ?: []);
+        return new static(Payload::parse($data));
     }
 
-    public function __construct(array $values = [])
+    public function __construct(array|Payload $payload)
     {
+        $values = is_array($payload) ? $payload : $payload->getValues();
+
         foreach ($values as $k => $v) {
             if (!property_exists($this, $k)) {
                 throw new InvalidArgumentException("Invalid property $k for message " . get_class($this));

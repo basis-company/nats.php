@@ -54,6 +54,7 @@ class Configuration
             'pedantic' => $this->pedantic,
             'verbose' => $this->verbose,
             'version' => $this->version,
+            'headers' => true,
         ];
 
         if ($this->user !== null) {

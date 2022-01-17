@@ -7,18 +7,23 @@ namespace Basis\Nats\Message;
 class Publish extends Prototype
 {
     public string $subject;
-    public string $payload;
+    public Payload $payload;
     public ?string $replyTo = null;
 
-    public function __toString()
+    public function render(): string
     {
-        $args = ['PUB', $this->subject];
+        $args = ['PUB'];
+        if ($this->payload->hasHeaders()) {
+            $args = ['HPUB'];
+        }
+
+        $args[] = $this->subject;
 
         if ($this->replyTo) {
             $args[] = $this->replyTo;
         }
 
-        $args[] = strlen($this->payload) . "\r\n" . $this->payload;
+        $args[] = $this->payload->render();
 
         return implode(' ', $args);
     }

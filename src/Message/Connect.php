@@ -6,6 +6,7 @@ namespace Basis\Nats\Message;
 
 class Connect extends Prototype
 {
+    public bool $headers;
     public bool $pedantic;
     public bool $verbose;
     public string $auth_token;
@@ -19,7 +20,7 @@ class Connect extends Prototype
     public string $user;
     public string $version;
 
-    public function __toString()
+    public function render(): string
     {
         return 'CONNECT ' . json_encode($this);
     }

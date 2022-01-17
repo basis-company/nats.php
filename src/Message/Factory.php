@@ -29,6 +29,10 @@ final class Factory
             throw new LogicException($message);
         }
 
+        if ($nick == 'Hmsg') {
+            $nick = 'Msg';
+        }
+
         $class = 'Basis\\Nats\\Message\\' . $nick;
 
         return call_user_func_array([$class, 'create'], [$body]);

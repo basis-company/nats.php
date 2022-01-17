@@ -9,6 +9,10 @@ use Basis\Nats\Message\Connect;
 use Basis\Nats\Message\Factory;
 use Basis\Nats\Message\Info;
 use Basis\Nats\Message\Msg;
+use Basis\Nats\Message\Payload;
+use Basis\Nats\Message\Ping;
+use Basis\Nats\Message\Pong;
+use Basis\Nats\Message\Prototype;
 use Basis\Nats\Message\Publish;
 use Basis\Nats\Message\Subscribe;
 use Basis\Nats\Message\Unsubscribe;
@@ -30,7 +34,7 @@ class Client
 
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
-        private ?LoggerInterface $logger = null,
+        public ?LoggerInterface $logger = null,
     ) {
         $this->api = new Api($this);
     }
@@ -74,18 +78,16 @@ class Client
 
             $this->connect = new Connect($config->getOptions());
             $this->send($this->connect);
-
-            $this->processMessage();
+            $this->process(true);
         }
     }
 
-    public function decode(string $value)
+    public function dispatch(string $name, mixed $payload, ?float $timeout = null)
     {
-        return json_decode($value) ?: $value;
-    }
+        if ($timeout === null) {
+            $timeout = $this->configuration->timeout;
+        }
 
-    public function dispatch(string $name, mixed $payload, float $timeout = 60)
-    {
         $context = (object) [
             'processed' => false,
             'result' => null,
@@ -98,7 +100,7 @@ class Client
         });
 
         while (!$context->processed && microtime(true) < $context->threshold) {
-            $this->processMessage();
+            $this->process();
         }
 
         if (!$context->processed) {
@@ -108,11 +110,6 @@ class Client
         return $context->result;
     }
 
-    public function encode($value): string
-    {
-        return is_object($value) || is_array($value) ? json_encode($value) : (string) $value;
-    }
-
     public function getApi(): Api
     {
         return $this->api;
@@ -120,16 +117,16 @@ class Client
 
     public function ping(): bool
     {
-        $start = microtime(true);
-        $this->send('PING');
-        $this->processMessage();
-        return $start < $this->pong;
+        $timestamp = microtime(true);
+        $this->send(new Ping([]));
+
+        return $timestamp <= $this->process(true);
     }
 
     public function publish(string $name, mixed $payload, ?string $replyTo = null): self
     {
         return $this->send(new Publish([
-            'payload' => $this->encode($payload),
+            'payload' => Payload::parse($payload),
             'replyTo' => $replyTo,
             'subject' => $name,
         ]));
@@ -143,8 +140,9 @@ class Client
             $this->unsubscribe($sid);
             $handler($response);
         });
+
         $this->publish($name, $payload, $sid);
-        $this->processMessage();
+        $this->process(true);
 
         return $this;
     }
@@ -197,27 +195,24 @@ class Client
         return $this;
     }
 
-    public function processMessage()
+    public function process(bool $retry = false)
     {
         $line = stream_get_line($this->socket, 1024, "\r\n");
         if (!$line) {
-            return;
+            return $retry ? $this->process(true) : null;
         }
 
         switch (trim($line)) {
             case 'PING':
-                $this->logger?->debug('ping');
-                $this->send('PONG');
-                return $this->processMessage();
+                $this->logger?->debug('receive ' . $line);
+                return $this->send(new Pong([]));
 
             case 'PONG':
-                $this->logger?->debug('pong');
-                $this->pong = microtime(true);
-                return;
+                $this->logger?->debug('receive ' . $line);
+                return $this->pong = microtime(true);
 
             case '+OK':
-                $this->logger?->debug('ok');
-                return $this->processMessage();
+                return $this->logger?->debug('receive ' . $line);
         }
 
         try {
@@ -229,42 +224,44 @@ class Client
 
         switch (get_class($message)) {
             case Info::class:
-                $this->logger?->debug('receive ' . $message);
+                $this->logger?->debug('receive ' . $line);
                 return $this->info = $message;
 
             case Msg::class:
-                if (!$message->length) {
-                    // read empty line
-                    $message->payload .= stream_get_line($this->socket, 0, "\r\n");
-                } else {
-                    // read message payload
-                    while (strlen($message->payload) < $message->length) {
-                        $message->payload .= stream_get_line($this->socket, 1024, "\r\n");
+                $payload = '';
+                if ($message->length) {
+                    while (strlen($payload) < $message->length) {
+                        $payload = stream_get_line($this->socket, $message->length);
+                        if (strlen($payload) != $message->length) {
+                            $this->logger?->debug('got ' . strlen($payload) . '/' . $message->length . ': ' . $payload);
+                        }
                     }
                 }
+                $message->parse($payload);
                 if (!array_key_exists($message->sid, $this->handlers)) {
                     throw new LogicException("No handler for message $message->sid");
                 }
-                $this->logger?->debug('receive message', (array) $message);
-                $result = $this->handlers[$message->sid]($this->decode($message->payload));
+                $this->logger?->debug('receive ' . $line . $payload);
+                $result = $this->handlers[$message->sid]($message->payload);
                 if ($message->replyTo) {
                     $this->send(new Publish([
                         'subject' => $message->replyTo,
-                        'payload' => $this->encode($result),
+                        'payload' => Payload::parse($result),
                     ]));
                 }
                 break;
         }
     }
 
-    private function send($message): self
+    private function send(Prototype $message): self
     {
-        $line = (string) $message . "\r\n";
+        $this->connect();
+
+        $line = $message->render() . "\r\n";
         $length = strlen($line);
 
-        $this->logger?->debug('send', compact('line'));
+        $this->logger?->debug('send ' . $line);
 
-        $this->connect();
 
         while (strlen($line)) {
             $written = fwrite($this->socket, $line);
@@ -279,6 +276,11 @@ class Client
                 break;
             }
             $msg = substr($msg, -$length);
+        }
+
+        if ($this->configuration->verbose && $line !== "PING\r\n") {
+            // get feedback
+            $this->process(true);
         }
 
         return $this;
