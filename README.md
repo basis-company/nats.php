@@ -114,11 +114,11 @@ $goodbyer->handle(function ($address) {
 ```php
 $bucket = $client->getApi()->getBucket('bucket_name');
 
-// put get
+// basics
 $bucket->put('username', 'nekufa');
 echo $bucket->get('username'); // nekufa
 
-// update given revision
+// safe update (given revision)
 $entry = $bucket->getEntry('username');
 echo $entry->value; // nekufa
 $bucket->update('username', 'bazyaba', $entry->revision);
