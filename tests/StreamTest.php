@@ -12,6 +12,26 @@ use ReflectionProperty;
 
 class StreamTest extends Test
 {
+    public function testNoMessages()
+    {
+        $this->called = false;
+
+        $stream = $this->getClient()->getApi()->getStream('no_messages');
+        $stream->getConfiguration()->setSubjects(['cucumber']);
+        $stream->create();
+
+        $consumer = $stream->getConsumer('test_consumer');
+        $consumer->getConfiguration()->setSubjectFilter('cucumber');
+
+        $consumer->create();
+
+        $consumer->handle(function ($response) {
+            $this->called = $response;
+        }, 1, 0);
+
+        $this->assertFalse($this->called);
+    }
+
     public function testSingletons()
     {
         $api = $this->getClient()->getApi();

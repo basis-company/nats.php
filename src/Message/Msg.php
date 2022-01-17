@@ -17,8 +17,14 @@ class Msg extends Prototype
 
     public static function create(string $data): self
     {
-        $args = explode(' ', $data);
+        $args = explode(' ', $data, 5);
         $values = [];
+        foreach ($args as $k => $v) {
+            if ($v === '') {
+                unset($args[$k]);
+            }
+        }
+        $args = array_values($args);
 
         switch (count($args)) {
             case 3:
@@ -27,7 +33,7 @@ class Msg extends Prototype
 
             case 4:
                 $values = array_combine(['subject', 'sid', 'replyTo', 'length'], $args);
-                if (is_numeric($values['sid'])) {
+                if (is_numeric($values['replyTo'])) {
                     $values = array_combine(['subject', 'sid', 'hlength', 'length'], $args);
                 }
                 break;
@@ -58,7 +64,22 @@ class Msg extends Prototype
     {
         $headers = [];
         if ($this->hlength) {
-            $rawHeaders = substr($payload, 0, $this->hlength);
+            $headerString = substr($payload, 0, $this->hlength);
+            foreach (explode("\r\n", $headerString) as $row) {
+                if (!$row) {
+                    continue;
+                }
+                if (strpos($row, 'NATS/') !== false) {
+                    [$nats, $code, $message] = explode(' ', $row, 3);
+                    $headers['Status-Code'] = trim($code);
+                    $headers['Status-Message'] = trim($message);
+                } elseif (strpos($row, ':') !== false) {
+                    [$key, $value] = explode(':', $row, 2);
+                    $headers[trim($key)] = trim($value);
+                } else {
+                    throw new Exception("Invalid header row: " . $row);
+                }
+            }
             $payload = substr($payload, $this->hlength);
         }
         $this->payload = new Payload($payload, $headers);
