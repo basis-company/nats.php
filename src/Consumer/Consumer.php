@@ -13,7 +13,7 @@ class Consumer
     private float $delay = 1;
     private float $expires = 0.01;
     private int $batch = 1;
-    private int $limit = PHP_INT_MAX;
+    private int $iterations = PHP_INT_MAX;
 
     public function __construct(
         public readonly Client $client,
@@ -79,9 +79,9 @@ class Consumer
         return $this->expires;
     }
 
-    public function getLimit(): int
+    public function getIterations(): int
     {
-        return $this->limit;
+        return $this->iterations;
     }
 
     public function handle(Closure $handler): int
@@ -110,21 +110,19 @@ class Consumer
         $this->create();
 
         $this->client->subscribe($handlerSubject, function ($message) use ($handler, $runtime) {
-            if ($message->isEmpty()) {
-                $runtime->empty = true;
-            } else {
+            if (!$message->isEmpty()) {
+                $runtime->empty = false;
                 $runtime->processed++;
                 $handler($message);
             }
         });
 
-        $limit = $this->getLimit();
-        while ($limit--) {
+        $iterations = $this->getIterations();
+        while ($iterations--) {
             $this->client->publish($requestSubject, $args, $handlerSubject);
 
-            $runtime->empty = false;
-
             foreach (range(1, $this->batch) as $_) {
+                $runtime->empty = true;
                 $this->client->process($this->expires);
 
                 if ($runtime->empty) {
@@ -132,7 +130,7 @@ class Consumer
                 }
             }
 
-            if ($limit && $runtime->empty) {
+            if ($iterations && $runtime->empty) {
                 usleep((int) floor($this->getDelay() * 1_000_000));
             }
         }
@@ -163,9 +161,9 @@ class Consumer
         return $this;
     }
 
-    public function setLimit(int $limit): self
+    public function setIterations(int $iterations): self
     {
-        $this->limit = $limit;
+        $this->iterations = $iterations;
 
         return $this;
     }
