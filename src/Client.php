@@ -78,7 +78,7 @@ class Client
 
             $this->connect = new Connect($config->getOptions());
             $this->send($this->connect);
-            $this->process(true);
+            $this->process(PHP_INT_MAX);
         }
     }
 
@@ -120,7 +120,7 @@ class Client
         $timestamp = microtime(true);
         $this->send(new Ping([]));
 
-        return $timestamp <= $this->process(true);
+        return $timestamp <= $this->process(PHP_INT_MAX);
     }
 
     public function publish(string $name, mixed $payload, ?string $replyTo = null): self
@@ -142,7 +142,7 @@ class Client
         });
 
         $this->publish($name, $payload, $sid);
-        $this->process(true);
+        $this->process(PHP_INT_MAX);
 
         return $this;
     }
@@ -195,11 +195,14 @@ class Client
         return $this;
     }
 
-    public function process(bool $retry = false)
+    public function process(null|int|float $timeout = 0)
     {
-        $line = stream_get_line($this->socket, 1024, "\r\n");
-        if (!$line) {
-            return $retry ? $this->process(true) : null;
+        $start = microtime(true);
+
+        while (!($line = stream_get_line($this->socket, 1024, "\r\n"))) {
+            if (microtime(true) - $start > $timeout) {
+                return null;
+            }
         }
 
         switch (trim($line)) {
@@ -262,7 +265,6 @@ class Client
 
         $this->logger?->debug('send ' . $line);
 
-
         while (strlen($line)) {
             $written = fwrite($this->socket, $line);
             if ($written === false) {
@@ -280,7 +282,7 @@ class Client
 
         if ($this->configuration->verbose && $line !== "PING\r\n") {
             // get feedback
-            $this->process(true);
+            $this->process(PHP_INT_MAX);
         }
 
         return $this;

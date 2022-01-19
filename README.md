@@ -13,6 +13,7 @@ Feel free to contribute or give any feedback.
 - [Request Response](#request-response)
 - [JetStream Api Usage](#jetstream-api-usage)
 - [Key Value Storage](#key-value-storage)
+- [Performance](#performance)
 
 ## Installation
 The recommended way to install the library is through [Composer](http://getcomposer.org):
@@ -132,3 +133,45 @@ $bucket->purge('username');
 // get bucket stats
 var_dump($bucket->getStatus());
 ```
+
+
+## Performance
+Testing on i5-4670k with nats running in docker gives 420k rps for publish and 350k rps for receive in non-verbose mode.
+You can run tests on your environment.
+```bash
+ % wget https://getcomposer.org/download/latest-stable/composer.phar
+...
+Saving to: ‘composer.phar’
+
+ % ./composer.phar install
+Installing dependencies from lock file (including require-dev)
+...
+
+ % export NATS_CLIENT_LOG=1
+ % vendor/bin/phpunit --filter performance
+PHPUnit 9.5.10 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.1
+Configuration: /home/nekufa/software/github/nats.php/phpunit.xml.dist
+Warning:       No code coverage driver available
+
+[2022-01-19T10:42:14.008230+00:00] SubjectTest.testPerformance.INFO: start performance test [] []
+[2022-01-19T10:42:14.246606+00:00] SubjectTest.testPerformance.INFO: publishing {"rps":421871.0,"length":100000,"time":0.23703885078430176} []
+[2022-01-19T10:42:14.530670+00:00] SubjectTest.testPerformance.INFO: processing {"rps":355120.0,"length":100000,"time":0.2839939594268799} []
+
+
+ % export NATS_CLIENT_VERBOSE=1
+ % vendor/bin/phpunit --filter performance
+PHPUnit 9.5.10 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.1
+Configuration: /home/nekufa/software/github/nats.php/phpunit.xml.dist
+Warning:       No code coverage driver available
+
+[2022-01-19T10:42:21.319838+00:00] SubjectTest.testPerformance.INFO: start performance test [] []
+[2022-01-19T10:42:21.766501+00:00] SubjectTest.testPerformance.INFO: publishing {"rps":224640.0,"length":100000,"time":0.4451560974121094} []
+[2022-01-19T10:42:21.922010+00:00] SubjectTest.testPerformance.INFO: processing {"rps":353317.0,"length":100000,"time":0.15544414520263672} []
+.                                                                   1 / 1 (100%)
+
+nekufa@fasiga ~ % cat /proc/cpuinfo | grep i5
+model name  : Intel(R) Core(TM) i5-4670K CPU @ 3.40GHz

@@ -10,7 +10,10 @@ use Basis\Nats\Client;
 class Consumer
 {
     private ?bool $exists = null;
+    private float $delay = 1;
+    private float $expires = 0.01;
     private int $batch = 1;
+    private int $limit = PHP_INT_MAX;
 
     public function __construct(
         public readonly Client $client,
@@ -18,11 +21,13 @@ class Consumer
     ) {
     }
 
-    public function create(): self
+    public function create($ifNotExists = true): self
     {
-        $command = 'consumer.durable.create.' . $this->getStream() . '.' . $this->getName();
-        $this->client->api($command, $this->configuration->toArray());
-        $this->exists = true;
+        if (!$this->exists()) {
+            $command = 'consumer.durable.create.' . $this->getStream() . '.' . $this->getName();
+            $this->client->api($command, $this->configuration->toArray());
+            $this->exists = true;
+        }
 
         return $this;
     }
@@ -59,15 +64,41 @@ class Consumer
         return $this->getConfiguration()->getStream();
     }
 
-    public function handle(Closure $handler, int $limit = PHP_INT_MAX, float $delay = 1): int
+    public function getBatching(): int
+    {
+        return $this->batch;
+    }
+
+    public function getDelay(): float
+    {
+        return $this->delay;
+    }
+
+    public function getExpires(): float
+    {
+        return $this->expires;
+    }
+
+    public function getLimit(): int
+    {
+        return $this->limit;
+    }
+
+    public function handle(Closure $handler): int
     {
         $method = 'consumer.msg.next.' . $this->getStream() . '.' . $this->getName();
         $requestSubject = strtoupper("\$js.api.$method");
-
         $args = [
-            'batch' => $this->batch,
-            'no_wait' => true,
+            'batch' => $this->getBatching(),
         ];
+
+        // convert to nanoseconds
+        $expires = intval(1_000_000_000 * $this->getExpires());
+        if ($expires) {
+            $args['expires'] = $expires;
+        } else {
+            $args['no_wait'] = true;
+        }
 
         $handlerSubject = 'handler.' . bin2hex(random_bytes(4));
 
@@ -75,6 +106,8 @@ class Consumer
             'processed' => 0,
             'empty' => false,
         ];
+
+        $this->create();
 
         $this->client->subscribe($handlerSubject, function ($message) use ($handler, $runtime) {
             if ($message->isEmpty()) {
@@ -85,14 +118,14 @@ class Consumer
             }
         });
 
+        $limit = $this->getLimit();
         while ($limit--) {
             $this->client->publish($requestSubject, $args, $handlerSubject);
-            $this->client->process(true);
 
             $runtime->empty = false;
 
             foreach (range(1, $this->batch) as $_) {
-                $this->client->process();
+                $this->client->process($this->expires);
 
                 if ($runtime->empty) {
                     break;
@@ -100,7 +133,7 @@ class Consumer
             }
 
             if ($limit && $runtime->empty) {
-                usleep((int) floor($delay * 1_000_000));
+                usleep((int) floor($this->getDelay() * 1_000_000));
             }
         }
 
@@ -112,6 +145,27 @@ class Consumer
     public function setBatching(int $batch): self
     {
         $this->batch = $batch;
+
+        return $this;
+    }
+
+    public function setDelay(float $delay): self
+    {
+        $this->delay = $delay;
+
+        return $this;
+    }
+
+    public function setExpires(float $expires): self
+    {
+        $this->expires = $expires;
+
+        return $this;
+    }
+
+    public function setLimit(int $limit): self
+    {
+        $this->limit = $limit;
 
         return $this;
     }

@@ -23,11 +23,12 @@ class StreamTest extends Test
         $consumer = $stream->getConsumer('test_consumer');
         $consumer->getConfiguration()->setSubjectFilter('cucumber');
 
-        $consumer->create();
-
-        $consumer->handle(function ($response) {
-            $this->called = $response;
-        }, 1, 0);
+        $consumer->create()
+            ->setDelay(0)
+            ->setLimit(1)
+            ->handle(function ($response) {
+                $this->called = $response;
+            });
 
         $this->assertFalse($this->called);
     }
@@ -100,11 +101,13 @@ class StreamTest extends Test
         $consumer->create();
 
         $this->assertNull($this->called);
-        $consumer->handle($this->persistMessage(...), 1, 0);
+        $consumer->setLimit(1);
+        $consumer->handle($this->persistMessage(...));
 
         $this->assertNull($this->called);
         $stream->put('tester.greet', [ 'name' => 'nekufa' ]);
-        $consumer->handle($this->persistMessage(...), 1, 0);
+        $consumer->setLimit(1);
+        $consumer->handle($this->persistMessage(...));
 
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->name, 'nekufa');
@@ -116,7 +119,8 @@ class StreamTest extends Test
         $consumer->create();
 
         $stream->put('tester.greet', [ 'name' => 'nekufa' ]);
-        $consumer->handle($this->persistMessage(...), 1, 0);
+        $consumer->setLimit(1)->setDelay(0);
+        $consumer->handle($this->persistMessage(...));
 
         $this->assertNull($this->called);
     }
@@ -143,30 +147,33 @@ class StreamTest extends Test
         $consumer->create();
 
         // [1] using 1 iteration
-        $this->assertSame(1, $consumer->handle($this->persistMessage(...), 1));
+        $consumer->setLimit(1);
+        $this->assertSame(1, $consumer->handle($this->persistMessage(...)));
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->tid, 1);
 
         // [2], [3] using 2 iterations
-        $this->assertSame(2, $consumer->handle($this->persistMessage(...), 2));
+        $consumer->setLimit(2);
+        $this->assertSame(2, $consumer->handle($this->persistMessage(...)));
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->tid, 3);
 
         // [4, 5] using 1 iteration
-        $consumer->setBatching(2);
-        $this->assertSame(2, $consumer->handle($this->persistMessage(...), 1));
+        $consumer->setBatching(2)->setLimit(1);
+        $this->assertSame(2, $consumer->handle($this->persistMessage(...)));
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->tid, 5);
 
         // [6, 7], [8, 9] using 2 iterations
-        $consumer->setBatching(2);
-        $this->assertSame(4, $consumer->handle($this->persistMessage(...), 2));
+        $consumer->setBatching(2)->setLimit(2);
+        $this->assertSame(4, $consumer->handle($this->persistMessage(...)));
 
         // [10] using 1 iteration
-        $consumer->setBatching(1);
-        $this->assertSame(1, $consumer->handle($this->persistMessage(...), 1));
+        $consumer->setBatching(1)->setLimit(1);
+        $this->assertSame(1, $consumer->handle($this->persistMessage(...)));
 
         // no more messages
-        $this->assertSame(0, $consumer->handle($this->persistMessage(...), 1));
+        $consumer->setLimit(1);
+        $this->assertSame(0, $consumer->handle($this->persistMessage(...)));
     }
 }

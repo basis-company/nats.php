@@ -15,6 +15,8 @@ class SubjectTest extends Test
         $client = $this->createClient();
         $client->setLogger(null);
 
+        $this->logger?->info('start performance test');
+
         $this->limit = 100_000;
         $this->counter = 0;
 
@@ -34,10 +36,9 @@ class SubjectTest extends Test
             'time' => $publishing,
         ]);
 
-
         $processing = microtime(true);
         while ($this->counter < $this->limit) {
-            $client->process();
+            $client->process(0);
         }
         $processing = microtime(true) - $processing;
 
@@ -62,7 +63,7 @@ class SubjectTest extends Test
         });
 
         $client->publish('hello', 'tester');
-        $client->process(true);
+        $client->process(1);
 
         $this->assertTrue($this->tested);
     }
@@ -96,9 +97,9 @@ class SubjectTest extends Test
         $this->assertSame($this->responseCounter, 1);
 
         // process request 2
-        $client->process(true);
+        $client->process(1);
         // get request 2 response
-        $client->process(true);
+        $client->process(1);
 
         $this->assertSame($this->responseCounter, 2);
     }

@@ -59,7 +59,7 @@ abstract class Test extends TestCase
             'host' => getenv('NATS_HOST'),
             'port' => +getenv('NATS_PORT'),
             'timeout' => 0.5,
-            'verbose' => false,
+            'verbose' => getenv('NATS_CLIENT_VERBOSE') == '1',
         ], $options));
     }
 
