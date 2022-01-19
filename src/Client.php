@@ -41,7 +41,7 @@ class Client
 
     public function api($command, array $args = [], ?Closure $callback = null): ?object
     {
-        $subject = strtoupper("\$js.api.$command");
+        $subject = "\$JS.API.$command";
         $options = json_encode((object) $args);
 
         if ($callback) {

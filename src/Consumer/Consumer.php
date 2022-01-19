@@ -24,7 +24,7 @@ class Consumer
     public function create($ifNotExists = true): self
     {
         if (!$this->exists()) {
-            $command = 'consumer.durable.create.' . $this->getStream() . '.' . $this->getName();
+            $command = 'CONSUMER.DURABLE.CREATE.' . $this->getStream() . '.' . $this->getName();
             $this->client->api($command, $this->configuration->toArray());
             $this->exists = true;
         }
@@ -34,7 +34,7 @@ class Consumer
 
     public function delete(): self
     {
-        $this->client->api('consumer.delete.' . $this->getStream() . '.' . $this->getName());
+        $this->client->api('CONSUMER.DELETE.' . $this->getStream() . '.' . $this->getName());
         $this->exists = false;
 
         return $this;
@@ -86,8 +86,7 @@ class Consumer
 
     public function handle(Closure $handler): int
     {
-        $method = 'consumer.msg.next.' . $this->getStream() . '.' . $this->getName();
-        $requestSubject = strtoupper("\$js.api.$method");
+        $requestSubject = '$JS.API.CONSUMER.MSG.NEXT.' . $this->getStream() . '.' . $this->getName();
         $args = [
             'batch' => $this->getBatching(),
         ];

@@ -27,17 +27,17 @@ class Api
 
     public function getInfo()
     {
-        return $this->client->api('info');
+        return $this->client->api('INFO');
     }
 
     public function getStreamList(): array
     {
-        return $this->client->api('stream.list')->streams ?: [];
+        return $this->client->api('STREAM.LIST')->streams ?: [];
     }
 
     public function getStreamNames(): array
     {
-        return $this->client->api('stream.names')->streams ?: [];
+        return $this->client->api('STREAM.NAMES')->streams ?: [];
     }
 
     public function getStream(string $name): Stream

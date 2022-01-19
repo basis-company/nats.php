@@ -40,7 +40,7 @@ class Configuration
 
     public function getName(): string
     {
-        return strtoupper($this->name);
+        return $this->name;
     }
 
     public function getStream(): string

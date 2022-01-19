@@ -88,7 +88,7 @@ class Configuration
 
     public function getName()
     {
-        return strtoupper($this->name);
+        return $this->name;
     }
 
     public function getReplicas(): int

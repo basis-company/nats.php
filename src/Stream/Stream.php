@@ -26,7 +26,7 @@ class Stream
 
     public function create(): self
     {
-        $this->api("stream.create." . $this->getName(), $this->configuration->toArray());
+        $this->api("STREAM.CREATE." . $this->getName(), $this->configuration->toArray());
 
         return $this;
     }
@@ -42,7 +42,7 @@ class Stream
     public function delete(): self
     {
         if ($this->exists()) {
-            $this->api("stream.delete." . $this->getName());
+            $this->api("STREAM.DELETE." . $this->getName());
         }
 
         return $this;
@@ -70,12 +70,12 @@ class Stream
 
     public function getConsumerNames(): array
     {
-        return $this->api('consumer.names.' . $this->getName())->consumers;
+        return $this->api('CONSUMER.NAMES.' . $this->getName())->consumers;
     }
 
     public function getLastMessage(string $subject)
     {
-        return $this->api('stream.msg.get.' . $this->getName(), [
+        return $this->api('STREAM.MSG.GET.' . $this->getName(), [
             'last_by_subj' => $subject
         ]);
     }
@@ -87,7 +87,7 @@ class Stream
 
     public function info()
     {
-        return $this->api("stream.info." . $this->getName());
+        return $this->api("STREAM.INFO." . $this->getName());
     }
 
     public function put(string $subject, mixed $payload): self
@@ -103,6 +103,6 @@ class Stream
 
     public function update()
     {
-        $this->api("stream.update." . $this->getName(), $this->configuration->toArray());
+        $this->api("STREAM.UPDATE." . $this->getName(), $this->configuration->toArray());
     }
 }
