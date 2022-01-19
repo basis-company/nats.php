@@ -147,6 +147,8 @@ Saving to: ‘composer.phar’
 Installing dependencies from lock file (including require-dev)
 ...
 
+ % export NATS_HOST=0.0.0.0
+ % export NATS_PORT=4222
  % export NATS_CLIENT_LOG=1
  % vendor/bin/phpunit --filter performance
 PHPUnit 9.5.10 by Sebastian Bergmann and contributors.
