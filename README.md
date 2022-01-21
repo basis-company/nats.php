@@ -137,6 +137,7 @@ var_dump($bucket->getStatus());
 
 ## Performance
 Testing on i5-4670k with nats running in docker gives 420k rps for publish and 350k rps for receive in non-verbose mode.
+
 You can run tests on your environment.
 ```bash
  % wget https://getcomposer.org/download/latest-stable/composer.phar
