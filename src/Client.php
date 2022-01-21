@@ -33,6 +33,9 @@ class Client
     private float $pong = 0;
     private string $name = '';
 
+    // delay on empty result
+    private float $delay = 0.001;
+
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
         public ?LoggerInterface $logger = null,
@@ -183,6 +186,12 @@ class Client
         return $this;
     }
 
+    public function setDelay(float $delay): self
+    {
+        $this->delay = $delay;
+        return $this;
+    }
+
     public function setLogger(?LoggerInterface $logger): self
     {
         $this->logger = $logger;
@@ -208,7 +217,7 @@ class Client
                 return null;
             }
             // 1ms sleep
-            usleep(1_000);
+            usleep(intval($this->delay * 1_000_000));
         }
 
         switch (trim($line)) {

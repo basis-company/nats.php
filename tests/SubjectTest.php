@@ -12,7 +12,7 @@ class SubjectTest extends Test
 {
     public function testPerformance()
     {
-        $client = $this->createClient();
+        $client = $this->createClient()->setDelay(0);
         $client->setLogger(null);
 
         $this->logger?->info('start performance test');
