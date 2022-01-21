@@ -201,12 +201,14 @@ class Client
 
     public function process(null|int|float $timeout = 0)
     {
-        $start = microtime(true);
+        $max = microtime(true) + $timeout;
 
         while (!($line = stream_get_line($this->socket, 1024, "\r\n"))) {
-            if (microtime(true) - $start > $timeout) {
+            if (microtime(true) > $max) {
                 return null;
             }
+            // 1ms sleep
+            usleep(1_000);
         }
 
         switch (trim($line)) {
