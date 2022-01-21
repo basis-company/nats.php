@@ -13,6 +13,7 @@ class Connect extends Prototype
     public string $echo;
     public string $jwt;
     public string $lang;
+    public string $name;
     public string $pass;
     public string $protocol;
     public string $sig;

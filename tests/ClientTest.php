@@ -19,6 +19,14 @@ class ClientTest extends Test
         $this->assertTrue(true);
     }
 
+    public function testName()
+    {
+        $client = $this->createClient();
+        $client->setName('name-test');
+        $client->connect();
+        $this->assertSame($client->connect->name, 'name-test');
+    }
+
     public function testInvalidConnection()
     {
         $this->expectExceptionMessage("Connection refused");

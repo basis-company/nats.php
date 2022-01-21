@@ -28,9 +28,10 @@ class Client
     public readonly Info $info;
     public readonly Api $api;
 
+    private $socket;
     private array $handlers = [];
     private float $pong = 0;
-    private $socket;
+    private string $name = '';
 
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
@@ -77,6 +78,9 @@ class Client
             $this->setTimeout($config->timeout);
 
             $this->connect = new Connect($config->getOptions());
+            if ($this->name) {
+                $this->connect->name = $this->name;
+            }
             $this->send($this->connect);
             $this->process(PHP_INT_MAX);
         }
@@ -285,6 +289,12 @@ class Client
             $this->process(PHP_INT_MAX);
         }
 
+        return $this;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
         return $this;
     }
 }
