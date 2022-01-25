@@ -70,7 +70,12 @@ class Msg extends Prototype
                     continue;
                 }
                 if (strpos($row, 'NATS/') !== false) {
-                    [$nats, $code, $message] = explode(' ', $row, 3);
+                    $parts = explode(' ', $row, 3);
+                    if (count($parts) == 1) {
+                        // empty header
+                        continue;
+                    }
+                    [$nats, $code, $message] = $parts;
                     $headers['Status-Code'] = trim($code);
                     $headers['Status-Message'] = trim($message);
                 } elseif (strpos($row, ':') !== false) {
