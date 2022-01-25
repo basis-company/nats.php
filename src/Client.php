@@ -292,7 +292,7 @@ class Client
             if ($length == $written) {
                 break;
             }
-            $msg = substr($msg, -$length);
+            $line = substr($line, $written);
         }
 
         if ($this->configuration->verbose && $line !== "PING\r\n") {
