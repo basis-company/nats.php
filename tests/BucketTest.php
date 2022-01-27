@@ -45,5 +45,15 @@ class BucketTest extends Test
         // username purged
         $this->assertSame($bucket->get('username'), null);
         $this->assertSame(1, $bucket->getStatus()->values);
+
+        $bucket->put('service_handlers', json_encode([
+            [
+                'threads' => 2,
+                'subject' => 'tester',
+                'name' => 'tester',
+            ]
+        ]));
+
+        $this->assertCount(1, json_decode($bucket->get('service_handlers')));
     }
 }

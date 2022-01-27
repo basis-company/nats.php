@@ -70,14 +70,14 @@ class Payload
         return $this->hasHeader($key) ? $this->headers[$key] : null;
     }
 
-    public function getValues(): ?stdClass
+    public function getValues()
     {
         return json_decode($this->body);
     }
 
     public function getValue(string $key)
     {
-        $values = $this->getValues() ?: (object) [];
+        $values = (object) $this->getValues() ?: [];
 
         foreach (explode('.', $key) as $property) {
             if (!is_object($values)) {
