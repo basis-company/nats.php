@@ -15,6 +15,7 @@ class StreamTest extends Test
     public function testNoMessages()
     {
         $this->called = false;
+        $this->empty = false;
 
         $stream = $this->getClient()->getApi()->getStream('no_messages');
         $stream->getConfiguration()->setSubjects(['cucumber']);
@@ -28,9 +29,12 @@ class StreamTest extends Test
             ->setIterations(1)
             ->handle(function ($response) {
                 $this->called = $response;
+            }, function () {
+                $this->empty = true;
             });
 
         $this->assertFalse($this->called);
+        $this->assertTrue($this->empty);
     }
 
     public function testSingletons()

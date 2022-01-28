@@ -84,7 +84,7 @@ class Consumer
         return $this->iterations;
     }
 
-    public function handle(Closure $handler): int
+    public function handle(Closure $handler, Closure $emptyHandler = null): int
     {
         $requestSubject = '$JS.API.CONSUMER.MSG.NEXT.' . $this->getStream() . '.' . $this->getName();
         $args = [
@@ -125,6 +125,9 @@ class Consumer
                 $this->client->process($this->expires);
 
                 if ($runtime->empty) {
+                    if ($emptyHandler) {
+                        $emptyHandler();
+                    }
                     break;
                 }
             }
