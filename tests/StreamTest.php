@@ -120,7 +120,10 @@ class StreamTest extends Test
 
     public function testConsumer()
     {
-        $api = $this->getClient()->getApi();
+        $api = $this->getClient()
+            ->skipInvalidMessages(true)
+            ->getApi();
+
         $this->assertSame($api->getInfo()->streams, 0);
 
         $stream = $api->getStream('my_stream');

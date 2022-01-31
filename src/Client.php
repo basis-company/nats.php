@@ -36,6 +36,8 @@ class Client
     // delay on empty result
     private float $delay = 0.001;
 
+    private bool $skipInvalidMessages = false;
+
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
         public ?LoggerInterface $logger = null,
@@ -258,6 +260,9 @@ class Client
                 $message->parse($payload);
                 $this->logger?->debug('receive ' . $line . $payload);
                 if (!array_key_exists($message->sid, $this->handlers)) {
+                    if ($this->skipInvalidMessages) {
+                        return;
+                    }
                     throw new LogicException("No handler for message $message->sid");
                 }
                 $result = $this->handlers[$message->sid]($message->payload);
@@ -306,6 +311,12 @@ class Client
     public function setName(string $name): self
     {
         $this->name = $name;
+        return $this;
+    }
+
+    public function skipInvalidMessages(bool $skipInvalidMessages): self
+    {
+        $this->skipInvalidMessages = $skipInvalidMessages;
         return $this;
     }
 }
