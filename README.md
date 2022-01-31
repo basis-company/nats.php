@@ -95,6 +95,8 @@ $stream->create();
 $stream->put('mailer.greet', 'nekufa@gmail.com');
 $stream->put('mailer.bye', 'nekufa@gmail.com');
 
+var_dump($stream->info()); // can stream info
+
 // this should be set in your worker
 $greeter = $stream->getConsumer('greeter');
 $greeter->getConfiguration()->setSubjectFilter('mailer.greet');
@@ -102,6 +104,8 @@ $greeter->getConfiguration()->setSubjectFilter('mailer.greet');
 $greeter->handle(function ($address) {
     mail($address, "Hi there!");
 });
+
+var_dump($greater->info()); // can consumer info
 
 $goodbyer = $stream->getConsumer('goodbyer');
 $goodbyer->getConfiguration()->setSubjectFilter('mailer.bye');
