@@ -88,6 +88,7 @@ $stream->getConfiguration()
     ->setStorageBackend(StorageBackend::MEMORY)
     ->setSubjects(['mailer.greet', 'mailer.bye']);
 
+// stream is created with given configuration
 $stream->create();
 
 // and put some tasks so workers would be doing something
@@ -97,18 +98,27 @@ $stream->put('mailer.bye', 'nekufa@gmail.com');
 // this should be set in your worker
 $greeter = $stream->getConsumer('greeter');
 $greeter->getConfiguration()->setSubjectFilter('mailer.greet');
-$greeter->create();
+// consumer would be created would on first handle call
 $greeter->handle(function ($address) {
     mail($address, "Hi there!");
 });
 
 $goodbyer = $stream->getConsumer('goodbyer');
 $goodbyer->getConfiguration()->setSubjectFilter('mailer.bye');
-$goodbyer->create();
+$goodbyer->create(); // create consumer if you don't want to handle anything right now
 $goodbyer->handle(function ($address) {
     mail($address, "See you later");
 });
 
+// you can configure batching and iteration count using chain api
+$goodbyer
+    ->setBatching(2) // how many messages would be requested from nats stream
+    ->setIterations(3) // how many times message request should be sent
+    ->handle(function () {
+        // if you need to break on next iteration simply call interrupt method
+        // batch will be processed to the end and the handling would be stopped
+        // $goodbyer->interrupt();
+    });
 ```
 
 ## Key Value Storage
