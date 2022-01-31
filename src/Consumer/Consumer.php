@@ -10,6 +10,7 @@ use Basis\Nats\Client;
 class Consumer
 {
     private ?bool $exists = null;
+    private bool $interrupt = false;
     private float $delay = 1;
     private float $expires = 0.01;
     private int $batch = 1;
@@ -116,8 +117,8 @@ class Consumer
             }
         });
 
-        $iterations = $this->getIterations();
-        while ($iterations--) {
+        $iteration = $this->getIterations();
+        while ($iteration--) {
             $this->client->publish($requestSubject, $args, $handlerSubject);
 
             foreach (range(1, $this->batch) as $_) {
@@ -132,7 +133,12 @@ class Consumer
                 }
             }
 
-            if ($iterations && $runtime->empty) {
+            if ($this->interrupt) {
+                $this->interrupt = false;
+                break;
+            }
+
+            if ($iteration && $runtime->empty) {
                 usleep((int) floor($this->getDelay() * 1_000_000));
             }
         }
@@ -140,6 +146,16 @@ class Consumer
         $this->client->unsubscribe($handlerSubject);
 
         return $runtime->processed;
+    }
+
+    public function info()
+    {
+        return $this->client->api("CONSUMER.INFO." . $this->getStream() . '.' . $this->getName());
+    }
+
+    public function interrupt()
+    {
+        $this->interrupt = true;
     }
 
     public function setBatching(int $batch): self

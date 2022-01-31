@@ -256,10 +256,10 @@ class Client
                     }
                 }
                 $message->parse($payload);
+                $this->logger?->debug('receive ' . $line . $payload);
                 if (!array_key_exists($message->sid, $this->handlers)) {
                     throw new LogicException("No handler for message $message->sid");
                 }
-                $this->logger?->debug('receive ' . $line . $payload);
                 $result = $this->handlers[$message->sid]($message->payload);
                 if ($message->replyTo) {
                     $this->send(new Publish([

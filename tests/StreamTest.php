@@ -12,6 +12,38 @@ use ReflectionProperty;
 
 class StreamTest extends Test
 {
+    public function testInterrupt()
+    {
+        $stream = $this->getClient()->getApi()->getStream('no_messages');
+        $stream->getConfiguration()->setSubjects(['cucumber']);
+        $stream->create();
+
+        $consumer = $stream->getConsumer('test_consumer');
+        $consumer->getConfiguration()->setSubjectFilter('cucumber');
+        $consumer->setDelay(0)->create();
+
+        $this->getClient()->publish('cucumber', 'message1');
+        $this->getClient()->publish('cucumber', 'message2');
+        $this->getClient()->publish('cucumber', 'message3');
+        $this->getClient()->publish('cucumber', 'message4');
+
+        $this->assertSame(4, $consumer->info()->getValue('num_pending'));
+
+        $consumer->setBatching(1)->setIterations(2)
+            ->handle(function ($response) use ($consumer) {
+                $consumer->interrupt();
+            });
+
+        $this->assertSame(3, $consumer->info()->getValue('num_pending'));
+
+        $consumer->setBatching(2)->setIterations(1)
+            ->handle(function ($response) use ($consumer) {
+                $consumer->interrupt();
+            });
+
+        $this->assertSame(1, $consumer->info()->getValue('num_pending'));
+    }
+
     public function testNoMessages()
     {
         $this->called = false;
