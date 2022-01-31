@@ -12,7 +12,7 @@ class Consumer
     private ?bool $exists = null;
     private bool $interrupt = false;
     private float $delay = 1;
-    private float $expires = 0.01;
+    private float $expires = 0.1;
     private int $batch = 1;
     private int $iterations = PHP_INT_MAX;
 
