@@ -18,7 +18,7 @@ class Configuration
     private ?string $gilterSubject = null;
     private ?string $headersOnly = null;
     private ?string $idleHeartbeat = null;
-    private ?string $maxAckPending = null;
+    private ?int $maxAckPending = null;
     private ?string $maxDeliver = null;
     private ?string $maxWaiting = null;
     private ?string $optStartSeq = null;
@@ -128,11 +128,15 @@ class Configuration
         return $this->replayPolicy;
     }
 
-
-
     public function setAckPolicy(string $ackPolicy): self
     {
         $this->ackPolicy = AckPolicy::validate($ackPolicy);
+        return $this;
+    }
+
+    public function setMaxAckPending(int $maxAckPending): self
+    {
+        $this->maxAckPending = $maxAckPending;
         return $this;
     }
 

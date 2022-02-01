@@ -19,7 +19,7 @@ class StreamTest extends Test
         $stream->create();
 
         $consumer = $stream->getConsumer('test_consumer');
-        $consumer->getConfiguration()->setSubjectFilter('cucumber');
+        $consumer->getConfiguration()->setSubjectFilter('cucumber')->setMaxAckPending(2);
         $consumer->setDelay(0)->create();
 
         $this->getClient()->publish('cucumber', 'message1');
@@ -28,6 +28,7 @@ class StreamTest extends Test
         $this->getClient()->publish('cucumber', 'message4');
 
         $this->assertSame(4, $consumer->info()->getValue('num_pending'));
+        $this->assertSame(2, $consumer->info()->getValue('config.max_ack_pending'));
 
         $consumer->setBatching(1)->setIterations(2)
             ->handle(function ($response) use ($consumer) {
