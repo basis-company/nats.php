@@ -9,22 +9,22 @@ use Basis\Nats\Client;
 
 class Configuration
 {
-    private ?string $ackWait = null;
+    private ?bool $flowControl = null;
+    private ?bool $headersOnly = null;
+    private ?int $ackWait = null;
+    private ?int $idleHeartbeat = null;
+    private ?int $maxAckPending = null;
+    private ?int $maxDeliver = null;
+    private ?int $maxWaiting = null;
+    private ?int $optStartSeq = null;
+    private ?int $optStartTime = null;
     private ?string $deliverGroup = null;
-    private ?string $deliverPolicy = null;
     private ?string $deliverSubject = null;
     private ?string $description = null;
-    private ?string $flowControl = null;
-    private ?string $headersOnly = null;
-    private ?string $idleHeartbeat = null;
-    private ?int $maxAckPending = null;
-    private ?string $maxDeliver = null;
-    private ?string $maxWaiting = null;
-    private ?string $optStartSeq = null;
-    private ?string $optStartTime = null;
-    private ?string $replayPolicy = null;
     private ?string $subjectFilter = null;
     private string $ackPolicy = AckPolicy::EXPLICIT;
+    private string $deliverPolicy = DeliverPolicy::ALL;
+    private string $replayPolicy = ReplayPolicy::INSTANT;
 
     public function __construct(
         private readonly string $stream,
@@ -128,9 +128,27 @@ class Configuration
         return $this;
     }
 
+    public function setAckWait(int $ackWait): self
+    {
+        $this->ackWait = $ackWait;
+        return $this;
+    }
+
+    public function setDeliverPolicy(string $deliverPolicy): self
+    {
+        $this->deliverPolicy = DeliverPolicy::validate($deliverPolicy);
+        return $this;
+    }
+
     public function setMaxAckPending(int $maxAckPending): self
     {
         $this->maxAckPending = $maxAckPending;
+        return $this;
+    }
+
+    public function setReplayPolicy(string $replayPolicy): self
+    {
+        $this->replayPolicy = ReplayPolicy::validate($replayPolicy);
         return $this;
     }
 
@@ -156,14 +174,23 @@ class Configuration
             'max_ack_pending' => $this->getMaxAckPending(),
             'max_deliver' => $this->getMaxDeliver(),
             'max_waiting' => $this->getMaxWaiting(),
-            'opt_start_seq' => $this->getOptStartSeq(),
-            'opt_start_time' => $this->getOptStartTime(),
             'replay_policy' => $this->getReplayPolicy(),
         ];
+
+        switch ($this->getDeliverPolicy()) {
+            case DeliverPolicy::BY_START_SEQUENCE:
+                $config['opt_start_seq'] = $this->getOptStartSeq();
+                break;
+
+            case DeliverPolicy::BY_START_TIME:
+                $config['opt_start_time'] = $this->getOptStartTime();
+                break;
+        }
 
         if ($this->getSubjectFilter()) {
             $config['filter_subject'] = $this->getSubjectFilter();
         }
+
         foreach ($config as $k => $v) {
             if ($v === null) {
                 unset($config[$k]);
