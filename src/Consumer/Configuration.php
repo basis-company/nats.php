@@ -15,7 +15,6 @@ class Configuration
     private ?string $deliverSubject = null;
     private ?string $description = null;
     private ?string $flowControl = null;
-    private ?string $gilterSubject = null;
     private ?string $headersOnly = null;
     private ?string $idleHeartbeat = null;
     private ?int $maxAckPending = null;
@@ -76,11 +75,6 @@ class Configuration
     public function getDescription()
     {
         return $this->description;
-    }
-
-    public function getGilterSubject()
-    {
-        return $this->gilterSubject;
     }
 
     public function getFlowControl()
@@ -156,7 +150,6 @@ class Configuration
             'deliver_subject' => $this->getDeliverSubject(),
             'description' => $this->getDescription(),
             'durable_name' => $this->getName(),
-            'filter_subject' => $this->getGilterSubject(),
             'flow_control' => $this->getFlowControl(),
             'headers_only' => $this->getHeadersOnly(),
             'idle_heartbeat' => $this->getIdleHeartbeat(),
