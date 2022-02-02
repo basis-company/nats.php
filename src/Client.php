@@ -216,10 +216,11 @@ class Client
         $max = microtime(true) + $timeout;
 
         while (!($line = stream_get_line($this->socket, 1024, "\r\n"))) {
-            if (microtime(true) > $max) {
+            $now = microtime(true);
+            if ($now >= $max) {
                 return null;
             }
-            // 1ms sleep
+            $this->logger?->debug('sleep', compact('max', 'now'));
             usleep(intval($this->delay * 1_000_000));
         }
 
