@@ -175,7 +175,7 @@ class StreamTest extends Test
 
         $this->assertNull($this->called);
         $stream->put('tester.greet', [ 'name' => 'nekufa' ]);
-        $consumer->setIterations(1);
+        $consumer->setIterations(1)->setExpires(1);
         $consumer->handle($this->persistMessage(...));
 
         $this->assertNotNull($this->called);
