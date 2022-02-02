@@ -12,6 +12,35 @@ use ReflectionProperty;
 
 class StreamTest extends Test
 {
+    public function testDeduplication()
+    {
+        $stream = $this->getClient()->getApi()->getStream('tester');
+        $stream->getConfiguration()->setSubjects(['tester']);
+        $stream->create();
+
+        $stream->put('tester', new Payload("hello", [
+            'Nats-Msg-Id' => 'the-message'
+        ]));
+
+        $consumer = $stream->getConsumer('tester')
+            ->setIterations(1)
+            ->create();
+
+        $this->called = null;
+        $this->assertSame(1, $consumer->info()->num_pending);
+
+        $consumer->handle($this->persistMessage(...));
+
+        $this->assertNotNull($this->called);
+
+        $this->assertSame(0, $consumer->info()->num_pending);
+
+        $stream->put('tester', new Payload("hello", [
+            'Nats-Msg-Id' => 'the-message'
+        ]));
+        $this->assertSame(0, $consumer->info()->num_pending);
+    }
+
     public function testInterrupt()
     {
         $stream = $this->getClient()->getApi()->getStream('no_messages');
