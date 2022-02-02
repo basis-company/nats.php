@@ -202,6 +202,7 @@ class Client
 
     public function setTimeout(float $value): self
     {
+        $this->connect();
         $seconds = (int) floor($value);
         $milliseconds = (int) (1000 * ($value - $seconds));
 
