@@ -288,7 +288,7 @@ class Client
         $this->logger?->debug('send ' . $line);
 
         while (strlen($line)) {
-            $written = fwrite($this->socket, $line);
+            $written = fwrite($this->socket, $line, 1024);
             if ($written === false) {
                 throw new LogicException('Error sending data');
             }
