@@ -254,6 +254,9 @@ class Client
                 if ($message->length) {
                     while (strlen($payload) < $message->length) {
                         $payload = stream_get_line($this->socket, $message->length);
+                        if (!$payload) {
+                            continue;
+                        }
                         if (strlen($payload) != $message->length) {
                             $this->logger?->debug('got ' . strlen($payload) . '/' . $message->length . ': ' . $payload);
                         }
