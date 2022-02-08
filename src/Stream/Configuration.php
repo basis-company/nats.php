@@ -20,6 +20,7 @@ class Configuration
     private string $retentionPolicy = RetentionPolicy::LIMITS;
     private string $storageBackend = StorageBackend::FILE;
 
+    private ?float $duplicateWindow = null;
     private ?int $maxBytes = null;
     private ?int $maxMessageSize = null;
     private ?int $maxMessagesPerSubject = null;
@@ -59,6 +60,11 @@ class Configuration
     public function getDiscardPolicy(): string
     {
         return $this->discardPolicy;
+    }
+
+    public function getDuplicateWindow(): ?float
+    {
+        return $this->duplicateWindow;
     }
 
     public function getMaxAge(): ?int
@@ -129,6 +135,12 @@ class Configuration
         return $this;
     }
 
+    public function setDuplicateWindow(?float $seconds): self
+    {
+        $this->duplicateWindow = $seconds;
+        return $this;
+    }
+
     public function setMaxAge(?int $maxAge): self
     {
         $this->maxAge = $maxAge;
@@ -190,6 +202,7 @@ class Configuration
             'deny_delete' => $this->getDenyDelete(),
             'description' => $this->getDescription(),
             'discard' => $this->getDiscardPolicy(),
+            'duplicate_window' => $this->getDuplicateWindow() * 1_000_000_000,
             'max_age' => $this->getMaxAge(),
             'max_bytes' => $this->getMaxBytes(),
             'max_consumers' => $this->getMaxConsumers(),

@@ -15,8 +15,18 @@ class StreamTest extends Test
     public function testDeduplication()
     {
         $stream = $this->getClient()->getApi()->getStream('tester');
-        $stream->getConfiguration()->setSubjects(['tester']);
+        $stream->getConfiguration()
+            ->setSubjects(['tester'])
+            ->setDuplicateWindow(0.5); // 500ms windows duplicate
+
         $stream->create();
+
+        // windows value using nanoseconds
+        $this->assertEquals(0.5 * 1_000_000_000, $stream->info()->getValue('config.duplicate_window'));
+
+        $stream->put('tester', new Payload("hello", [
+            'Nats-Msg-Id' => 'the-message'
+        ]));
 
         $stream->put('tester', new Payload("hello", [
             'Nats-Msg-Id' => 'the-message'
@@ -39,6 +49,21 @@ class StreamTest extends Test
             'Nats-Msg-Id' => 'the-message'
         ]));
         $this->assertSame(0, $consumer->info()->num_pending);
+
+        // 500ms sleep
+        usleep(500 * 1_000);
+
+        $stream->put('tester', new Payload("hello", [
+            'Nats-Msg-Id' => 'the-message'
+        ]));
+        $this->assertSame(1, $consumer->info()->num_pending);
+
+        usleep(500 * 1_000);
+
+        $stream->put('tester', new Payload("hello", [
+            'Nats-Msg-Id' => 'the-message'
+        ]));
+        $this->assertSame(2, $consumer->info()->num_pending);
     }
 
     public function testInterrupt()
