@@ -24,8 +24,8 @@ use Throwable;
 
 class Client
 {
-    public readonly Connect $connect;
-    public readonly Info $info;
+    public Connect $connect;
+    public Info $info;
     public readonly Api $api;
 
     private $socket;
@@ -67,14 +67,17 @@ class Client
         return $result;
     }
 
-    public function connect()
+    public function connect(): self
     {
         if (!$this->socket) {
             $config = $this->configuration;
 
             $dsn = "tcp://$config->host:$config->port";
             $flags = STREAM_CLIENT_CONNECT;
-            $this->socket = @stream_socket_client($dsn, $errno, $errstr, $config->timeout, $flags);
+            $this->socket = @stream_socket_client($dsn, $errorCode, $errorMessage, $config->timeout, $flags);
+            if ($errorCode) {
+                throw new Exception($errorMessage, $errorCode);
+            }
 
             if (!$this->socket) {
                 throw new Exception($errstr, $errno);
@@ -89,6 +92,8 @@ class Client
             $this->send($this->connect);
             $this->process(PHP_INT_MAX);
         }
+
+        return $this;
     }
 
     public function dispatch(string $name, mixed $payload, ?float $timeout = null)
@@ -215,13 +220,21 @@ class Client
     {
         $max = microtime(true) + $timeout;
 
-        while (!($line = stream_get_line($this->socket, 1024, "\r\n"))) {
-            $now = microtime(true);
-            if ($now >= $max) {
-                return null;
+        while (true) {
+            try {
+                $line = stream_get_line($this->socket, 1024, "\r\n");
+                if ($line) {
+                    break;
+                }
+                $now = microtime(true);
+                if ($now >= $max) {
+                    return null;
+                }
+                $this->logger?->debug('sleep', compact('max', 'now'));
+                usleep(intval($this->delay * 1_000_000));
+            } catch (Throwable $e) {
+                $this->processSocketException($e);
             }
-            $this->logger?->debug('sleep', compact('max', 'now'));
-            usleep(intval($this->delay * 1_000_000));
         }
 
         switch (trim($line)) {
@@ -281,6 +294,17 @@ class Client
         }
     }
 
+    private function processSocketException(Throwable $e): self
+    {
+        if (!$this->configuration->reconnect) {
+            $this->logger?->error($e->getMessage());
+            throw $e;
+        }
+
+        $this->socket = null;
+        return $this->connect();
+    }
+
     private function send(Prototype $message): self
     {
         $this->connect();
@@ -291,18 +315,22 @@ class Client
         $this->logger?->debug('send ' . $line);
 
         while (strlen($line)) {
-            $written = fwrite($this->socket, $line, 1024);
-            if ($written === false) {
-                throw new LogicException('Error sending data');
-            }
+            try {
+                $written = @fwrite($this->socket, $line, 1024);
+                if ($written === false) {
+                    throw new LogicException('Error sending data');
+                }
 
-            if ($written === 0) {
-                throw new LogicException('Broken pipe or closed connection');
+                if ($written === 0) {
+                    throw new LogicException('Broken pipe or closed connection');
+                }
+                if ($length == $written) {
+                    break;
+                }
+                $line = substr($line, $written);
+            } catch (Throwable $e) {
+                $this->processSocketException($e);
             }
-            if ($length == $written) {
-                break;
-            }
-            $line = substr($line, $written);
         }
 
         if ($this->configuration->verbose && $line !== "PING\r\n") {
