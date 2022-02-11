@@ -75,12 +75,9 @@ class Client
             $dsn = "tcp://$config->host:$config->port";
             $flags = STREAM_CLIENT_CONNECT;
             $this->socket = @stream_socket_client($dsn, $errorCode, $errorMessage, $config->timeout, $flags);
-            if ($errorCode) {
-                throw new Exception($errorMessage, $errorCode);
-            }
 
-            if (!$this->socket) {
-                throw new Exception($errstr, $errno);
+            if ($errorCode || !$this->socket) {
+                throw new Exception($errorMessage ?: "Connection error", $errorCode);
             }
 
             $this->setTimeout($config->timeout);
