@@ -123,7 +123,8 @@ class Consumer
 
             foreach (range(1, $this->batch) as $_) {
                 $runtime->empty = true;
-                $this->client->process($this->expires);
+                // expires request means that we should receive answer from stream
+                $this->client->process($this->expires ? PHP_INT_MAX : null);
 
                 if ($runtime->empty) {
                     if ($emptyHandler) {
