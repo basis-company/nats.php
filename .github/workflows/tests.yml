@@ -6,9 +6,14 @@ jobs:
     env:
       NATS_CLIENT_LOG: 1
       NATS_TEST_LOG: 1
+    strategy:
+      matrix:
+        php: ["8.0", "8.1"]
     steps:
       - uses: actions/checkout@v2
       - uses: php-actions/composer@v6
+        with:
+          version: ${{ matrix.php }}
       - run: docker run -d -p 4222:4222 nats --js
       - uses: php-actions/phpunit@v3
         with:
