@@ -15,7 +15,4 @@ jobs:
         with:
           php_version: ${{ matrix.php }}
       - run: docker run -d -p 4222:4222 nats --js
-      - uses: php-actions/phpunit@v3
-        with:
-          bootstrap: vendor/autoload.php
-          args: tests
+      - run: vendor/bin/phpunit tests
