@@ -87,7 +87,7 @@ class Client
                 $this->connect->name = $this->name;
             }
             $this->send($this->connect);
-            $this->process(PHP_INT_MAX);
+            $this->process($config->timeout);
         }
 
         return $this;
@@ -131,7 +131,7 @@ class Client
         $timestamp = microtime(true);
         $this->send(new Ping([]));
 
-        return $timestamp <= $this->process(PHP_INT_MAX);
+        return $timestamp <= $this->process($this->configuration->timeout);
     }
 
     public function publish(string $name, mixed $payload, ?string $replyTo = null): self
@@ -153,7 +153,7 @@ class Client
         });
 
         $this->publish($name, $payload, $sid);
-        $this->process(PHP_INT_MAX);
+        $this->process($this->configuration->timeout);
 
         return $this;
     }
@@ -332,7 +332,7 @@ class Client
 
         if ($this->configuration->verbose && $line !== "PING\r\n") {
             // get feedback
-            $this->process(PHP_INT_MAX);
+            $this->process($this->configuration->timeout);
         }
 
         return $this;
