@@ -263,13 +263,14 @@ class Client
                 $payload = '';
                 if ($message->length) {
                     while (strlen($payload) < $message->length) {
-                        $payload = stream_get_line($this->socket, $message->length);
-                        if (!$payload) {
+                        $line = stream_get_line($this->socket, $message->length);
+                        if (!$line) {
                             continue;
                         }
-                        if (strlen($payload) != $message->length) {
-                            $this->logger?->debug('got ' . strlen($payload) . '/' . $message->length . ': ' . $payload);
+                        if (strlen($line) != $message->length) {
+                            $this->logger?->debug('got ' . strlen($line) . '/' . $message->length . ': ' . $line);
                         }
+                        $payload .= $line;
                     }
                 }
                 $message->parse($payload);
@@ -317,7 +318,6 @@ class Client
                 if ($written === false) {
                     throw new LogicException('Error sending data');
                 }
-
                 if ($written === 0) {
                     throw new LogicException('Broken pipe or closed connection');
                 }
