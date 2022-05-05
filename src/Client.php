@@ -260,9 +260,16 @@ class Client
             case Msg::class:
                 $payload = '';
                 if ($message->length) {
+                    $iteration = 0;
                     while (strlen($payload) < $message->length) {
                         $line = stream_get_line($this->socket, $message->length);
                         if (!$line) {
+                            if ($iteration > 16) {
+                                $exception = new LogicException("No payload for message $message->sid");
+                                $this->processSocketException($exception);
+                                break;
+                            }
+                            $this->configuration->delay($iteration++);
                             continue;
                         }
                         if (strlen($line) != $message->length) {
