@@ -78,7 +78,7 @@ class Configuration
 
     public function delay(int $iteration)
     {
-        $milliseconds = intval($delay * 1_000);
+        $milliseconds = intval($this->delay * 1_000);
 
         switch ($this->delayMode) {
             case self::DELAY_EXPONENTIAL:
