@@ -33,9 +33,6 @@ class Client
     private float $pong = 0;
     private string $name = '';
 
-    // delay on empty result
-    private float $delay = 0.001;
-
     private bool $skipInvalidMessages = false;
 
     public function __construct(
@@ -190,9 +187,9 @@ class Client
         return $this;
     }
 
-    public function setDelay(float $delay): self
+    public function setDelay(float $delay, string $mode = Configuration::DELAY_CONSTANT): self
     {
-        $this->delay = $delay;
+        $this->configuration->setDelay($delay, $mode);
         return $this;
     }
 
@@ -217,6 +214,7 @@ class Client
     {
         $max = microtime(true) + $timeout;
 
+        $iteration = 0;
         while (true) {
             try {
                 $line = stream_get_line($this->socket, 1024, "\r\n");
@@ -228,7 +226,7 @@ class Client
                     return null;
                 }
                 $this->logger?->debug('sleep', compact('max', 'now'));
-                usleep(intval($this->delay * 1_000_000));
+                $this->configuration->delay($iteration++);
             } catch (Throwable $e) {
                 $this->processSocketException($e);
             }

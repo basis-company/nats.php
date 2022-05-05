@@ -22,6 +22,13 @@ class Configuration
     public readonly ?string $token;
     public readonly ?string $user;
 
+    public const DELAY_CONSTANT = 'constant';
+    public const DELAY_LINEAR = 'linear';
+    public const DELAY_EXPONENTIAL = 'exponential';
+
+    protected float $delay = 0.001;
+    protected string $delayMode = self::DELAY_CONSTANT;
+
     protected array $defaults = [
         'host' => 'localhost',
         'jwt' => null,
@@ -67,5 +74,44 @@ class Configuration
         }
 
         return $options;
+    }
+
+    public function delay(int $iteration)
+    {
+        $milliseconds = intval($delay * 1_000);
+
+        switch ($this->delayMode) {
+            case self::DELAY_EXPONENTIAL:
+                $milliseconds = $milliseconds ** $iteration;
+                break;
+
+            case self::DELAY_LINEAR:
+                $milliseconds = $milliseconds * $iteration;
+                break;
+        }
+
+        usleep($milliseconds * 1_000);
+    }
+
+    public function setDelay(float $delay, string $mode = self::DELAY_CONSTANT): self
+    {
+        if (!in_array($mode, [self::DELAY_CONSTANT, self::DELAY_EXPONENTIAL, self::DELAY_LINEAR])) {
+            throw new InvalidArgumentException("Invalid mode: $mode");
+        }
+
+        $this->delay = $delay;
+        $this->delayMode = $mode;
+
+        return $this;
+    }
+
+    public function getDelay(): float
+    {
+        return $this->delay;
+    }
+
+    public function getDelayMode(): string
+    {
+        return $this->delayMode;
     }
 }

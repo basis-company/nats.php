@@ -42,6 +42,16 @@ $configuration = new Configuration([
     'version' => 'dev',
 ]);
 
+// default delay mode is constant - first retry be in 1ms, second in 1ms, third in 1ms
+$configuration->setDelay(0.001);
+
+// linear delay mode - first retry be in 1ms, second in 2ms, third in 3ms, fourth in 4ms, etc...
+$configuration->setDelay(0.001, Configuration::DELAY_LINEAR);
+
+// exponential delay mode - first retry be in 10ms, second in 100ms, third in 1s, fourth if 10 seconds, etc...
+$configuration->setDelay(0.01, Configuration::DELAY_EXPONENTIAL);
+
+
 $client = new Client($configuration);
 $client->ping(); // true
 
