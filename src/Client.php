@@ -30,6 +30,7 @@ class Client
 
     private $socket;
     private array $handlers = [];
+    private float $ping = 0;
     private float $pong = 0;
     private string $name = '';
 
@@ -125,10 +126,13 @@ class Client
 
     public function ping(): bool
     {
-        $timestamp = microtime(true);
+        $this->ping = microtime(true);
         $this->send(new Ping([]));
+        $this->process($this->configuration->timeout);
+        $result = $this->ping <= $this->pong;
+        $this->ping = 0;
 
-        return $timestamp <= $this->process($this->configuration->timeout);
+        return $result;
     }
 
     public function publish(string $name, mixed $payload, ?string $replyTo = null): self
@@ -213,13 +217,29 @@ class Client
     public function process(null|int|float $timeout = 0)
     {
         $max = microtime(true) + $timeout;
+        $ping = time() + $this->configuration->pingInterval;
 
         $iteration = 0;
         while (true) {
             try {
                 $line = stream_get_line($this->socket, 1024, "\r\n");
-                if ($line) {
+                if ($line && ($this->ping || trim($line) != 'PONG')) {
                     break;
+                }
+                if ($line === false && $ping < time()) {
+                    try {
+                        $this->send(new Ping([]));
+                        $line = stream_get_line($this->socket, 1024, "\r\n");
+                        $ping = time() + $this->configuration->pingInterval;
+                        if ($line && ($this->ping || trim($line) != 'PONG')) {
+                            break;
+                        }
+                    } catch (Throwable $e) {
+                        if ($this->ping) {
+                            return;
+                        }
+                        $this->processSocketException($e);
+                    }
                 }
                 $now = microtime(true);
                 if ($now >= $max) {
@@ -305,7 +325,26 @@ class Client
         }
 
         $this->socket = null;
-        return $this->connect();
+        $iteration = 0;
+
+        while (true) {
+            try {
+                $this->connect();
+            } catch (Throwable $e) {
+                $this->configuration->delay($iteration++);
+                continue;
+            }
+            break;
+        }
+
+        foreach ($this->subscriptions as $i => $subscription) {
+            $fn = $this->handlers[$subscription['sid']];
+            unset($this->subscriptions[$i]);
+            unset($this->handlers[$subscription['sid']]);
+            $this->send(new Unsubscribe(['sid' => $subscription['sid']]));
+            $this->subscribe($subscription['name'], $fn);
+        }
+        return $this;
     }
 
     private function send(Prototype $message): self

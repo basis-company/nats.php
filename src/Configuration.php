@@ -16,6 +16,7 @@ class Configuration
     public readonly string $lang;
     public readonly string $version;
     public readonly float $timeout;
+    public readonly int $pingInterval;
 
     public readonly ?string $jwt;
     public readonly ?string $pass;
@@ -42,6 +43,7 @@ class Configuration
         'user' => null,
         'verbose' => false,
         'version' => 'dev',
+        'pingInterval' => 2,
     ];
 
     public function __construct(array $config = [])
