@@ -33,6 +33,7 @@ class Client
     private float $ping = 0;
     private float $pong = 0;
     private string $name = '';
+    private array $subscriptions = [];
 
     private bool $skipInvalidMessages = false;
 
