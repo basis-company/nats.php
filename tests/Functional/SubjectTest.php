@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Basis\Nats\Tests;
+namespace Tests\Functional;
 
 use Basis\Nats\Client;
 use Basis\Nats\Message\Payload;
 use ReflectionProperty;
+use Tests\FunctionalTestCase;
 
-class SubjectTest extends Test
+class SubjectTest extends FunctionalTestCase
 {
     public function testPublishSubscribe()
     {

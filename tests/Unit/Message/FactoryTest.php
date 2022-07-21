@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Basis\Nats\Tests;
+namespace Tests\Unit\Message;
 
 use Basis\Nats\Message\Factory;
 use Basis\Nats\Message\Info;
+use Tests\TestCase;
 
-class FactoryTest extends Test
+class FactoryTest extends TestCase
 {
     public function testInfo()
     {

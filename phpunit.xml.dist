@@ -19,11 +19,11 @@
   </php>
   <testsuites>
     <testsuite name="Tests">
-      <directory>./tests</directory>
-      <exclude>./tests/PerformanceTest.php</exclude>
+      <directory>./tests/Unit</directory>
+      <directory>./tests/Functional</directory>
     </testsuite>
     <testsuite name="Performance">
-      <file>./tests/PerformanceTest.php</file>
+      <directory>./tests/Performance</directory>
     </testsuite>
   </testsuites>
   <logging/>

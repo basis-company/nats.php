@@ -2,14 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Basis\Nats\Tests;
+namespace Tests\Functional\KeyValue;
 
-use Basis\Nats\Client;
-use Basis\Nats\Stream\RetentionPolicy;
-use Basis\Nats\Stream\StorageBackend;
-use ReflectionProperty;
+use Tests\FunctionalTestCase;
 
-class BucketTest extends Test
+class BucketTest extends FunctionalTestCase
 {
     public function testBasics()
     {

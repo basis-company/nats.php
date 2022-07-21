@@ -12,8 +12,12 @@
     "license": "mit",
     "autoload": {
         "psr-4": {
-            "Basis\\Nats\\Tests\\": "tests/",
             "Basis\\Nats\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
         }
     },
     "scripts": {
