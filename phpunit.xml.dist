@@ -5,8 +5,8 @@
       <directory>src</directory>
     </include>
     <report>
-      <clover outputFile="coverage.clover"/>
-      <text outputFile="coverage.txt"/>
+      <clover outputFile="coverage/report.clover"/>
+      <text outputFile="coverage/report.txt"/>
     </report>
   </coverage>
   <php>
