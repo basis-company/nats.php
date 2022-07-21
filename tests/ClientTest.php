@@ -44,7 +44,7 @@ class ClientTest extends Test
 
     public function testInvalidConnection()
     {
-        $this->expectExceptionMessage("Connection refused");
+        $this->expectExceptionMessageMatches('/^Connection refused$|^A connection attempt failed/');
         $this->createClient(['port' => -1])->ping();
     }
 }
