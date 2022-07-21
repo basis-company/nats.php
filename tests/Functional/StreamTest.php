@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Basis\Nats\Tests;
+namespace Tests\Functional;
 
-use Basis\Nats\Client;
 use Basis\Nats\Message\Payload;
 use Basis\Nats\Stream\RetentionPolicy;
 use Basis\Nats\Stream\StorageBackend;
-use ReflectionProperty;
+use Tests\FunctionalTestCase;
 
-class StreamTest extends Test
+class StreamTest extends FunctionalTestCase
 {
+    private mixed $called;
+
     public function testDeduplication()
     {
         $stream = $this->getClient()->getApi()->getStream('tester');

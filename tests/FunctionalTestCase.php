@@ -2,37 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Basis\Nats\Tests;
+namespace Tests;
 
 use Basis\Nats\Client;
 use Basis\Nats\Configuration;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
-use ReflectionClass;
+use Tests\Utils\Logger;
 
-abstract class Test extends TestCase
+abstract class FunctionalTestCase extends TestCase
 {
-    protected ?LoggerInterface $logger = null;
-
-    public function getLogger(): LoggerInterface
-    {
-        if (!$this->logger) {
-            $reflection = new ReflectionClass(get_class($this));
-            $name = $reflection->getShortName();
-            foreach (debug_backtrace() as $trace) {
-                if ($trace['class'] == __CLASS__) {
-                    continue;
-                }
-                $name .= '.' . $trace['function'];
-                break;
-            }
-            $this->logger = new Logger($name);
-            $this->logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
-        }
-        return $this->logger;
-    }
+    use Logger;
 
     public function createClient(array $options = []): Client
     {

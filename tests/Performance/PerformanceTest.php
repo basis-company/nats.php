@@ -2,19 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Basis\Nats\Tests;
+namespace Tests\Performance;
 
-class PerformanceTest extends Test
+use Tests\FunctionalTestCase;
+
+class PerformanceTest extends FunctionalTestCase
 {
+    private int $limit = 100_000;
+    private int $counter = 0;
+
     public function testPerformance()
     {
         $client = $this->createClient()->setTimeout(0.1)->setDelay(0);
         $client->setLogger(null);
 
         $this->logger?->info('start performance test');
-
-        $this->limit = 100_000;
-        $this->counter = 0;
 
         $client->subscribe('hello', function ($n) {
             $this->counter++;

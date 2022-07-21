@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Basis\Nats\Tests;
+namespace Tests\Functional;
 
 use Basis\Nats\Client;
-use Basis\Nats\Configuration;
 use ReflectionProperty;
+use Tests\FunctionalTestCase;
 
-class ClientTest extends Test
+class ClientTest extends FunctionalTestCase
 {
     public function test()
     {
