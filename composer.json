@@ -16,6 +16,10 @@
             "Basis\\Nats\\": "src/"
         }
     },
+    "scripts": {
+        "test": "phpunit --testsuite Tests",
+        "perf-test": "phpunit --testsuite Performance"
+    },
     "authors": [
         {
             "name": "dmitry krokhin",

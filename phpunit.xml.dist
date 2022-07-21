@@ -14,12 +14,16 @@
     <ini name="display_errors" value="On"/>
     <ini name="display_startup_errors" value="On"/>
     <ini name="error_reporting" value="E_ALL"/>
-    <env name="NATS_HOST" value="0.0.0.0"/>
+    <env name="NATS_HOST" value="localhost"/>
     <env name="NATS_PORT" value="4222"/>
   </php>
   <testsuites>
     <testsuite name="Tests">
       <directory>./tests</directory>
+      <exclude>./tests/PerformanceTest.php</exclude>
+    </testsuite>
+    <testsuite name="Performance">
+      <file>./tests/PerformanceTest.php</file>
     </testsuite>
   </testsuites>
   <logging/>

@@ -175,7 +175,7 @@ Installing dependencies from lock file (including require-dev)
  % export NATS_HOST=0.0.0.0
  % export NATS_PORT=4222
  % export NATS_CLIENT_LOG=1
- % vendor/bin/phpunit --filter performance
+ % composer run perf-test
 PHPUnit 9.5.10 by Sebastian Bergmann and contributors.
 
 Runtime:       PHP 8.1.1
@@ -188,7 +188,7 @@ Warning:       No code coverage driver available
 
 
  % export NATS_CLIENT_VERBOSE=1
- % vendor/bin/phpunit --filter performance
+ % composer run perf-test
 PHPUnit 9.5.10 by Sebastian Bergmann and contributors.
 
 Runtime:       PHP 8.1.1
