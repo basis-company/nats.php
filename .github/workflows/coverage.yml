@@ -15,5 +15,5 @@ jobs:
           extensions: xdebug
           tools: phpunit, composer:v2
       - run: composer install
-      - run: vendor/bin/phpunit tests
-      - run: cat ./coverage.txt
+      - run: vendor/bin/phpunit --testsuite Tests
+      - run: cat ./coverage/report.txt
