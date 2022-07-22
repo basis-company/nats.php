@@ -7,6 +7,7 @@
     <report>
       <clover outputFile="coverage/report.clover"/>
       <text outputFile="coverage/report.txt"/>
+      <html outputDirectory="coverage"/>
     </report>
   </coverage>
   <php>
