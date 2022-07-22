@@ -5,10 +5,34 @@ declare(strict_types=1);
 namespace Tests\Unit\NKeys;
 
 use Basis\Nats\NKeys\SecretKey;
+use InvalidArgumentException;
 use Tests\TestCase;
 
 class SecretKeyTest extends TestCase
 {
+    public function testConstructionWithInvalidArgument()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new SecretKey("");
+    }
+
+    /**
+     * @dataProvider invalidSeedProvider
+     */
+    public function testFromSeedWithInvalidArgument(string $seed)
+    {
+        $this->expectException(InvalidArgumentException::class);
+        SecretKey::fromSeed($seed);
+    }
+
+    public function invalidSeedProvider(): array
+    {
+        return [
+            ["XYAALXURZGZFICARCJRNP5FKO2NW2DED46LNDDGJ4HWNC3G26VZ5BBZAME"],
+            ["SQAALXURZGZFICARCJRNP5FKO2NW2DED46LNDDGJ4HWNC3G26VZ5BBZAME"]
+        ];
+    }
+
     public function testFromSeed()
     {
         $seed = "SUAALXURZGZFICARCJRNP5FKO2NW2DED46LNDDGJ4HWNC3G26VZ5BBZAME";

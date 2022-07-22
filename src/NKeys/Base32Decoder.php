@@ -122,8 +122,11 @@ class Base32Decoder
         for ($i = 0; $i < $count; $i += 8) {
             $x = '';
 
-            if (!in_array($input[$i], self::MAP)) {
-                throw new InvalidArgumentException('Invalid base32 data');
+            $jmax = min($count, $i+8);
+            for($j = $i; $j<$jmax; $j++) {
+                if (!in_array($input[$j], self::MAP)) {
+                    throw new InvalidArgumentException('Invalid base32 data');
+                }
             }
 
             $x .= $this->decodeFlippedMap($i, $input);
