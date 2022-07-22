@@ -22,6 +22,7 @@ class Configuration
     public readonly ?string $pass;
     public readonly ?string $token;
     public readonly ?string $user;
+    public readonly ?string $nkey;
 
     public const DELAY_CONSTANT = 'constant';
     public const DELAY_LINEAR = 'linear';
@@ -41,14 +42,19 @@ class Configuration
         'timeout' => 1,
         'token' => null,
         'user' => null,
+        'nkey' => null,
         'verbose' => false,
         'version' => 'dev',
         'pingInterval' => 2,
     ];
 
-    public function __construct(array $config = [])
+    /**
+     * @param array<string, string|int|bool|null> ...$options
+     */
+    public function __construct(array ...$options)
     {
-        foreach (array_merge($this->defaults, $config) as $k => $v) {
+        $config = array_merge($this->defaults, ...$options);
+        foreach ($config as $k => $v) {
             if (!property_exists($this, $k)) {
                 throw new InvalidArgumentException("Invalid config option $k");
             }

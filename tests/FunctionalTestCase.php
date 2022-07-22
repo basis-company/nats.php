@@ -12,9 +12,9 @@ abstract class FunctionalTestCase extends TestCase
 {
     use Logger;
 
-    public function createClient(array $options = []): Client
+    public function createClient(array ...$options): Client
     {
-        $configuration = $this->getConfiguration($options);
+        $configuration = $this->getConfiguration(...$options);
 
         $logger = null;
         if (getenv('NATS_CLIENT_LOG')) {
@@ -31,14 +31,14 @@ abstract class FunctionalTestCase extends TestCase
         return $this->client ?: $this->client = $this->createClient();
     }
 
-    public function getConfiguration(array $options = []): Configuration
+    public function getConfiguration(array ...$options): Configuration
     {
-        return new Configuration(array_merge([
+        return new Configuration([
             'host' => getenv('NATS_HOST'),
             'port' => +getenv('NATS_PORT'),
             'timeout' => 0.5,
             'verbose' => getenv('NATS_CLIENT_VERBOSE') == '1',
-        ], $options));
+        ], ...$options);
     }
 
     public function setup(): void

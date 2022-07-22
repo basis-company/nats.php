@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Basis\Nats;
 
-use BadMethodCallException;
 use Basis\Nats\Message\Connect;
 use Basis\Nats\Message\Factory;
 use Basis\Nats\Message\Info;
@@ -28,6 +27,8 @@ class Client
     public Info $info;
     public readonly Api $api;
 
+    private readonly ?Authenticator $authenticator;
+
     private $socket;
     private array $handlers = [];
     private float $ping = 0;
@@ -42,6 +43,8 @@ class Client
         public ?LoggerInterface $logger = null,
     ) {
         $this->api = new Api($this);
+
+        $this->authenticator = Authenticator::create($this->configuration);
     }
 
     public function api($command, array $args = [], ?Closure $callback = null): ?object
@@ -68,26 +71,35 @@ class Client
 
     public function connect(): self
     {
-        if (!$this->socket) {
-            $config = $this->configuration;
-
-            $dsn = "tcp://$config->host:$config->port";
-            $flags = STREAM_CLIENT_CONNECT;
-            $this->socket = @stream_socket_client($dsn, $errorCode, $errorMessage, $config->timeout, $flags);
-
-            if ($errorCode || !$this->socket) {
-                throw new Exception($errorMessage ?: "Connection error", $errorCode);
-            }
-
-            $this->setTimeout($config->timeout);
-
-            $this->connect = new Connect($config->getOptions());
-            if ($this->name) {
-                $this->connect->name = $this->name;
-            }
-            $this->send($this->connect);
-            $this->process($config->timeout);
+        if ($this->socket) {
+            return $this;
         }
+
+        $config = $this->configuration;
+
+        $dsn = "tcp://$config->host:$config->port";
+        $flags = STREAM_CLIENT_CONNECT;
+        $this->socket = @stream_socket_client($dsn, $errorCode, $errorMessage, $config->timeout, $flags);
+
+        if ($errorCode || !$this->socket) {
+            throw new Exception($errorMessage ?: "Connection error", $errorCode);
+        }
+
+        $this->setTimeout($config->timeout);
+
+        // Process server info
+        $this->process($config->timeout);
+
+        $this->connect = new Connect($config->getOptions());
+
+        if ($this->name) {
+            $this->connect->name = $this->name;
+        }
+        if (isset($this?->info->nonce) && $this->authenticator) {
+            $this->connect->sig = $this->authenticator->sign($this->info->nonce);
+        }
+
+        $this->send($this->connect);
 
         return $this;
     }

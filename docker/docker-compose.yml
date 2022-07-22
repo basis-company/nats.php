@@ -1,0 +1,28 @@
+version: '3'
+services:
+  nats:
+    image: nats:alpine
+    restart: unless-stopped
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: -js -m 8222
+  nats-with-jwt-nkey:
+    image: nats:alpine
+    restart: unless-stopped
+    ports:
+      - "4221:4222"
+      - "8221:8222"
+    command: -js -m 8222 -c /credentials/server.conf
+    volumes:
+      - ./credentials:/credentials:ro
+    depends_on:
+      credentials-generator:
+        condition: service_completed_successfully
+  credentials-generator:
+    image: natsio/nats-box:latest
+    volumes:
+      - ./scripts:/app:ro
+      - ./credentials:/credentials
+    working_dir: /app
+    command: generate-credentials.sh
