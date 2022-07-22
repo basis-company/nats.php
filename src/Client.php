@@ -69,6 +69,10 @@ class Client
         return $result;
     }
 
+    /**
+     * @return $this
+     * @throws Throwable
+     */
     public function connect(): self
     {
         if ($this->socket) {

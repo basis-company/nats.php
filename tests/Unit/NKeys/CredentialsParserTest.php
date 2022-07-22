@@ -37,4 +37,12 @@ CREDS;
 
         $this->assertEquals($expected, $result);
     }
+
+    public function testParseEmpty()
+    {
+        $parser = new CredentialsParser();
+        $result = $parser->parse("");
+
+        $this->assertEquals([], $result);
+    }
 }
