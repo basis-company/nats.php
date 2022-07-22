@@ -18,3 +18,9 @@ jobs:
       - run: docker compose up -d
         working-directory: docker
       - run: vendor/bin/phpunit --testsuite Tests
+      - name: Archive code coverage results
+        if: matrix.php == '8.1'
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: ./coverage
