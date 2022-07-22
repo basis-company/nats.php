@@ -15,5 +15,6 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
       - uses: php-actions/composer@v6
-      - run: docker run -d -p 4222:4222 nats --js
+      - run: docker compose up -d
+        working-directory: docker
       - run: vendor/bin/phpunit --testsuite Tests
