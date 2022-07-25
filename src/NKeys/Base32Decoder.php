@@ -122,8 +122,8 @@ class Base32Decoder
         for ($i = 0; $i < $count; $i += 8) {
             $x = '';
 
-            $jmax = min($count, $i+8);
-            for($j = $i; $j<$jmax; $j++) {
+            $jmax = min($count, $i + 8);
+            for ($j = $i; $j < $jmax; $j++) {
                 if (!in_array($input[$j], self::MAP)) {
                     throw new InvalidArgumentException('Invalid base32 data');
                 }
