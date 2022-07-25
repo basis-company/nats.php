@@ -87,7 +87,7 @@ class Msg extends Prototype
             }
             $payload = substr($payload, $this->hlength);
         }
-        $this->payload = new Payload($payload, $headers);
+        $this->payload = new Payload($payload, $headers, $this->subject);
         return $this;
     }
 

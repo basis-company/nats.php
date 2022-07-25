@@ -17,7 +17,8 @@ class SubjectTest extends FunctionalTestCase
 
         $client = $this->createClient();
         $client->subscribe('hello', function ($message) {
-            $this->assertSame($message->body, 'tester');
+            $this->assertSame('tester', $message->body);
+            $this->assertSame('hello', $message->subject);
             $this->tested = true;
         });
 
