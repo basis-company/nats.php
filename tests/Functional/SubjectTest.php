@@ -28,6 +28,23 @@ class SubjectTest extends FunctionalTestCase
         $this->assertTrue($this->tested);
     }
 
+    public function testSubscribeQueue()
+    {
+        $client = $this->createClient();
+
+        $memoryStream = fopen('php://memory', 'w+');
+        $setter = function ($socket) {
+            $this->socket = $socket;
+        };
+        $setter->call($client, $memoryStream);
+
+        $client->subscribeQueue('subject', 'group', function () {});
+
+        $content = stream_get_contents($memoryStream, -1, 0);
+
+        $this->assertStringContainsString('SUB subject group', $content);
+    }
+
     public function testProcessing()
     {
         $client = $this->createClient();
