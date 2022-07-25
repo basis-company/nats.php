@@ -162,21 +162,12 @@ class Client
 
     public function subscribe(string $name, Closure $handler): self
     {
-        $sid = bin2hex(random_bytes(4));
+        return $this->doSubscribe($name, null, $handler);
+    }
 
-        $this->handlers[$sid] = $handler;
-
-        $this->send(new Subscribe([
-            'sid' => $sid,
-            'subject' => $name,
-        ]));
-
-        $this->subscriptions[] = [
-            'name' => $name,
-            'sid' => $sid,
-        ];
-
-        return $this;
+    public function subscribeQueue(string $name, string $group, Closure $handler)
+    {
+        return $this->doSubscribe($name, $group, $handler);
     }
 
     public function unsubscribe(string $name): self
@@ -316,6 +307,26 @@ class Client
                 }
                 break;
         }
+    }
+
+    private function doSubscribe(string $subject, ?string $group, Closure $handler): self
+    {
+        $sid = bin2hex(random_bytes(4));
+
+        $this->handlers[$sid] = $handler;
+
+        $this->send(new Subscribe([
+            'sid' => $sid,
+            'subject' => $subject,
+            'group' => $group,
+        ]));
+
+        $this->subscriptions[] = [
+            'name' => $subject,
+            'sid' => $sid,
+        ];
+
+        return $this;
     }
 
     private function processSocketException(Throwable $e): self
