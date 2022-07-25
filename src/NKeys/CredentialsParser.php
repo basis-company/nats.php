@@ -18,7 +18,7 @@ class CredentialsParser
         $jwtMatches = [];
         $nkeyMatches = [];
 
-        if(
+        if (
             !preg_match($this->getRegex("NATS USER JWT"), $text, $jwtMatches) ||
             !preg_match($this->getRegex("USER NKEY SEED"), $text, $nkeyMatches)
         ) {
