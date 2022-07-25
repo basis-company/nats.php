@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Basis\Nats\Message;
 
-use stdClass;
-
 class Payload
 {
     public static function parse(mixed $data): self
@@ -26,6 +24,7 @@ class Payload
     public function __construct(
         public string $body,
         public array $headers = [],
+        public ?string $subject = null
     ) {
         $hdrs = $this->getValue('message.hdrs');
         if ($hdrs) {
