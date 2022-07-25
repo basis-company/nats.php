@@ -21,6 +21,8 @@ The recommended way to install the library is through [Composer](http://getcompo
 $ composer require basis-company/nats
 ```
 
+The NKeys functionality requires Ed25519, which is provided in `libsodium` extension or `sodium_compat` package. 
+
 ## Connection
 ```php
 use Basis\Nats\Client;
@@ -38,6 +40,7 @@ $configuration = new Configuration([
     'timeout' => 1,
     'token' => null,
     'user' => null,
+    'nkey' => null,
     'verbose' => false,
     'version' => 'dev',
 ]);
@@ -158,6 +161,26 @@ $bucket->purge('username');
 var_dump($bucket->getStatus());
 ```
 
+## Using NKeys with JWT
+
+To use NKeys with JWT, simply provide them in the `Configuration` options as `jwt` and `nkey`.
+You can also provide a credentials file with `CredentialsParser`
+
+```php
+use Basis\Nats\Client;
+use Basis\Nats\Configuration;
+use Basis\Nats\NKeys\CredentialsParser;
+
+$configuration = new Configuration(
+    [
+        'host' => 'localhost',
+        'port' => 4222
+    ],
+    CredentialsParser::fromFile($credentialPath)
+);
+
+$client = new Client($configuration);
+```
 
 ## Performance
 Testing on i5-4670k with nats running in docker gives 420k rps for publish and 350k rps for receive in non-verbose mode.
