@@ -1,0 +1,19 @@
+name: coding-style
+on: [push, pull_request]
+jobs:
+  php-cs-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        uses: php-actions/composer@v6
+      - name: php-cs-fixer
+        uses: php-actions/composer@v6
+        with:
+          command: run cs-verify
+  editorconfig-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: editorconfig-checker/action-editorconfig-checker@main
+      - run: editorconfig-checker
