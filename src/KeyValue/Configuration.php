@@ -11,8 +11,8 @@ class Configuration
     private ?int $history = null;
     private ?int $maxBytes = null;
     private ?int $maxValueSize = null;
-    private int $replicas = 1;
-    private int $ttl = 0;
+    private ?int $replicas = null;
+    private ?int $ttl = null;
 
     public function __construct(private readonly string $name)
     {
@@ -23,11 +23,11 @@ class Configuration
         $configuration
             ->setAllowRollupHeaders(true)
             ->setDenyDelete(false)
-            ->setMaxAge($this->getTtl())
+            ->setMaxAge($this->getTtl() ?? 0)
             ->setMaxBytes($this->getMaxBytes())
             ->setMaxMessageSize($this->getMaxValueSize())
             ->setMaxMessagesPerSubject($this->getHistory())
-            ->setReplicas($this->getReplicas())
+            ->setReplicas($this->getReplicas() ?? 1)
             ->setSubjects([strtoupper("\$kv.$this->name.*")]);
 
         return $this;

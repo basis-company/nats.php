@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Basis\Nats\Message;
 
-use Basis\Nats\Message\Ok;
-use Basis\Nats\Message\Pong;
 use LogicException;
 
 final class Factory
@@ -16,7 +14,7 @@ final class Factory
 
     public static function create(string $line): Prototype
     {
-        if (strpos($line, ' ') === false) {
+        if (!str_contains($line, ' ')) {
             throw new LogicException("Parse message failure: $line");
         }
 

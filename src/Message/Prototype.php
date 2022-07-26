@@ -12,6 +12,7 @@ abstract class Prototype
 
     public static function create(string $data): self
     {
+        // @phan-suppress-next-line PhanTypeInstantiateAbstractStatic
         return new static(Payload::parse($data));
     }
 

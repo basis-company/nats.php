@@ -102,10 +102,7 @@ class Consumer
 
         $handlerSubject = 'handler.' . bin2hex(random_bytes(4));
 
-        $runtime = (object) [
-            'processed' => 0,
-            'empty' => false,
-        ];
+        $runtime = new Runtime();
 
         $this->create();
 
