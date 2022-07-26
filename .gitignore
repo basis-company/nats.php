@@ -6,3 +6,4 @@ vendor
 # Editor files
 *.bak
 .idea
+.php-cs-fixer.cache
