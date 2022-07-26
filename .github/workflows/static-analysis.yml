@@ -1,0 +1,13 @@
+name: static-analysis
+on: [push, pull_request]
+jobs:
+  phan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        uses: php-actions/composer@v6
+      - name: phan
+        uses: php-actions/composer@v6
+        with:
+          command: run phan
