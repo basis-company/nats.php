@@ -24,9 +24,9 @@ class FactoryTest extends TestCase
             "domain" => "domain"
         ];
         $infoString = "INFO " . json_encode($infoData);
-        
+
         $message = Factory::create($infoString);
-        
+
         $this->assertEquals(Info::class, get_class($message));
     }
 }

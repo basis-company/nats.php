@@ -38,7 +38,8 @@ class SubjectTest extends FunctionalTestCase
         };
         $setter->call($client, $memoryStream);
 
-        $client->subscribeQueue('subject', 'group', function () {});
+        $client->subscribeQueue('subject', 'group', function () {
+        });
 
         $content = stream_get_contents($memoryStream, -1, 0);
 

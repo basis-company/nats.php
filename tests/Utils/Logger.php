@@ -9,7 +9,8 @@ use Monolog\Logger as MonologLogger;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 
-trait Logger {
+trait Logger
+{
     protected ?LoggerInterface $logger = null;
 
     public function getLogger(): LoggerInterface

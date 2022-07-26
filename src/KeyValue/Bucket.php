@@ -64,7 +64,7 @@ class Bucket
 
             if (!$this->stream->exists()) {
                 $this->getConfiguration()
-                     ->configureStream($this->stream->getConfiguration());
+                    ->configureStream($this->stream->getConfiguration());
 
                 $this->stream->create();
             }
