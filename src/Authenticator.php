@@ -9,7 +9,7 @@ use Basis\Nats\NKeys\SecretKey;
 
 abstract class Authenticator
 {
-    public abstract function sign(string $nonce): string;
+    abstract public function sign(string $nonce): string;
 
     public static function create(Configuration $configuration): ?self
     {
