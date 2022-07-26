@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Basis\Nats\Consumer;
 
-use Closure;
-use Basis\Nats\Client;
-
 class Configuration
 {
     private ?bool $flowControl = null;

@@ -37,16 +37,12 @@ class Bucket
         $response = $this->getStream()
             ->getLastMessage($this->getSubject($key));
 
-        $value = null;
-
-        if ($response->message && property_exists($response->message, 'data')) {
-            $revision = $response->message->seq;
-            $value = base64_decode($response->message->data);
-        }
-
-        if ($value == null) {
+        if (!$response->message || !property_exists($response->message, 'data')) {
             return null;
         }
+
+        $revision = $response->message->seq;
+        $value = base64_decode($response->message->data);
 
         return new Entry($this->name, $key, $value, $revision);
     }

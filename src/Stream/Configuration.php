@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Basis\Nats\Stream;
 
-use Basis\Nats\Client;
-use Basis\Nats\Consumer\Consumer;
 use DomainException;
 
 class Configuration
@@ -67,7 +65,7 @@ class Configuration
         return $this->duplicateWindow;
     }
 
-    public function getMaxAge(): ?int
+    public function getMaxAge(): int
     {
         return $this->maxAge;
     }
@@ -141,7 +139,7 @@ class Configuration
         return $this;
     }
 
-    public function setMaxAge(?int $maxAge): self
+    public function setMaxAge(int $maxAge): self
     {
         $this->maxAge = $maxAge;
         return $this;

@@ -7,7 +7,6 @@ namespace Basis\Nats\Stream;
 use Basis\Nats\Client;
 use Basis\Nats\Consumer\Consumer;
 use Basis\Nats\Consumer\Configuration as ConsumerConfiguration;
-use DomainException;
 
 class Stream
 {
