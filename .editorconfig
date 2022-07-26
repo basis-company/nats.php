@@ -11,3 +11,7 @@ insert_final_newline = true
 indent_style = space
 indent_size = 4
 ij_php_space_before_if_left_brace = true
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
