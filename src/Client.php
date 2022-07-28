@@ -99,7 +99,7 @@ class Client
         if ($this->name) {
             $this->connect->name = $this->name;
         }
-        if (isset($this?->info->nonce) && $this->authenticator) {
+        if (isset($this->info->nonce) && $this->authenticator) {
             $this->connect->sig = $this->authenticator->sign($this->info->nonce);
         }
 
