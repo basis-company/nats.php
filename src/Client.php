@@ -191,8 +191,8 @@ class Client
         foreach ($this->subscriptions as $i => $subscription) {
             if ($subscription['name'] == $name) {
                 unset($this->subscriptions[$i]);
-                unset($this->handlers[$subscription['sid']]);
                 $this->send(new Unsubscribe(['sid' => $subscription['sid']]));
+                unset($this->handlers[$subscription['sid']]);
             }
         }
 
@@ -352,11 +352,11 @@ class Client
             throw $e;
         }
 
-        $this->socket = null;
         $iteration = 0;
 
         while (true) {
             try {
+                $this->socket = null;
                 $this->connect();
             } catch (Throwable $e) {
                 $this->configuration->delay($iteration++);
@@ -366,11 +366,10 @@ class Client
         }
 
         foreach ($this->subscriptions as $i => $subscription) {
-            $fn = $this->handlers[$subscription['sid']];
-            unset($this->subscriptions[$i]);
-            unset($this->handlers[$subscription['sid']]);
-            $this->send(new Unsubscribe(['sid' => $subscription['sid']]));
-            $this->subscribe($subscription['name'], $fn);
+            $this->send(new Subscribe([
+                'sid' => $subscription['sid'],
+                'subject' => $subscription['name'],
+            ]));
         }
         return $this;
     }
@@ -392,6 +391,10 @@ class Client
                 }
                 if ($written === 0) {
                     throw new LogicException('Broken pipe or closed connection');
+                }
+                $info = stream_get_meta_data($this->socket);
+                if ($info['timed_out']) {
+                    throw new LogicException('Connection timed out');
                 }
                 if ($length == $written) {
                     break;
