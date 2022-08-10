@@ -392,10 +392,6 @@ class Client
                 if ($written === 0) {
                     throw new LogicException('Broken pipe or closed connection');
                 }
-                $info = stream_get_meta_data($this->socket);
-                if ($info['timed_out']) {
-                    throw new LogicException('Connection timed out');
-                }
                 if ($length == $written) {
                     break;
                 }
