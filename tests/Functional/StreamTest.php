@@ -66,9 +66,9 @@ class StreamTest extends FunctionalTestCase
         ]));
         $this->assertSame(2, $consumer->info()->num_pending);
 
-        $consumer->handle(function($msg) {
+        $consumer->handle(function ($msg) {
             $this->assertSame($msg->getHeader('Nats-Msg-Id'), 'the-message');
-       });
+        });
 
         $this->assertSame(1, $consumer->info()->num_pending);
     }
