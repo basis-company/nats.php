@@ -398,6 +398,7 @@ class Client
                 $line = substr($line, $written);
             } catch (Throwable $e) {
                 $this->processSocketException($e);
+                $line = $message->render() . "\r\n";
             }
         }
 
