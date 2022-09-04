@@ -24,6 +24,10 @@ class Configuration
     public readonly ?string $user;
     public readonly ?string $nkey;
 
+    public readonly ?string $tlsKeyFile;
+    public readonly ?string $tlsCertFile;
+    public readonly ?string $tlsCaFile;
+
     public const DELAY_CONSTANT = 'constant';
     public const DELAY_LINEAR = 'linear';
     public const DELAY_EXPONENTIAL = 'exponential';
@@ -46,6 +50,9 @@ class Configuration
         'verbose' => false,
         'version' => 'dev',
         'pingInterval' => 2,
+        'tlsKeyFile' => null,
+        'tlsCertFile' => null,
+        'tlsCaFile' => null,
     ];
 
     /**
