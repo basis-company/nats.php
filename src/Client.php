@@ -30,6 +30,7 @@ class Client
     private readonly ?Authenticator $authenticator;
 
     private $socket;
+    private $context;
     private array $handlers = [];
     private float $ping = 0;
     private float $pong = 0;
@@ -81,9 +82,10 @@ class Client
 
         $config = $this->configuration;
 
-        $dsn = "tcp://$config->host:$config->port";
+        $dsn = "$config->host:$config->port";
         $flags = STREAM_CLIENT_CONNECT;
-        $this->socket = @stream_socket_client($dsn, $errorCode, $errorMessage, $config->timeout, $flags);
+        $this->context = stream_context_create();
+        $this->socket = @stream_socket_client($dsn, $errorCode, $errorMessage, $config->timeout, $flags, $this->context);
 
         if ($errorCode || !$this->socket) {
             throw new Exception($errorMessage ?: "Connection error", $errorCode);
@@ -222,6 +224,9 @@ class Client
         return $this;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function process(null|int|float $timeout = 0)
     {
         $max = microtime(true) + $timeout;
@@ -283,6 +288,7 @@ class Client
         switch (get_class($message)) {
             case Info::class:
                 $this->logger?->debug('receive ' . $line);
+                $this->handleInfoMessage($message);
                 return $this->info = $message;
 
             case Msg::class:
@@ -324,6 +330,48 @@ class Client
                 break;
         }
     }
+
+    /**
+     * @throws Exception
+     */
+    private function handleInfoMessage(Info $info): void
+    {
+        if (isset($info->tls_verify) && $info->tls_verify) {
+            $this->enableTls(true);
+        } elseif (isset($info->tls_required) && $info->tls_required) {
+            $this->enableTls(false);
+        }
+    }
+
+
+    /**
+     *
+     *
+     * @throws Exception
+     */
+    public function enableTls(bool $requireClientCert): void
+    {
+        if ($requireClientCert) {
+            if (!empty($this->configuration->tlsKeyFile)) {
+                stream_context_set_option($this->context, 'ssl', 'local_pk', $this->configuration->tlsKeyFile);
+            }
+            if (!empty($this->configuration->tlsCertFile)) {
+                stream_context_set_option($this->context, 'ssl', 'local_cert', $this->configuration->tlsCertFile);
+            }
+            if (!empty($this->configuration->tlsCaFile)) {
+                stream_context_set_option($this->context, 'ssl', 'cafile', $this->configuration->tlsCaFile);
+            }
+        }
+
+        if (!stream_socket_enable_crypto(
+            $this->socket,
+            true,
+            STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
+        )) {
+            throw new Exception('Failed to connect: Error enabling TLS');
+        }
+    }
+
 
     private function doSubscribe(string $subject, ?string $group, Closure $handler): self
     {
