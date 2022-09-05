@@ -59,6 +59,48 @@ $client = new Client($configuration);
 $client->ping(); // true
 
 ```
+
+### Connecting to a cluster with TLS enabled
+Typically, when connecting to a cluster with TLS enabled the connection settings do not change. The client lib will automatically switch over to TLS 1.2. However, if you're using a self-signed certificate you may have to point to your local CA file using the tlsCaFile setting. 
+
+When connecting to a nats cluster that requires the client to provide TLS certificates use the tlsCertFile and tlsKeyFile to point at your local TLS certificate and private key file. 
+
+Nats Server documentation for:
+- [Enabling TLS](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/tls)
+- [Enabling TLS Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/tls_mutual_auth)
+- [Creating self-signed TLS certs for Testing](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/tls#self-signed-certificates-for-testing)
+
+Connection settings when connecting to a nats server that has TLS and TLS Client verify enabled.
+```php
+use Basis\Nats\Client;
+use Basis\Nats\Configuration;
+
+// this is default options, you can override anyone
+$configuration = new Configuration([
+    'host' => 'localhost',
+    'jwt' => null,
+    'lang' => 'php',
+    'pass' => null,
+    'pedantic' => false,
+    'port' => 4222,
+    'reconnect' => true,
+    'timeout' => 1,
+    'token' => null,
+    'user' => null,
+    'nkey' => null,
+    'verbose' => false,
+    'version' => 'dev',
+    'tlsCertFile' => "./certs/client-cert.pem",
+    'tlsKeyFile'  => "./certs/client-key.pem",
+    'tlsCaFile'  => "./certs/client-key.pem",
+]);
+
+$configuration->setDelay(0.001);
+
+$client = new Client($configuration);
+$client->ping(); // true
+```
+
 ## Publish Subscribe
 
 ```php
