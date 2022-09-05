@@ -47,4 +47,56 @@ class ClientTest extends FunctionalTestCase
         $this->expectExceptionMessageMatches('/^Connection refused$|^A connection attempt failed/');
         $this->createClient(['port' => -1])->ping();
     }
+
+    public function testTLSConnection()
+    {
+        $client = $this->createClient([
+            'port' => 4220,
+            'tlsCertFile' => $this->getProjectRoot() . "/docker/certs/client-cert.pem",
+            'tlsKeyFile'  => $this->getProjectRoot() . "/docker/certs/client-key.pem",
+            'tlsCaFile'   => $this->getProjectRoot() . "/docker/certs/rootCA.pem",
+        ]);
+
+        $this->assertTrue($client->ping());
+
+        $this->assertTrue($client->info->tls_required);
+        $this->assertTrue($client->info->tls_verify);
+    }
+
+
+    public function testInvalidTlsRootCa()
+    {
+        $this->expectExceptionMessageMatches("/tlsCaFile file does not exist*/");
+        $client = $this->createClient([
+            'port' => 4220,
+            'tlsCertFile' => $this->getProjectRoot() . "/docker/certs/client-cert.pem",
+            'tlsKeyFile'  => $this->getProjectRoot() . "/docker/certs/client-key.pem",
+            'tlsCaFile'   => $this->getProjectRoot() . "/docker/certs/rootCAWrong.pem",
+        ]);
+        $client->ping();
+    }
+
+    public function testInvalidTlsCert()
+    {
+        $this->expectExceptionMessageMatches("/tlsCertFile file does not exist*/");
+        $client = $this->createClient([
+            'port' => 4220,
+            'tlsCertFile' => $this->getProjectRoot() . "/docker/certs/client-cert-wrong.pem",
+            'tlsKeyFile'  => $this->getProjectRoot() . "/docker/certs/client-key.pem",
+            'tlsCaFile'   => $this->getProjectRoot() . "/docker/certs/rootCAWrong.pem",
+        ]);
+        $client->ping();
+    }
+
+    public function testInvalidTlsKey()
+    {
+        $this->expectExceptionMessageMatches("/tlsKeyFile file does not exist*/");
+        $client = $this->createClient([
+            'port' => 4220,
+            'tlsCertFile' => $this->getProjectRoot() . "/docker/certs/client-cert.pem",
+            'tlsKeyFile'  => $this->getProjectRoot() . "/docker/certs/client-key-wrong.pem",
+            'tlsCaFile'   => $this->getProjectRoot() . "/docker/certs/rootCA.pem",
+        ]);
+        $client->ping();
+    }
 }

@@ -349,18 +349,28 @@ class Client
      *
      * @throws Exception
      */
-    public function enableTls(bool $requireClientCert): void
+    private function enableTls(bool $requireClientCert): void
     {
         if ($requireClientCert) {
             if (!empty($this->configuration->tlsKeyFile)) {
+                if (!file_exists($this->configuration->tlsKeyFile)) {
+                    throw new Exception("tlsKeyFile file does not exist: " . $this->configuration->tlsKeyFile);
+                }
                 stream_context_set_option($this->context, 'ssl', 'local_pk', $this->configuration->tlsKeyFile);
             }
             if (!empty($this->configuration->tlsCertFile)) {
+                if (!file_exists($this->configuration->tlsCertFile)) {
+                    throw new Exception("tlsCertFile file does not exist: " . $this->configuration->tlsCertFile);
+                }
                 stream_context_set_option($this->context, 'ssl', 'local_cert', $this->configuration->tlsCertFile);
             }
-            if (!empty($this->configuration->tlsCaFile)) {
-                stream_context_set_option($this->context, 'ssl', 'cafile', $this->configuration->tlsCaFile);
+        }
+
+        if (!empty($this->configuration->tlsCaFile)) {
+            if (!file_exists($this->configuration->tlsCaFile)) {
+                throw new Exception("tlsCaFile file does not exist: " . $this->configuration->tlsCaFile);
             }
+            stream_context_set_option($this->context, 'ssl', 'cafile', $this->configuration->tlsCaFile);
         }
 
         if (!stream_socket_enable_crypto(

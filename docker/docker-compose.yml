@@ -19,6 +19,18 @@ services:
     depends_on:
       credentials-generator:
         condition: service_completed_successfully
+  nats-with-certs:
+    image: nats:alpine
+    restart: unless-stopped
+    ports:
+      - "4220:4222"
+      - "8220:8222"
+    command: -js -m 8222 --tls --tlscert=/certs/server-cert.pem --tlskey=/certs/server-key.pem --tlscacert=/certs/rootCA.pem --tlsverify
+    volumes:
+      - ./certs:/certs:ro
+    depends_on:
+      certs-generator:
+        condition: service_completed_successfully
   credentials-generator:
     image: natsio/nats-box:latest
     volumes:
@@ -26,3 +38,11 @@ services:
       - ./credentials:/credentials
     working_dir: /app
     command: generate-credentials.sh
+  certs-generator:
+    image: goodeggs/mkcert
+    entrypoint: /bin/bash
+    volumes:
+      - ./scripts:/app:ro
+      - ./certs:/certs
+    working_dir: /app
+    command: generate-certs.sh
