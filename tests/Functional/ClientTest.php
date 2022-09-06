@@ -52,8 +52,8 @@ class ClientTest extends FunctionalTestCase
     {
         $client = $this->createClient([
             'port' => 4220,
-            'tlsCertFile' => $this->getProjectRoot() . "/docker/certs/client-cert.pem",
-            'tlsKeyFile'  => $this->getProjectRoot() . "/docker/certs/client-key.pem",
+//            'tlsCertFile' => $this->getProjectRoot() . "/docker/certs/client-cert.pem",
+//            'tlsKeyFile'  => $this->getProjectRoot() . "/docker/certs/client-key.pem",
             'tlsCaFile'   => $this->getProjectRoot() . "/docker/certs/rootCA.pem",
         ]);
 
@@ -71,7 +71,6 @@ class ClientTest extends FunctionalTestCase
             'port' => 4220,
             'tlsCaFile'   => $this->getProjectRoot() . "/docker/certs/rootCAWrong.pem",
         ]);
-        
         $client->ping();
     }
 
