@@ -18,6 +18,8 @@ class Configuration
     public readonly float $timeout;
     public readonly int $pingInterval;
 
+    public readonly string $inboxPrefix;
+
     public readonly ?string $jwt;
     public readonly ?string $pass;
     public readonly ?string $token;
@@ -50,6 +52,7 @@ class Configuration
         'verbose' => false,
         'version' => 'dev',
         'pingInterval' => 2,
+        'inboxPrefix' => '_INBOX',
         'tlsKeyFile' => null,
         'tlsCertFile' => null,
         'tlsCaFile' => null,
