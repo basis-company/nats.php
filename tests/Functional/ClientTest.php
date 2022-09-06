@@ -71,6 +71,7 @@ class ClientTest extends FunctionalTestCase
             'port' => 4220,
             'tlsCaFile'   => $this->getProjectRoot() . "/docker/certs/rootCAWrong.pem",
         ]);
+        
         $client->ping();
     }
 
