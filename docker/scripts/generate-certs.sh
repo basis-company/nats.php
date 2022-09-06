@@ -16,7 +16,7 @@ echo "Generate server certs";
 /usr/local/bin/mkcert -cert-file server-cert.pem -key-file server-key.pem localhost ::1
 
 echo "Generate client certs";
-/usr/local/bin/mkcert -client -cert-file client-cert.pem -key-file client-key.pem localhost ::1 email@localhost
+/usr/local/bin/mkcert -client -cert-file client-cert.pem -key-file client-key.pem email@localhost
 
 echo "Copy CA file to certs directory";
 cp "$(mkcert -CAROOT)/rootCA.pem" /certs
