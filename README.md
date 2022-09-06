@@ -14,6 +14,7 @@ Feel free to contribute or give any feedback.
 - [JetStream Api Usage](#jetstream-api-usage)
 - [Key Value Storage](#key-value-storage)
 - [Performance](#performance)
+- [Configuration Options](#configuration-options)
 
 ## Installation
 The recommended way to install the library is through [Composer](http://getcomposer.org):
@@ -267,9 +268,9 @@ Warning:       No code coverage driver available
 
 nekufa@fasiga ~ % cat /proc/cpuinfo | grep i5
 model name  : Intel(R) Core(TM) i5-4670K CPU @ 3.40GHz
+```
 
-
-## Coniguration Options
+## Configuration Options
 
 The following is the list of configuration options and default values.
 
