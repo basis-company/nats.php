@@ -25,7 +25,7 @@ services:
     ports:
       - "4220:4222"
       - "8220:8222"
-    command: -js -m 8222 --tls --tlscert=/certs/server-cert.pem --tlskey=/certs/server-key.pem --tlscacert=/certs/rootCA.pem
+    command: -js -m 8222 --tls --tlscert=/certs/server-cert.pem --tlskey=/certs/server-key.pem --tlscacert=/certs/rootCA.pem --tlsverify
     volumes:
       - ./certs:/certs:ro
     depends_on:
