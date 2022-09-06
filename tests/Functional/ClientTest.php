@@ -73,6 +73,7 @@ class ClientTest extends FunctionalTestCase
             'tlsKeyFile'  => $this->getProjectRoot() . "/docker/certs/client-key.pem",
             'tlsCaFile'   => $this->getProjectRoot() . "/docker/certs/rootCAWrong.pem",
         ]);
+        
         $client->ping();
     }
 
