@@ -20,3 +20,5 @@ echo "Generate client certs";
 
 echo "Copy CA file to certs directory";
 cp "$(mkcert -CAROOT)/rootCA.pem" /certs
+
+chmod 644 /certs/client-key.pem
