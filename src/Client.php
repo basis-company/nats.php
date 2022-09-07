@@ -165,14 +165,14 @@ class Client
 
     public function request(string $name, mixed $payload, Closure $handler): self
     {
-        $sid = 'inbox.' . bin2hex(random_bytes(4));
+        $replyTo = $this->configuration->inboxPrefix . '.' . bin2hex(random_bytes(16));
 
-        $this->subscribe($sid, function ($response) use ($sid, $handler) {
-            $this->unsubscribe($sid);
+        $this->subscribe($replyTo, function ($response) use ($replyTo, $handler) {
+            $this->unsubscribe($replyTo);
             $handler($response);
         });
 
-        $this->publish($name, $payload, $sid);
+        $this->publish($name, $payload, $replyTo);
         $this->process($this->configuration->timeout);
 
         return $this;

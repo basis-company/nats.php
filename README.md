@@ -13,7 +13,9 @@ Feel free to contribute or give any feedback.
 - [Request Response](#request-response)
 - [JetStream Api Usage](#jetstream-api-usage)
 - [Key Value Storage](#key-value-storage)
+- [Using NKeys with JWT](#using-nkeys-with-jwt)
 - [Performance](#performance)
+- [Configuration Options](#configuration-options)
 
 ## Installation
 The recommended way to install the library is through [Composer](http://getcomposer.org):
@@ -267,3 +269,25 @@ Warning:       No code coverage driver available
 
 nekufa@fasiga ~ % cat /proc/cpuinfo | grep i5
 model name  : Intel(R) Core(TM) i5-4670K CPU @ 3.40GHz
+```
+
+## Configuration Options
+
+The following is the list of configuration options and default values.
+
+| Option         | Default    | Description                                                                                                                                                                                                                   |
+|----------------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `inboxPrefix`  | `"_INBOX"` | Sets de prefix for automatically created inboxes                                                                                                                                                                              |
+| `jwt`          |            | Token for [JWT Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/jwt). Alternatively you can use [CredentialsParser](#using-nkeys-with-jwt)                                  |
+| `neky`         |            | Ed25519 based public key signature used for [NKEY Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/nkey_auth).                                                              |
+| `pass`         |            | Sets the password for a connection.                                                                                                                                                                                           |
+| `pedantic`     | `false`    | Turns on strict subject format checks.                                                                                                                                                                                        |
+| `pingInterval` | `2`        | Number of seconds between client-sent pings.                                                                                                                                                                                  |
+| `port`         | `4222`     | Port to connect to (only used if `servers` is not specified).                                                                                                                                                                 |
+| `timeout`      | 1          | Number of seconds the client will wait for a connection to be established. |
+| `token`        |            | Sets a authorization token for a connection.                                                                                                                                                                                  |
+| `tlsKeyFile`   |            | TLS 1.2 Client key file path.                                                                                                                                                                                                 |
+| `tlsCertFile`  |            | TLS 1.2 Client certificate file path.                                                                                                                                                                                         |
+| `tlsCaFile`    |            | TLS 1.2 CA certificate filepath.                                                                                                                                                                                              |
+| `user`         |            | Sets the username for a connection.                                                                                                                                                                                           |
+| `verbose`      | `false`    | Turns on `+OK` protocol acknowledgements.                                                                                                                                                                                     |

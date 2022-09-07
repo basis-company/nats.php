@@ -82,6 +82,78 @@ class SubjectTest extends FunctionalTestCase
         $this->assertSame($this->responseCounter, 2);
     }
 
+    public function testRequestReplyToDefault()
+    {
+        $refSubscriptions = new ReflectionProperty(Client::class, 'subscriptions');
+        $refSubscriptions->setAccessible(true);
+
+        $client = $this->createClient();
+
+        //subscriptions should be empty to begin with
+        $this->assertEquals(0, sizeof($refSubscriptions->getValue($client)));
+
+        $client->subscribe('hello.request', $this->greet(...));
+        $this->responseCounter = 0;
+
+        //Adding one subscription for hello.request
+        $this->assertEquals(1, sizeof($refSubscriptions->getValue($client)));
+
+        $client->request('hello.request', 'Nekufa1', function ($response) use ($client) {
+            $this->assertEquals($response->body, 'Hello, Nekufa1');
+            $this->responseCounter++;
+        });
+
+        //Added second subscription for reply message
+        $this->assertEquals(2, sizeof($refSubscriptions->getValue($client)));
+        $this->assertStringStartsWith('_INBOX.', $refSubscriptions->getValue($client)[1]['name']);
+
+        // processing requests
+        // handler 1 was called during request 2
+        $this->assertEquals(0, $this->responseCounter);
+
+        // get request response
+        $client->process(1);
+
+        $this->assertEquals(1, $this->responseCounter);
+
+        //back down to one subscription when reply is received
+        $this->assertEquals(1, sizeof($refSubscriptions->getValue($client)));
+    }
+
+    public function testRequestWithCustomReplyTo()
+    {
+        $property = new ReflectionProperty(Client::class, 'subscriptions');
+        $property->setAccessible(true);
+
+        $client = $this->createClient([
+            'inboxPrefix' => '_MY_CUSTOM_PREFIX'
+        ]);
+
+        $client->subscribe('hello.request', $this->greet(...));
+        $this->responseCounter = 0;
+
+        $this->assertEquals(1, sizeof($property->getValue($client)));
+
+        $client->request('hello.request', 'Nekufa1', function ($response) use ($client) {
+            $this->assertEquals($response->body, 'Hello, Nekufa1');
+            $this->responseCounter++;
+        });
+
+        $this->assertEquals(2, sizeof($property->getValue($client)));
+        $this->assertStringStartsWith('_MY_CUSTOM_PREFIX.', $property->getValue($client)[1]['name']);
+
+        // processing requests
+        // handler 1 was called during request 2
+        $this->assertEquals(0, $this->responseCounter);
+
+        // get request response
+        $client->process(1);
+
+        $this->assertEquals(1, $this->responseCounter);
+
+        $this->assertEquals(1, sizeof($property->getValue($client)));
+    }
+
     public function testUnsubscribe()
     {
         $property = new ReflectionProperty(Client::class, 'handlers');
