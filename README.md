@@ -112,9 +112,20 @@ $client->subscribe('hello', function ($message) {
 
 $client->publish('hello', 'tester');
 $client->process();
+
+// if you want to append some headers, construct payload manually
+use Basis\Nats\Message\Payload;
+
+$payload = new Payload('tester', [
+    'Nats-Msg-Id' => 'payload-example'
+]);
+
+$client->publish('hello', $payload);
+
 ```
 
 ## Request Response
+There is a simple wrapper over publish and feedback processing, so payload can be constructed manually same way.
 ```php
 $client->subscribe('hello.request', function ($name) {
     return "Hello, " . $name;
@@ -180,6 +191,16 @@ $goodbyer
         // batch will be processed to the end and the handling would be stopped
         // $goodbyer->interrupt();
     });
+    
+// if you need to append some headers, construct payload manually
+use Basis\Nats\Message\Payload;
+
+$payload = new Payload('nekufa@gmail.com', [
+    'Nats-Msg-Id' => 'single-send'
+]);
+
+$stream->put('mailer.bye', $payload);
+    
 ```
 
 ## Key Value Storage
