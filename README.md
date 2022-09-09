@@ -103,6 +103,29 @@ $client = new Client($configuration);
 $client->ping(); // true
 ```
 
+As an alternative to the `host` and `port` configuration options you can specify an array of host/port values in the `server` option. When the array contains more than one entry the client will attempt to connect to each entry in turn. If it fails to connect it will go to the next entry in the array. 
+
+By default, the order of the host:port entries is randomly shuffled on startup. In situations where multiple clients have the same connection configuration this shuffle will balance the clients across multiple servers. If you want to manage client connections directly while also availing of the redundancy of multiple host:port configurations you can disable the shuffle by setting the `serversRandomize` option to false.
+
+```php
+use Basis\Nats\Client;
+use Basis\Nats\Configuration;
+
+
+$configuration = new Configuration([
+    'servers' => ['localhost:4222', 'localhost:4221', 'localhost:4220'],
+    'serversRandomize' => false
+]);
+
+// default delay mode is constant - first retry be in 1ms, second in 1ms, third in 1ms
+$configuration->setDelay(0.001);
+
+
+$client = new Client($configuration);
+$client->ping(); // true
+
+```
+
 ## Publish Subscribe
 
 ```php
@@ -296,19 +319,24 @@ model name  : Intel(R) Core(TM) i5-4670K CPU @ 3.40GHz
 
 The following is the list of configuration options and default values.
 
-| Option         | Default    | Description                                                                                                                                                                                                                   |
-|----------------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `inboxPrefix`  | `"_INBOX"` | Sets de prefix for automatically created inboxes                                                                                                                                                                              |
-| `jwt`          |            | Token for [JWT Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/jwt). Alternatively you can use [CredentialsParser](#using-nkeys-with-jwt)                                  |
-| `nkey`         |            | Ed25519 based public key signature used for [NKEY Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/nkey_auth).                                                              |
-| `pass`         |            | Sets the password for a connection.                                                                                                                                                                                           |
-| `pedantic`     | `false`    | Turns on strict subject format checks.                                                                                                                                                                                        |
-| `pingInterval` | `2`        | Number of seconds between client-sent pings.                                                                                                                                                                                  |
-| `port`         | `4222`     | Port to connect to (only used if `servers` is not specified).                                                                                                                                                                 |
-| `timeout`      | 1          | Number of seconds the client will wait for a connection to be established. |
-| `token`        |            | Sets a authorization token for a connection.                                                                                                                                                                                  |
-| `tlsKeyFile`   |            | TLS 1.2 Client key file path.                                                                                                                                                                                                 |
-| `tlsCertFile`  |            | TLS 1.2 Client certificate file path.                                                                                                                                                                                         |
-| `tlsCaFile`    |            | TLS 1.2 CA certificate filepath.                                                                                                                                                                                              |
-| `user`         |            | Sets the username for a connection.                                                                                                                                                                                           |
-| `verbose`      | `false`    | Turns on `+OK` protocol acknowledgements.                                                                                                                                                                                     |
+| Option                 | Default    | Description                                                                                                                                                                                  |
+|------------------------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ignoreClusterUpdates` | `false`    | If true the client will ignore `connect_urls` and `ldm` in INFO messages.                                                                                                                    |
+| `inboxPrefix`          | `"_INBOX"` | Sets de prefix for automatically created inboxes                                                                                                                                             |
+| `jwt`                  |            | Token for [JWT Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/jwt). Alternatively you can use [CredentialsParser](#using-nkeys-with-jwt) |
+| `maxReconnectAttempts` | 10         | Sets the maximum number of reconnect attempts per server. The value of -1 specifies no limit.                                                                                                |
+| `nkey`                 |            | Ed25519 based public key signature used for [NKEY Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/nkey_auth).                             |
+| `pass`                 |            | Sets the password for a connection.                                                                                                                                                          |
+| `pedantic`             | `false`    | Turns on strict subject format checks.                                                                                                                                                       |
+| `pingInterval`         | `2`        | Number of seconds between client-sent pings.                                                                                                                                                 |
+| `port`                 | `4222`     | Port to connect to (only used if `servers` is not specified).                                                                                                                                |
+| `reconnectTimeWait`    | `2000`     | If disconnected, the client will wait the specified number of miliseconds between reconnect attempts on a per server basis.                                                           |
+| `servers`              |            | Array of host:port values for servers                                                                                                                                                        |
+| `serversRandomize`     | `true`     | Toggle on/off the server array shuffle.                                                                                                                                                      |
+| `timeout`              | 1          | Number of seconds the client will wait for a connection to be established.                                                                                                                   |
+| `token`                |            | Sets a authorization token for a connection.                                                                                                                                                 |
+| `tlsKeyFile`           |            | TLS 1.2 Client key file path.                                                                                                                                                                |
+| `tlsCertFile`          |            | TLS 1.2 Client certificate file path.                                                                                                                                                        |
+| `tlsCaFile`            |            | TLS 1.2 CA certificate filepath.                                                                                                                                                             |
+| `user`                 |            | Sets the username for a connection.                                                                                                                                                          |
+| `verbose`              | `false`    | Turns on `+OK` protocol acknowledgements.                                                                                                                                                    |

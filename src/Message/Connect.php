@@ -15,7 +15,7 @@ class Connect extends Prototype
     public string $lang;
     public string $name;
     public string $pass;
-    public string $protocol;
+    public int $protocol;
     public string $sig;
     public string $tls_required;
     public string $user;

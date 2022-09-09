@@ -27,4 +27,21 @@ class ConfigurationTest extends TestCase
         $this->assertArrayHasKey('user', $connection->getOptions());
         $this->assertArrayHasKey('pass', $connection->getOptions());
     }
+
+    public function testServersOption()
+    {
+        $config = new Configuration(
+            [
+            "servers" => ["localhost:4222", "localhost:4221"]]
+        );
+
+        $this->assertEquals(["localhost:4222", "localhost:4221"], $config->servers);
+    }
+
+    public function testEmptyServersOption()
+    {
+        $config = new Configuration([]);
+
+        $this->assertEquals([], $config->servers);
+    }
 }
