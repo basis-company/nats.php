@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Basis\Nats;
 
-use Basis\Nats\Connection\ServersManager;
+use Basis\Nats\Connection\ServerPool;
 use Basis\Nats\Message\Connect;
 use Basis\Nats\Message\Factory;
 use Basis\Nats\Message\Info;
@@ -29,7 +29,7 @@ class Client
     public readonly Api $api;
 
     private readonly ?Authenticator $authenticator;
-    private readonly ServersManager $serversManager;
+    private readonly ServerPool $serversManager;
 
     private $socket;
     private $context;
@@ -41,6 +41,7 @@ class Client
 
     private bool $skipInvalidMessages = false;
     private bool $tlsEnabled = false;
+    private int $counter = 1;
 
     /**
      * @throws Exception
@@ -52,7 +53,7 @@ class Client
         $this->api = new Api($this);
 
         $this->authenticator = Authenticator::create($this->configuration);
-        $this->serversManager = new ServersManager($this->configuration);
+        $this->serversManager = new ServerPool($this->configuration);
     }
 
     public function api($command, array $args = [], ?Closure $callback = null): ?object
@@ -106,6 +107,7 @@ class Client
             if ($config->reconnect && $this->serversManager->hasServers()) {
                 $this->logger?->error("Error connecting to: (" . $dsn . ")");
                 $this->socket = null;
+                $this->tlsEnabled = false;
                 return $this->connect(); /** @phan-suppress-current-line PhanPossiblyInfiniteRecursionSameParams */
             }
             throw new Exception($errorMessage ?: "Connection error", $errorCode);
@@ -407,10 +409,9 @@ class Client
         $this->tlsEnabled = true;
     }
 
-
     private function doSubscribe(string $subject, ?string $group, Closure $handler): self
     {
-        $sid = bin2hex(random_bytes(4));
+        $sid = "" . $this->counter++;
 
         $this->handlers[$sid] = $handler;
 
@@ -440,6 +441,7 @@ class Client
         while (true) {
             try {
                 $this->socket = null;
+                $this->tlsEnabled = false;
                 $this->connect();
             } catch (Throwable $e) {
                 $this->configuration->delay($iteration++);

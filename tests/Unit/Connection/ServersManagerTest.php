@@ -4,7 +4,7 @@ namespace Tests\Unit\Connection;
 
 use Basis\Nats\Client;
 use Basis\Nats\Configuration;
-use Basis\Nats\Connection\ServersManager;
+use Basis\Nats\Connection\ServerPool;
 use Basis\Nats\Message\Info;
 use Tests\TestCase;
 use ReflectionProperty;
@@ -20,13 +20,13 @@ class ServersManagerTest extends TestCase
             [
                 "servers" => ["host1:4222", "host2:4222", "host3:4222", "host4:4222", "host5:4222"],
                 'reconnect' => true,
-                'reconnectTimeWait' => 10,
+                'reconnectTimeWait' => 0.010,
                 'maxReconnectAttempts' => 3,
                 'serversRandomize' => false
             ]
         );
 
-        $manager = new ServersManager($config);
+        $manager = new ServerPool($config);
 
         //Initial Connections
         $this->assertTrue($manager->hasServers());
@@ -87,7 +87,7 @@ class ServersManagerTest extends TestCase
             ]
         );
 
-        $manager = new ServersManager($config);
+        $manager = new ServerPool($config);
 
         $this->assertTrue($manager->hasServers());
 
@@ -106,7 +106,7 @@ class ServersManagerTest extends TestCase
             ]
         );
 
-        $manager = new ServersManager($config);
+        $manager = new ServerPool($config);
 
         $this->assertTrue($manager->hasServers());
 
@@ -131,12 +131,12 @@ class ServersManagerTest extends TestCase
                 "servers" => ["host1:4222", "host2:4222"],
                 'serversRandomize' => false,
                 'reconnect' => true,
-                'reconnectTimeWait' => 10,
+                'reconnectTimeWait' => 0.010,
                 'maxReconnectAttempts' => 2,
             ]
         );
 
-        $manager = new ServersManager($config);
+        $manager = new ServerPool($config);
 
         $this->assertEquals("host1:4222", $manager->nextServer()->getConnectionString());
         $this->assertEquals("host2:4222", $manager->nextServer()->getConnectionString());
@@ -162,7 +162,7 @@ class ServersManagerTest extends TestCase
                 "servers" => ["localhost:4222", "localhost:4221"]]
         );
 
-        $manager = new ServersManager($config);
+        $manager = new ServerPool($config);
 
         $this->assertTrue($manager->hasServers());
 
@@ -184,7 +184,7 @@ class ServersManagerTest extends TestCase
     {
         $config = new Configuration([]);
 
-        $manager = new ServersManager($config);
+        $manager = new ServerPool($config);
 
         $this->assertFalse($manager->hasServers());
 
@@ -201,7 +201,7 @@ class ServersManagerTest extends TestCase
                 "servers" => ["localhost:4222:8080"]]
         );
 
-        new ServersManager($config);
+        new ServerPool($config);
     }
 
 
@@ -214,7 +214,7 @@ class ServersManagerTest extends TestCase
                 "servers" => ["localhost"]]
         );
 
-        new ServersManager($config);
+        new ServerPool($config);
     }
 
     public function testInvalidServerHostPort3()
@@ -226,7 +226,7 @@ class ServersManagerTest extends TestCase
                 "servers" => [":"]]
         );
 
-        new ServersManager($config);
+        new ServerPool($config);
     }
 
     public function testInvalidServerHostPort4()
@@ -238,12 +238,12 @@ class ServersManagerTest extends TestCase
                 "servers" => ["localhost:port"]]
         );
 
-        new ServersManager($config);
+        new ServerPool($config);
     }
 
-    private function getServersArr(ServersManager $manager): array
+    private function getServersArr(ServerPool $manager): array
     {
-        $property = new ReflectionProperty(ServersManager::class, 'serversIterator');
+        $property = new ReflectionProperty(ServerPool::class, 'serversIterator');
         $property->setAccessible(true);
         $iterator = $property->getValue($manager);
 

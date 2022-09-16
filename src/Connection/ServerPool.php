@@ -7,12 +7,12 @@ use Basis\Nats\Message\Info;
 use Exception;
 use ArrayIterator;
 
-class ServersManager
+class ServerPool
 {
     private ArrayIterator $serversIterator;
     private readonly bool $ignoreClusterUpdates;
     private readonly bool $serversRandomize;
-    private readonly int  $reconnectTimeWait;
+    private readonly float $reconnectTimeWait;
     private readonly int  $maxReconnectsAllowed;
 
     /**
@@ -89,7 +89,7 @@ class ServersManager
 
             if ($current->getReconnectAttempts() <= $this->maxReconnectsAllowed && !$current->isLameDuck()) {
                 if ($current->getReconnectAttempts() > 0 && $this->reconnectTimeWait > 0) {
-                    usleep((int) floor($this->reconnectTimeWait * 1_000));
+                    usleep((int) floor(intval($this->reconnectTimeWait * 1_000)));
                 }
                 return $current;
             }
@@ -104,6 +104,11 @@ class ServersManager
      */
     public function processInfoMessage(Info $message): void
     {
+        $server = $this->serversIterator->current();
+        if ($server) {
+            $server->resetReconnectAttempts();
+        }
+
         if (!$this->ignoreClusterUpdates) {
             if (isset($message->ldm) && $message->ldm) {
                 $server = $this->serversIterator->current();

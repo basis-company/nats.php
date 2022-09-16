@@ -34,7 +34,7 @@ class Configuration
     public readonly bool  $serversRandomize;
     public readonly bool  $ignoreClusterUpdates;
     public readonly int   $maxReconnectAttempts;
-    public readonly int   $reconnectTimeWait;
+    public readonly float $reconnectTimeWait;
 
     public const DELAY_CONSTANT = 'constant';
     public const DELAY_LINEAR = 'linear';
@@ -66,7 +66,7 @@ class Configuration
         'serversRandomize' => true,
         'ignoreClusterUpdates' => false,
         'maxReconnectAttempts' => 10,
-        'reconnectTimeWait' => 2000
+        'reconnectTimeWait' => 0.200
     ];
 
     /**

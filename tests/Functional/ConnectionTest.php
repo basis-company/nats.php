@@ -4,7 +4,7 @@ namespace Tests\Functional;
 
 use Basis\Nats\Client;
 use Basis\Nats\Configuration;
-use Basis\Nats\Connection\ServersManager;
+use Basis\Nats\Connection\ServerPool;
 use Tests\TestCase;
 use ReflectionProperty;
 use Tests\Utils\Logger;
@@ -26,7 +26,7 @@ class ConnectionTest extends TestCase
         $client = $this->createClient([
             'servers' => ["localhost:4222"],
             'reconnect' => true,
-            'reconnectTimeWait' => 50,
+            'reconnectTimeWait' => 0.050,
             'maxReconnectAttempts' => 10,
             'serversRandomize' => false
         ]);
@@ -39,7 +39,7 @@ class ConnectionTest extends TestCase
         $client = $this->createClient([
             'servers' => ["localhost:3222", "localhost:3223", "localhost:3224", "localhost:4222" ],
             'reconnect' => true,
-            'reconnectTimeWait' => 50,
+            'reconnectTimeWait' => 0.050,
             'maxReconnectAttempts' => 0,
             'serversRandomize' => false
         ]);
@@ -57,13 +57,13 @@ class ConnectionTest extends TestCase
             $client = $this->createClient([
                 'servers' => ["localhost:3222", "localhost:3223", "localhost:3224" ],
                 'reconnect' => true,
-                'reconnectTimeWait' => 10,
+                'reconnectTimeWait' => 0.010,
                 'maxReconnectAttempts' => 5,
                 'serversRandomize' => false
             ]);
 
             /**
-             * @var $manager ServersManager
+             * @var $manager ServerPool
              */
             $manager = $property->getValue($client);
 
@@ -85,7 +85,7 @@ class ConnectionTest extends TestCase
         $client = $this->createClient([
             'servers' => ["localhost:3222", "localhost:3223", "localhost:3224" ],
             'reconnect' => true,
-            'reconnectTimeWait' => 50,
+            'reconnectTimeWait' => 0.050,
             'maxReconnectAttempts' => 10,
             'serversRandomize' => false
         ]);
