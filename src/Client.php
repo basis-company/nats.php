@@ -298,10 +298,12 @@ class Client
                     while (strlen($payload) < $message->length) {
                         $line = stream_get_line($this->socket, $message->length);
                         if (!$line) {
-                            if ($iteration > 16) {
+                            $isEof = stream_get_meta_data($this->socket)['eof'] ?? false;
+
+                            if ($isEof || $iteration > 16) {
                                 $exception = new LogicException("No payload for message $message->sid");
                                 $this->processSocketException($exception);
-                                break;
+                                break 2;
                             }
                             $this->configuration->delay($iteration++);
                             continue;
