@@ -25,6 +25,7 @@ class Configuration
     public readonly ?string $token;
     public readonly ?string $user;
     public readonly ?string $nkey;
+    public readonly ?string $pubNkey;
 
     public readonly ?string $tlsKeyFile;
     public readonly ?string $tlsCertFile;
@@ -49,6 +50,7 @@ class Configuration
         'token' => null,
         'user' => null,
         'nkey' => null,
+        'pubNkey' => null,
         'verbose' => false,
         'version' => 'dev',
         'pingInterval' => 2,
@@ -79,6 +81,7 @@ class Configuration
             'pedantic' => $this->pedantic,
             'verbose' => $this->verbose,
             'version' => $this->version,
+            'pubNkey' => $this->pubNkey,
             'headers' => true,
         ];
 

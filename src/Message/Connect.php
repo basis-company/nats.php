@@ -20,6 +20,7 @@ class Connect extends Prototype
     public string $tls_required;
     public string $user;
     public string $version;
+    public string $pubNkey;
 
     public function render(): string
     {

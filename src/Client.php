@@ -103,6 +103,7 @@ class Client
         }
         if (isset($this->info->nonce) && $this->authenticator) {
             $this->connect->sig = $this->authenticator->sign($this->info->nonce);
+            $this->connect->nkey = $this->connect->pubNkey;
         }
 
         $this->send($this->connect);
