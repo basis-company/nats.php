@@ -6,6 +6,7 @@ namespace Basis\Nats\Consumer;
 
 class Configuration
 {
+    private bool $ephemeral = false;
     private ?bool $flowControl = null;
     private ?bool $headersOnly = null;
     private ?int $ackWait = null;
@@ -25,7 +26,7 @@ class Configuration
 
     public function __construct(
         private readonly string $stream,
-        private readonly string $name
+        private string $name
     ) {
     }
 
@@ -119,6 +120,17 @@ class Configuration
         return $this->replayPolicy;
     }
 
+    public function isEphemeral(): bool
+    {
+        return $this->ephemeral;
+    }
+
+    public function ephemeral(): self
+    {
+        $this->ephemeral = true;
+        return $this;
+    }
+
     public function setAckPolicy(string $ackPolicy): self
     {
         $this->ackPolicy = AckPolicy::validate($ackPolicy);
@@ -143,6 +155,15 @@ class Configuration
         return $this;
     }
 
+    public function setName(string $name): self
+    {
+        if ($this->isEphemeral()) {
+            $this->name = $name;
+        }
+
+        return $this;
+    }
+
     public function setReplayPolicy(string $replayPolicy): self
     {
         $this->replayPolicy = ReplayPolicy::validate($replayPolicy);
@@ -164,7 +185,7 @@ class Configuration
             'deliver_policy' => $this->getDeliverPolicy(),
             'deliver_subject' => $this->getDeliverSubject(),
             'description' => $this->getDescription(),
-            'durable_name' => $this->getName(),
+            'durable_name' => $this->isEphemeral() ?  null : $this->getName(),
             'flow_control' => $this->getFlowControl(),
             'headers_only' => $this->getHeadersOnly(),
             'idle_heartbeat' => $this->getIdleHeartbeat(),
