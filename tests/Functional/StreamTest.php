@@ -245,10 +245,14 @@ class StreamTest extends FunctionalTestCase
 
         $this->called = null;
 
-        $configuration = new Configuration('my_stream', '');
+        $configuration = new Configuration('my_stream');
         $configuration->setSubjectFilter('tester.greet');
         $consumer1 = $stream->createEphemeralConsumer($configuration);
         $this->assertNull($this->called);
+
+        // check that consumer can be received by name after creation
+        $this->assertSame($consumer1, $stream->getConsumer($consumer1->getName()));
+
         $consumer1->setIterations(1);
         $consumer1->handle($this->persistMessage(...));
 
@@ -261,7 +265,7 @@ class StreamTest extends FunctionalTestCase
         $this->assertSame($this->called->name, 'oxidmod');
 
         $this->called = null;
-        $configuration = new Configuration('my_stream', '');
+        $configuration = new Configuration('my_stream');
         $configuration->setSubjectFilter('tester.bye')->setAckPolicy('explicit');
         $consumer2 = $stream->createEphemeralConsumer($configuration);
 
