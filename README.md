@@ -192,6 +192,30 @@ $goodbyer
         // $goodbyer->interrupt();
     });
     
+// you also can create ephemeral consumer
+// the only thing that ephemeral consumer is created as soon as object is created
+// you have to create full consumer configuration first
+use Basis\Nats\Consumer\Configuration as ConsumerConfiguration;
+use Basis\Nats\Consumer\DeliverPolicy;
+
+$configuration = (new ConsumerConfiguration($stream->getName(), ''))
+    ->setDeliverPolicy(DeliverPolicy::NEW)
+    ->setSubjectFilter('mailer.greet');
+    
+$ephemeralConsumer = $stream->createEphemeralConsumer($configuration);
+
+// now you can use ephemeral consumer in the same way as durable consumer
+$ephemeralConsumer->handle(function ($address) {
+    mail($address, "Hi there!");
+});
+
+// the only difference - you don't have to remove it manually, it will be deleted by NATS when socket connection is closed
+// be aware that NATS will not remove that consumer immediately, process can take few seconds 
+var_dump(
+    $ephemeralConsumer->getName(),
+    $ephemeralConsumer->info(),
+);
+    
 // if you need to append some headers, construct payload manually
 use Basis\Nats\Message\Payload;
 
