@@ -12,6 +12,7 @@ jobs:
       - name: php-cs-fixer
         uses: php-actions/composer@v6
         with:
+          php_version: 8.1
           command: run cs-verify
   editorconfig-verify:
     runs-on: ubuntu-latest
