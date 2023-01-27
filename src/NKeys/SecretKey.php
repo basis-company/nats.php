@@ -11,7 +11,7 @@ class SecretKey
     private const PREFIX_BYTE_SEED     = 18 << 3;
     private const PREFIX_BYTE_PRIVATE  = 15 << 3;
     private const PREFIX_BYTE_SERVER   = 13 << 3;
-    private const PREFIX_BYTE_CLUSTER  = 2  << 3;
+    private const PREFIX_BYTE_CLUSTER  = 2 << 3;
     private const PREFIX_BYTE_OPERATOR = 14 << 3;
     private const PREFIX_BYTE_ACCOUNT  = 0;
     private const PREFIX_BYTE_USER     = 20 << 3;
