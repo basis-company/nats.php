@@ -198,7 +198,7 @@ $goodbyer
 use Basis\Nats\Consumer\Configuration as ConsumerConfiguration;
 use Basis\Nats\Consumer\DeliverPolicy;
 
-$configuration = (new ConsumerConfiguration($stream->getName(), ''))
+$configuration = (new ConsumerConfiguration($stream->getName()))
     ->setDeliverPolicy(DeliverPolicy::NEW)
     ->setSubjectFilter('mailer.greet');
     

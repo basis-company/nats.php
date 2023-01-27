@@ -24,7 +24,7 @@ class Consumer
 
     public function create($ifNotExists = true): self
     {
-        if (!$this->exists()) {
+        if ($this->shouldCreateConsumer($ifNotExists)) {
             $command = $this->configuration->isEphemeral() ?
                 'CONSUMER.CREATE.' . $this->getStream() :
                 'CONSUMER.DURABLE.CREATE.' . $this->getStream() . '.' . $this->getName();
@@ -190,5 +190,11 @@ class Consumer
         $this->iterations = $iterations;
 
         return $this;
+    }
+
+    private function shouldCreateConsumer(bool $ifNotExists): bool
+    {
+        return ($this->configuration->isEphemeral() && $this->configuration->getName() === null)
+            || !$this->exists();
     }
 }

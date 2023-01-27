@@ -26,7 +26,7 @@ class Configuration
 
     public function __construct(
         private readonly string $stream,
-        private string $name
+        private ?string $name = null
     ) {
     }
 
@@ -35,7 +35,7 @@ class Configuration
         return $this->ackPolicy;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -185,7 +185,7 @@ class Configuration
             'deliver_policy' => $this->getDeliverPolicy(),
             'deliver_subject' => $this->getDeliverSubject(),
             'description' => $this->getDescription(),
-            'durable_name' => $this->isEphemeral() ?  null : $this->getName(),
+            'durable_name' => $this->isEphemeral() ? null : $this->getName(),
             'flow_control' => $this->getFlowControl(),
             'headers_only' => $this->getHeadersOnly(),
             'idle_heartbeat' => $this->getIdleHeartbeat(),
