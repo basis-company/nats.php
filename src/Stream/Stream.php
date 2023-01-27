@@ -52,6 +52,15 @@ class Stream
         return $this->configuration;
     }
 
+    public function createEphemeralConsumer(ConsumerConfiguration $configuration): Consumer
+    {
+        $consumer = new Consumer($this->client, $configuration->ephemeral());
+        $consumer->create();
+
+        $this->consumers[$consumer->getName()] = $consumer;
+        return $consumer;
+    }
+
     public function getConsumer(string $name): Consumer
     {
         if (!array_key_exists($name, $this->consumers)) {

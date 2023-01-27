@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Functional;
 
+use Basis\Nats\Consumer\Configuration;
 use Basis\Nats\Message\Payload;
 use Basis\Nats\Stream\RetentionPolicy;
 use Basis\Nats\Stream\StorageBackend;
@@ -224,6 +225,70 @@ class StreamTest extends FunctionalTestCase
         $consumer->handle($this->persistMessage(...));
 
         $this->assertNull($this->called);
+    }
+
+    public function testEphemeralConsumer()
+    {
+        $api = $this->getClient()
+            ->skipInvalidMessages(true)
+            ->getApi();
+
+        $this->assertSame($api->getInfo()->streams, 0);
+
+        $stream = $api->getStream('my_stream');
+
+        $stream->getConfiguration()
+            ->setRetentionPolicy(RetentionPolicy::WORK_QUEUE)
+            ->setSubjects(['tester.greet', 'tester.bye']);
+
+        $stream->create();
+
+        $this->called = null;
+
+        $configuration = new Configuration('my_stream', '');
+        $configuration->setSubjectFilter('tester.greet');
+        $consumer1 = $stream->createEphemeralConsumer($configuration);
+        $this->assertNull($this->called);
+        $consumer1->setIterations(1);
+        $consumer1->handle($this->persistMessage(...));
+
+        $this->assertNull($this->called);
+        $stream->put('tester.greet', [ 'name' => 'oxidmod' ]);
+        $consumer1->setIterations(1)->setExpires(1);
+        $consumer1->handle($this->persistMessage(...));
+
+        $this->assertNotNull($this->called);
+        $this->assertSame($this->called->name, 'oxidmod');
+
+        $this->called = null;
+        $configuration = new Configuration('my_stream', '');
+        $configuration->setSubjectFilter('tester.bye')->setAckPolicy('explicit');
+        $consumer2 = $stream->createEphemeralConsumer($configuration);
+
+        $stream->put('tester.greet', [ 'name' => 'oxidmod' ]);
+        $consumer2->setIterations(1)->setDelay(0);
+        $consumer2->handle($this->persistMessage(...));
+
+        $this->assertNull($this->called);
+
+        $this->assertCount(2, $stream->getConsumerNames());
+
+        $this->client = null;
+
+        # consumers removing process takes some time
+        for ($i = 1; $i <= 30; $i++) {
+            sleep(1);
+
+            $stream = $this->getClient()->getApi()->getStream('my_stream');
+            if (count($stream->getConsumerNames()) === 0) {
+                break;
+            }
+
+            $this->client = null;
+        }
+
+        $stream = $this->getClient()->getApi()->getStream('my_stream');
+        $this->assertCount(0, $stream->getConsumerNames());
     }
 
     public function persistMessage(Payload $message)
