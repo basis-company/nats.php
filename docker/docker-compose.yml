@@ -37,7 +37,7 @@ services:
       - ./scripts:/app:ro
       - ./credentials:/credentials
     working_dir: /app
-    command: generate-credentials.sh
+    command: sh generate-credentials.sh
   certs-generator:
     image: goodeggs/mkcert
     entrypoint: /bin/bash
