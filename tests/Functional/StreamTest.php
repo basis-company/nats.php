@@ -14,6 +14,8 @@ class StreamTest extends FunctionalTestCase
 {
     private mixed $called;
 
+    private bool $empty;
+
     public function testDeduplication()
     {
         $stream = $this->getClient()->getApi()->getStream('tester');
@@ -213,6 +215,7 @@ class StreamTest extends FunctionalTestCase
 
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->name, 'nekufa');
+        $this->assertNotNull($this->called->timestampNanos);
 
         $this->called = null;
         $consumer = $stream->getConsumer('bye');
