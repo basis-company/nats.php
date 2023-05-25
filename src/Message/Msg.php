@@ -14,6 +14,7 @@ class Msg extends Prototype
     public Payload $payload;
     public string $sid;
     public string $subject;
+    public ?int $timestampNanos = null;
 
     public static function create(string $data): self
     {
@@ -52,6 +53,8 @@ class Msg extends Prototype
             }
         }
 
+        $values = self::tryParseMessageTime($values);
+
         return new self($values);
     }
 
@@ -87,12 +90,47 @@ class Msg extends Prototype
             }
             $payload = substr($payload, $this->hlength);
         }
-        $this->payload = new Payload($payload, $headers, $this->subject);
+        $this->payload = new Payload(
+            $payload,
+            $headers,
+            $this->subject,
+            $this->timestampNanos
+        );
+
         return $this;
     }
 
     public function render(): string
     {
         return 'MSG ' . json_encode($this);
+    }
+
+    private static function tryParseMessageTime(array $values): array
+    {
+        if (!array_key_exists('replyTo', $values)
+            || !str_starts_with($values['replyTo'], '$JS.ACK')
+        ) {
+            # This is not a JetStream message
+            return $values;
+        }
+
+        # old format
+        # "$JS.ACK.<stream>.<consumer>.<redeliveryCount><streamSeq><deliverySequence>.<timestamp>.<pending>"
+        # new format
+        # $JS.ACK.<domain>.<accounthash>.<stream>.<consumer>.<redeliveryCount>.<streamSeq>.<deliverySequence>.<timestamp>.<pending>.<random>
+        $tokens = explode('.', $values['replyTo']);
+        if (count($tokens) === 9) {
+            # if it is an old format we will add two missing items to process tokens in the same way
+            array_splice($tokens, 2, 0, ['', '']);
+        }
+
+        if (count($tokens) < 11) {
+            # Looks like invalid format was given
+            return $values;
+        }
+
+        $values['timestampNanos'] = (int)$tokens[9];
+
+        return $values;
     }
 }

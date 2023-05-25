@@ -24,7 +24,8 @@ class Payload
     public function __construct(
         public string $body,
         public array $headers = [],
-        public ?string $subject = null
+        public ?string $subject = null,
+        public ?int $timestampNanos = null
     ) {
         $hdrs = $this->getValue('message.hdrs');
         if ($hdrs) {
