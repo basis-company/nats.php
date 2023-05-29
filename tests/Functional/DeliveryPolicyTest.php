@@ -36,7 +36,7 @@ class DeliveryPolicyTest extends FunctionalTestCase
             ->setExpires(1.0);
         $consumer->getConfiguration()
             ->setDeliverPolicy(DeliverPolicy::BY_START_SEQUENCE)
-            ->setOptStartSeq(2);
+            ->setStartSequence(2);
         $consumer->create();
 
         $handled = false;
@@ -74,7 +74,7 @@ class DeliveryPolicyTest extends FunctionalTestCase
             ->setExpires(1.0);
         $consumer->getConfiguration()
             ->setDeliverPolicy(DeliverPolicy::BY_START_TIME)
-            ->setOptStartTime($time);
+            ->setStartTime($time);
         $consumer->create();
 
         $handled = false;
