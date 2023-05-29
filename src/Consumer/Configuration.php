@@ -18,8 +18,8 @@ class Configuration
     private ?int $maxAckPending = null;
     private ?int $maxDeliver = null;
     private ?int $maxWaiting = null;
-    private ?int $optStartSeq = null;
-    private ?DateTimeInterface $optStartTime = null;
+    private ?int $startSequence = null;
+    private ?DateTimeInterface $startTime = null;
     private ?string $deliverGroup = null;
     private ?string $deliverSubject = null;
     private ?string $description = null;
@@ -109,14 +109,14 @@ class Configuration
         return $this->maxWaiting;
     }
 
-    public function getOptStartSeq()
+    public function getStartSequence()
     {
-        return $this->optStartSeq;
+        return $this->startSequence;
     }
 
-    public function getOptStartTime()
+    public function getStartTime()
     {
-        return $this->optStartTime;
+        return $this->startTime;
     }
 
     public function getReplayPolicy()
@@ -168,15 +168,15 @@ class Configuration
         return $this;
     }
 
-    public function setOptStartSeq(int $startSeq): self
+    public function setStartSequence(int $startSeq): self
     {
-        $this->optStartSeq = $startSeq;
+        $this->startSequence = $startSeq;
         return $this;
     }
 
-    public function setOptStartTime(DateTimeInterface $startTime): self
+    public function setStartTime(DateTimeInterface $startTime): self
     {
-        $this->optStartTime = $startTime;
+        $this->startTime = $startTime;
         return $this;
     }
 
@@ -213,11 +213,11 @@ class Configuration
 
         switch ($this->getDeliverPolicy()) {
             case DeliverPolicy::BY_START_SEQUENCE:
-                $config['opt_start_seq'] = $this->getOptStartSeq();
+                $config['opt_start_seq'] = $this->getStartSequence();
                 break;
 
             case DeliverPolicy::BY_START_TIME:
-                $config['opt_start_time'] = $this->getOptStartTime()?->format(self::OPT_START_TIME_FORMAT);
+                $config['opt_start_time'] = $this->getStartTime()?->format(self::OPT_START_TIME_FORMAT);
                 break;
         }
 
