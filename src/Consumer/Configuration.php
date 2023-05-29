@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Basis\Nats\Consumer;
 
+use DateTimeInterface;
+
 class Configuration
 {
+    private const OPT_START_TIME_FORMAT = 'Y-m-d\TH:i:s.uP'; # ISO8601 with microseconds
+
     private bool $ephemeral = false;
     private ?bool $flowControl = null;
     private ?bool $headersOnly = null;
@@ -15,7 +19,7 @@ class Configuration
     private ?int $maxDeliver = null;
     private ?int $maxWaiting = null;
     private ?int $optStartSeq = null;
-    private ?int $optStartTime = null;
+    private ?DateTimeInterface $optStartTime = null;
     private ?string $deliverGroup = null;
     private ?string $deliverSubject = null;
     private ?string $description = null;
@@ -164,6 +168,18 @@ class Configuration
         return $this;
     }
 
+    public function setOptStartSeq(int $startSeq): self
+    {
+        $this->optStartSeq = $startSeq;
+        return $this;
+    }
+
+    public function setOptStartTime(DateTimeInterface $startTime): self
+    {
+        $this->optStartTime = $startTime;
+        return $this;
+    }
+
     public function setReplayPolicy(string $replayPolicy): self
     {
         $this->replayPolicy = ReplayPolicy::validate($replayPolicy);
@@ -201,7 +217,7 @@ class Configuration
                 break;
 
             case DeliverPolicy::BY_START_TIME:
-                $config['opt_start_time'] = $this->getOptStartTime();
+                $config['opt_start_time'] = $this->getOptStartTime()?->format(self::OPT_START_TIME_FORMAT);
                 break;
         }
 
