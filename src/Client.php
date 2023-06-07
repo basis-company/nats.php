@@ -299,7 +299,7 @@ class Client
                 if ($message->length) {
                     $iteration = 0;
                     while (strlen($payload) < $message->length) {
-                        $line = $this->readLine($message->length, checkTimeout: false);
+                        $line = $this->readLine($message->length, '', false);
                         if (!$line) {
                             if ($iteration > 16) {
                                 $exception = new LogicException("No payload for message $message->sid");
