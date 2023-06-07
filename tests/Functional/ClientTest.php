@@ -15,6 +15,19 @@ class ClientTest extends FunctionalTestCase
         $this->assertTrue($this->createClient()->ping());
     }
 
+    public function testConnectionTimeout(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Socket read timeout');
+
+        $client = $this->createClient([
+            'reconnect' => false,
+        ]);
+        $this->assertTrue($client->ping());
+
+        $client->process(1);
+    }
+
     public function testReconnect()
     {
         $client = $this->getClient();

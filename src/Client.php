@@ -34,6 +34,7 @@ class Client
     private array $handlers = [];
     private float $ping = 0;
     private float $pong = 0;
+    private ?float $lastDataReadFailureAt = null;
     private string $name = '';
     private array $subscriptions = [];
 
@@ -229,20 +230,22 @@ class Client
      */
     public function process(null|int|float $timeout = 0)
     {
+        $this->lastDataReadFailureAt = null;
         $max = microtime(true) + $timeout;
         $ping = time() + $this->configuration->pingInterval;
 
         $iteration = 0;
         while (true) {
             try {
-                $line = stream_get_line($this->socket, 1024, "\r\n");
+                $line = $this->readLine(1024, "\r\n");
+
                 if ($line && ($this->ping || trim($line) != 'PONG')) {
                     break;
                 }
                 if ($line === false && $ping < time()) {
                     try {
                         $this->send(new Ping([]));
-                        $line = stream_get_line($this->socket, 1024, "\r\n");
+                        $line = $this->readLine(1024, "\r\n");
                         $ping = time() + $this->configuration->pingInterval;
                         if ($line && ($this->ping || trim($line) != 'PONG')) {
                             break;
@@ -296,7 +299,7 @@ class Client
                 if ($message->length) {
                     $iteration = 0;
                     while (strlen($payload) < $message->length) {
-                        $line = stream_get_line($this->socket, $message->length);
+                        $line = $this->readLine($message->length, checkTimeout: false);
                         if (!$line) {
                             if ($iteration > 16) {
                                 $exception = new LogicException("No payload for message $message->sid");
@@ -478,5 +481,24 @@ class Client
     {
         $this->skipInvalidMessages = $skipInvalidMessages;
         return $this;
+    }
+
+    private function readLine(int $length, string $ending = '', bool $checkTimeout = true): string|bool
+    {
+        $line = stream_get_line($this->socket, $length, $ending);
+        if ($line || !$checkTimeout) {
+            $this->lastDataReadFailureAt = null;
+            return $line;
+        }
+
+        $now = microtime(true);
+        $this->lastDataReadFailureAt = $this->lastDataReadFailureAt ?? $now;
+        $timeWithoutDataRead = $now - $this->lastDataReadFailureAt;
+
+        if ($timeWithoutDataRead > $this->configuration->timeout) {
+            throw new LogicException('Socket read timeout');
+        }
+
+        return false;
     }
 }
