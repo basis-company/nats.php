@@ -299,8 +299,8 @@ class Client
                 if ($message->length) {
                     $iteration = 0;
                     while (strlen($payload) < $message->length) {
-                        $line = $this->readLine($message->length, '', false);
-                        if (!$line) {
+                        $payloadLine = $this->readLine($message->length, '', false);
+                        if (!$payloadLine) {
                             if ($iteration > 16) {
                                 $exception = new LogicException("No payload for message $message->sid");
                                 $this->processSocketException($exception);
@@ -309,10 +309,10 @@ class Client
                             $this->configuration->delay($iteration++);
                             continue;
                         }
-                        if (strlen($line) != $message->length) {
-                            $this->logger?->debug('got ' . strlen($line) . '/' . $message->length . ': ' . $line);
+                        if (strlen($payloadLine) != $message->length) {
+                            $this->logger?->debug('got ' . strlen($payloadLine) . '/' . $message->length . ': ' . $payloadLine);
                         }
-                        $payload .= $line;
+                        $payload .= $payloadLine;
                     }
                 }
                 $message->parse($payload);
