@@ -271,7 +271,12 @@ class Client
         switch (trim($line)) {
             case 'PING':
                 $this->logger?->debug('receive ' . $line);
-                return $this->send(new Pong([]));
+                $this->send(new Pong([]));
+                $now = microtime(true);
+                if ($now >= $max) {
+                    return null;
+                }
+                return $this->process($max - $now);
 
             case 'PONG':
                 $this->logger?->debug('receive ' . $line);

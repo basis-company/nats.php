@@ -144,7 +144,7 @@ class Consumer
                 break;
             }
 
-            if ($iteration && $runtime->empty) {
+            if ($iteration && $runtime->empty && !$expires) {
                 usleep((int) floor($this->getDelay() * 1_000_000));
             }
         }
