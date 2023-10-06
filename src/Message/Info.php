@@ -33,6 +33,7 @@ class Info extends Prototype
     /** @var string[]|null  */
     public ?array $ws_connect_urls;
     public ?bool $ldm;
+    public ?string $xkey;
 
     public function render(): string
     {
