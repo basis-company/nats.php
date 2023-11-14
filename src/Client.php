@@ -228,7 +228,7 @@ class Client
     /**
      * @throws Throwable
      */
-    public function process(null|int|float $timeout = 0)
+    public function process(null|int|float $timeout = 0, bool $ack = true)
     {
         $this->lastDataReadFailureAt = null;
         $max = microtime(true) + $timeout;
@@ -328,8 +328,8 @@ class Client
                     }
                     throw new LogicException("No handler for message $message->sid");
                 }
-                $result = $this->handlers[$message->sid]($message->payload);
-                if ($message->replyTo) {
+                $result = $this->handlers[$message->sid]($message->payload, $message->replyTo);
+                if ($ack && $message->replyTo) {
                     $this->send(new Publish([
                         'subject' => $message->replyTo,
                         'payload' => Payload::parse($result),
