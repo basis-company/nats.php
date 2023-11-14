@@ -93,7 +93,7 @@ class Consumer
         return $this->iterations;
     }
 
-    public function handle(Closure $handler, Closure $emptyHandler = null): int
+    public function handle(Closure $handler, Closure $emptyHandler = null, bool $ack = true): int
     {
         $requestSubject = '$JS.API.CONSUMER.MSG.NEXT.' . $this->getStream() . '.' . $this->getName();
         $args = [
@@ -129,7 +129,7 @@ class Consumer
             foreach (range(1, $this->batch) as $_) {
                 $runtime->empty = true;
                 // expires request means that we should receive answer from stream
-                $this->client->process($this->expires ? PHP_INT_MAX : null);
+                $this->client->process($this->expires ? PHP_INT_MAX : null, $ack);
 
                 if ($runtime->empty) {
                     if ($emptyHandler) {
