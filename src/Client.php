@@ -330,10 +330,7 @@ class Client
                 }
                 $result = $this->handlers[$message->sid]($message->payload, $message->replyTo);
                 if ($reply && $message->replyTo) {
-                    $this->send(new Publish([
-                        'subject' => $message->replyTo,
-                        'payload' => Payload::parse($result),
-                    ]));
+                    $this->publish($message->replyTo, $result);
                 }
                 break;
         }
