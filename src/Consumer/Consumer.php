@@ -114,11 +114,11 @@ class Consumer
 
         $this->create();
 
-        $this->client->subscribe($handlerSubject, function ($message) use ($handler, $runtime) {
+        $this->client->subscribe($handlerSubject, function ($message, $replyTo) use ($handler, $runtime) {
             if (!$message->isEmpty()) {
                 $runtime->empty = false;
                 $runtime->processed++;
-                $handler($message);
+                $handler($message, $replyTo);
             }
         });
 
