@@ -195,6 +195,6 @@ class Consumer
     private function shouldCreateConsumer(bool $ifNotExists): bool
     {
         return ($this->configuration->isEphemeral() && $this->configuration->getName() === null)
-            || !$this->exists();
+            || !$this->exists() || !$ifNotExists;
     }
 }
