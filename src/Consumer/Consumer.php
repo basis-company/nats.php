@@ -41,6 +41,11 @@ class Consumer
         return $this;
     }
 
+    public function update(): self
+    {
+        return $this->create(false);
+    }
+
     public function delete(): self
     {
         $this->client->api('CONSUMER.DELETE.' . $this->getStream() . '.' . $this->getName());
