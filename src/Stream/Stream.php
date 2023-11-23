@@ -7,6 +7,7 @@ namespace Basis\Nats\Stream;
 use Basis\Nats\Client;
 use Basis\Nats\Consumer\Consumer;
 use Basis\Nats\Consumer\Configuration as ConsumerConfiguration;
+use Basis\Nats\Message\Payload;
 
 class Stream
 {
@@ -88,6 +89,9 @@ class Stream
         return $this->configuration->getName();
     }
 
+    /**
+     * @return Payload
+     */
     public function info()
     {
         return $this->client->api("STREAM.INFO." . $this->getName());
