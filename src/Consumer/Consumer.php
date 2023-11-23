@@ -6,6 +6,7 @@ namespace Basis\Nats\Consumer;
 
 use Closure;
 use Basis\Nats\Client;
+use Basis\Nats\Message\Payload;
 
 class Consumer
 {
@@ -154,6 +155,9 @@ class Consumer
         return $runtime->processed;
     }
 
+    /**
+     * @return Payload
+     */
     public function info()
     {
         return $this->client->api("CONSUMER.INFO." . $this->getStream() . '.' . $this->getName());
