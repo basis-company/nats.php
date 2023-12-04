@@ -10,10 +10,29 @@ use Tests\TestCase;
 
 class SecretKeyTest extends TestCase
 {
-    public function testConstructionWithInvalidArgument()
+    private static $VALID_SECRET_KEY_HEX = "05de91c9b25408111262d7f4aa769b6d0c83e796d18cc9e1ecd16cdaf573d0876dbdcb0a7b213d6c04f55b6436afaf224ee52fba6cc9ba4da573b13ba8102012";
+    private static $VALID_VERIFYING_KEY_HEX = "6dbdcb0a7b213d6c04f55b6436afaf224ee52fba6cc9ba4da573b13ba8102012";
+    private static $VALID_PUBLIC_KEY = "UBW33SYKPMQT23AE6VNWINVPV4RE5ZJPXJWMTOSNUVZ3CO5ICAQBEIPK";
+
+    public function testConstructionWithInvalidPrivateKeyArgument()
     {
         $this->expectException(InvalidArgumentException::class);
-        new SecretKey("");
+        $this->expectExceptionMessage("Invalid secret key provided");
+        new SecretKey("", "", 0);
+    }
+
+    public function testConstructionWithInvalidVerifyingKeyArgument()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid verifying key provided");
+        new SecretKey(hex2bin(self::$VALID_SECRET_KEY_HEX), "", 0);
+    }
+
+    public function testConstructionWithInvalidPrefixArgument()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid seed prefix");
+        new SecretKey(hex2bin(self::$VALID_SECRET_KEY_HEX), hex2bin(self::$VALID_VERIFYING_KEY_HEX), 42);
     }
 
     /**
@@ -38,8 +57,7 @@ class SecretKeyTest extends TestCase
         $seed = "SUAALXURZGZFICARCJRNP5FKO2NW2DED46LNDDGJ4HWNC3G26VZ5BBZAME";
         $key = SecretKey::fromSeed($seed);
 
-        $expectedSecretKey = "05de91c9b25408111262d7f4aa769b6d0c83e796d18cc9e1ecd16cdaf573d0876dbdcb0a7b213d6c04f55b6436afaf224ee52fba6cc9ba4da573b13ba8102012";
-
-        $this->assertEquals($expectedSecretKey, bin2hex($key->value));
+        $this->assertEquals(self::$VALID_SECRET_KEY_HEX, bin2hex($key->value));
+        $this->assertEquals(self::$VALID_PUBLIC_KEY, $key->getPublicKey());
     }
 }

@@ -9,7 +9,7 @@ use InvalidArgumentException;
 /**
  * @see https://github.com/selective-php/base32
  */
-class Base32Decoder
+class Base32
 {
     /**
      * @var array<string>
@@ -87,6 +87,57 @@ class Base32Decoder
         '6' => '30',
         '7' => '31',
     ];
+
+    /**
+     * Encodes data with base32.
+     *
+     * @param string $input The original data, as a string
+     * @param bool $padding Use padding false when encoding for urls
+     *
+     * @return string The Base32 encoded string
+     */
+    public function encode(string $input, bool $padding = true): string
+    {
+        if ($input === '') {
+            return '';
+        }
+
+        $input = str_split($input);
+        $binaryString = '';
+
+        $inputCount = count($input);
+        for ($i = 0; $i < $inputCount; $i++) {
+            $binaryString .= str_pad(base_convert((string) ord($input[$i]), 10, 2), 8, '0', STR_PAD_LEFT);
+        }
+
+        $fiveBitBinaryArray = str_split($binaryString, 5);
+        $base32 = '';
+        $i = 0;
+        $fiveCount = count($fiveBitBinaryArray);
+
+        while ($i < $fiveCount) {
+            $base32 .= self::MAP[base_convert(str_pad($fiveBitBinaryArray[$i], 5, '0'), 2, 10)];
+            $i++;
+        }
+
+        $x = strlen($binaryString) % 40;
+        if ($padding && $x !== 0) {
+            if ($x === 8) {
+                return $base32 . str_repeat(self::MAP[32], 6);
+            }
+            if ($x === 16) {
+                return $base32 . str_repeat(self::MAP[32], 4);
+            }
+            if ($x === 24) {
+                return $base32 . str_repeat(self::MAP[32], 3);
+            }
+            if ($x === 32) {
+                return $base32 . self::MAP[32];
+            }
+        }
+
+        return $base32;
+    }
 
     /**
      * Decodes data encoded with base32.
