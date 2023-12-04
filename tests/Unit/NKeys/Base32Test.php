@@ -4,22 +4,46 @@ declare(strict_types=1);
 
 namespace Tests\Unit\NKeys;
 
-use Basis\Nats\NKeys\Base32Decoder;
+use Basis\Nats\NKeys\Base32;
 use InvalidArgumentException;
 use Tests\TestCase;
 
-class Base32DecoderTest extends TestCase
+class Base32Test extends TestCase
 {
     /**
      * @dataProvider dataProvider
      */
     public function testDecode(string $input, string $expected)
     {
-        $decoder = new Base32Decoder();
+        $base32 = new Base32();
 
-        $result = $decoder->decode($input);
+        $result = $base32->decode($input);
 
         $this->assertEquals($expected, bin2hex($result));
+    }
+
+    /**
+     * @dataProvider dataProvider
+     */
+    public function testEncode(string $expected, string $input)
+    {
+        $base32 = new Base32();
+
+        $result = $base32->encode(hex2bin($input), false);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @dataProvider dataProvider
+     */
+    public function testEncodePadding(string $expected, string $input)
+    {
+        $base32 = new Base32();
+
+        $result = $base32->encode(hex2bin($input));
+
+        $this->assertEquals($expected . '======', $result);
     }
 
     /**
@@ -27,10 +51,10 @@ class Base32DecoderTest extends TestCase
      */
     public function testDecodeInvalid($input)
     {
-        $decoder = new Base32Decoder();
+        $base32 = new Base32();
 
         $this->expectException(InvalidArgumentException::class);
-        $decoder->decode($input);
+        $base32->decode($input);
     }
 
     public function invalidInputProvider(): array
@@ -44,9 +68,9 @@ class Base32DecoderTest extends TestCase
 
     public function testDecodeEmpty()
     {
-        $decoder = new Base32Decoder();
+        $base32 = new Base32();
 
-        $this->assertEquals("", $decoder->decode(""));
+        $this->assertEquals("", $base32->decode(""));
     }
 
     public function dataProvider(): array

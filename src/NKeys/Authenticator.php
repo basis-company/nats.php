@@ -18,4 +18,9 @@ class Authenticator extends AuthenticatorInterface
 
         return base64_encode($signature);
     }
+
+    public function getPublicKey(): string
+    {
+        return $this->key->getPublicKey();
+    }
 }
