@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Functional\KeyValue;
 
+use Basis\Nats\KeyValue\Entry;
 use Tests\FunctionalTestCase;
 
 class BucketTest extends FunctionalTestCase
@@ -52,5 +53,67 @@ class BucketTest extends FunctionalTestCase
         ]));
 
         $this->assertCount(1, json_decode($bucket->get('service_handlers')));
+    }
+
+    public function testGetAll()
+    {
+        $bucket = $this->createClient()
+            ->getApi()
+            ->getBucket('test_bucket');
+
+        $this->assertSame(0, $bucket->getStatus()->values);
+
+        $kv_pairs = [
+            'KEY1' => 'value1',
+            'KEY2' => 'value2',
+            'KEY3' => 'value3',
+        ];
+
+        foreach ($kv_pairs as $key => $value) {
+            $bucket->put($key, $value);
+        }
+
+        $this->assertSame(count($kv_pairs), $bucket->getStatus()->values);
+        $actual_entries = $this->entriesAsAssocArray($bucket->getAll());
+        $this->assertEquals($kv_pairs, $actual_entries);
+    }
+
+    public function testGetAllAfterPurge()
+    {
+        $bucket = $this->createClient()
+            ->getApi()
+            ->getBucket('test_bucket');
+
+        $this->assertSame(0, $bucket->getStatus()->values);
+
+        $bucket->put('KEY1', 'value1');
+        $bucket->purge('KEY1');
+
+        $kv_pairs = [
+            'KEY2' => 'value2',
+            'KEY3' => 'value3',
+        ];
+
+        foreach ($kv_pairs as $key => $value) {
+            $bucket->put($key, $value);
+        }
+
+        $actual_entries = $this->entriesAsAssocArray($bucket->getAll());
+        $this->assertEquals($kv_pairs, $actual_entries);
+    }
+
+    /**
+     * @param Entry[] $entries
+     * @return array<string, string>
+     */
+    private function entriesAsAssocArray(array $entries): array
+    {
+        $assoc = [];
+
+        foreach ($entries as $entry) {
+            $assoc[$entry->key] = $entry->value;
+        }
+
+        return $assoc;
     }
 }

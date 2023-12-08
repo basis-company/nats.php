@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Basis\Nats\Consumer;
 
+use Basis\Nats\Message\Payload;
 use Closure;
 use Basis\Nats\Client;
 
@@ -115,10 +116,21 @@ class Consumer
         $this->create();
 
         $this->client->subscribe($handlerSubject, function ($message, $replyTo) use ($handler, $runtime) {
-            if (!$message->isEmpty()) {
+            if (!($message instanceof Payload)) {
+                return;
+            }
+
+            $kv_operation = $message->getHeader('KV-Operation');
+
+            // Consuming deleted or purged messages must not stop processing messages as more
+            // messages might arrive after this.
+            if (!$message->isEmpty() || $kv_operation === 'DEL' || $kv_operation === 'PURGE') {
                 $runtime->empty = false;
                 $runtime->processed++;
-                $handler($message, $replyTo);
+
+                if (!$message->isEmpty()) {
+                    $handler($message, $replyTo);
+                }
             }
         });
 
