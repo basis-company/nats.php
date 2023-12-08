@@ -28,13 +28,13 @@ class BucketTest extends FunctionalTestCase
 
         $bucket->update('username', 'bazyaba', $bucket->getEntry('username')->revision);
         $this->assertSame($bucket->get('username'), 'bazyaba');
-        $this->assertSame(2, $bucket->getStatus()->values);
+        $this->assertSame(1, $bucket->getStatus()->values);
 
         $bucket->delete('username');
 
         // username null value in history
         $this->assertSame($bucket->get('username'), null);
-        $this->assertSame(3, $bucket->getStatus()->values);
+        $this->assertSame(1, $bucket->getStatus()->values);
 
         // purge key logs
         $bucket->purge('username');

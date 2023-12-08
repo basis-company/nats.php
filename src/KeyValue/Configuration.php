@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Basis\Nats\KeyValue;
 
 use Basis\Nats\Stream\Configuration as StreamConfiguration;
+use Basis\Nats\Stream\DiscardPolicy;
 
 class Configuration
 {
@@ -22,11 +23,12 @@ class Configuration
     {
         $configuration
             ->setAllowRollupHeaders(true)
+            ->setDiscardPolicy(DiscardPolicy::NEW)
             ->setDenyDelete(false)
             ->setMaxAge($this->getTtl() ?? 0)
             ->setMaxBytes($this->getMaxBytes())
             ->setMaxMessageSize($this->getMaxValueSize())
-            ->setMaxMessagesPerSubject($this->getHistory())
+            ->setMaxMessagesPerSubject($this->getHistory() ?? 1)
             ->setReplicas($this->getReplicas() ?? 1)
             ->setSubjects([strtoupper("\$kv.$this->name.*")]);
 
