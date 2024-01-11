@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Functional;
 
 use Basis\Nats\Consumer\Configuration;
+use Basis\Nats\Consumer\Consumer;
 use Basis\Nats\Message\Payload;
 use Basis\Nats\Stream\RetentionPolicy;
 use Basis\Nats\Stream\StorageBackend;
@@ -41,18 +42,18 @@ class StreamTest extends FunctionalTestCase
             ->create();
 
         $this->called = null;
-        $this->assertSame(1, $consumer->info()->num_pending);
+        $this->assertWrongNumPending($consumer, 1);
 
         $consumer->handle($this->persistMessage(...));
 
         $this->assertNotNull($this->called);
 
-        $this->assertSame(0, $consumer->info()->num_pending);
+        $this->assertWrongNumPending($consumer);
 
         $stream->put('tester', new Payload("hello", [
             'Nats-Msg-Id' => 'the-message'
         ]));
-        $this->assertSame(0, $consumer->info()->num_pending);
+        $this->assertWrongNumPending($consumer);
 
         // 500ms sleep
         usleep(500 * 1_000);
@@ -60,20 +61,20 @@ class StreamTest extends FunctionalTestCase
         $stream->put('tester', new Payload("hello", [
             'Nats-Msg-Id' => 'the-message'
         ]));
-        $this->assertSame(1, $consumer->info()->num_pending);
+        $this->assertWrongNumPending($consumer, 1);
 
         usleep(500 * 1_000);
 
         $stream->put('tester', new Payload("hello", [
             'Nats-Msg-Id' => 'the-message'
         ]));
-        $this->assertSame(2, $consumer->info()->num_pending);
+        $this->assertWrongNumPending($consumer, 2);
 
         $consumer->handle(function ($msg) {
             $this->assertSame($msg->getHeader('Nats-Msg-Id'), 'the-message');
         });
 
-        $this->assertSame(1, $consumer->info()->num_pending);
+        $this->assertWrongNumPending($consumer, 1);
     }
 
     public function testInterrupt()
@@ -86,27 +87,28 @@ class StreamTest extends FunctionalTestCase
         $consumer->getConfiguration()->setSubjectFilter('cucumber')->setMaxAckPending(2);
         $consumer->setDelay(0)->create();
 
+        $this->assertSame(2, $consumer->info()->getValue('config.max_ack_pending'));
+
         $this->getClient()->publish('cucumber', 'message1');
         $this->getClient()->publish('cucumber', 'message2');
         $this->getClient()->publish('cucumber', 'message3');
         $this->getClient()->publish('cucumber', 'message4');
 
-        $this->assertSame(4, $consumer->info()->getValue('num_pending'));
-        $this->assertSame(2, $consumer->info()->getValue('config.max_ack_pending'));
+        $this->assertWrongNumPending($consumer, 4);
 
         $consumer->setBatching(1)->setIterations(2)
             ->handle(function ($response) use ($consumer) {
                 $consumer->interrupt();
             });
 
-        $this->assertSame(3, $consumer->info()->getValue('num_pending'));
+        $this->assertWrongNumPending($consumer, 3);
 
         $consumer->setBatching(2)->setIterations(1)
             ->handle(function ($response) use ($consumer) {
                 $consumer->interrupt();
             });
 
-        $this->assertSame(1, $consumer->info()->getValue('num_pending'));
+        $this->assertWrongNumPending($consumer, 1);
     }
 
     public function testNoMessages()
@@ -348,5 +350,20 @@ class StreamTest extends FunctionalTestCase
         // no more messages
         $consumer->setIterations(1);
         $this->assertSame(0, $consumer->handle($this->persistMessage(...)));
+    }
+
+    private function assertWrongNumPending(Consumer $consumer, ?int $expected = null, int $loops = 100): void
+    {
+        for ($i = 1; $i <= $loops; $i++) {
+            $actual =  $consumer->info()->getValue('num_pending');
+
+            if ($actual === $expected) {
+                break;
+            }
+
+            if ($i == $loops) {
+                $this->assertSame($expected, $actual);
+            }
+        }
     }
 }
