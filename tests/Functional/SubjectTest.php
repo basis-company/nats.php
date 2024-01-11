@@ -11,6 +11,7 @@ use Tests\FunctionalTestCase;
 
 class SubjectTest extends FunctionalTestCase
 {
+    private int $responseCounter = 0;
     public function testPublishSubscribe()
     {
         $this->tested = false;
