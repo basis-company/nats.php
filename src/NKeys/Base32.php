@@ -158,8 +158,9 @@ class Base32
         }
 
         for ($i = 0; $i < 4; $i++) {
-            if ($paddingCharCount === $allowedValues[$i] &&
-                substr($input, -($allowedValues[$i])) !== str_repeat(self::MAP[32], $allowedValues[$i])
+            if (
+                $paddingCharCount === $allowedValues[$i]
+                && substr($input, -($allowedValues[$i])) !== str_repeat(self::MAP[32], $allowedValues[$i])
             ) {
                 throw new InvalidArgumentException('Invalid base32 data');
             }
@@ -227,7 +228,7 @@ class Base32
         $binaryString = '';
 
         for ($z = 0; $z < $bitCount; $z++) {
-            $binaryString .= (($y = chr((int)base_convert($eightBits[$z], 2, 10))) || ord($y) === 48) ? $y : '';
+            $binaryString .= (($y = chr((int) base_convert($eightBits[$z], 2, 10))) || ord($y) === 48) ? $y : '';
         }
 
         return $binaryString;

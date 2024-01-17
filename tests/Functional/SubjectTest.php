@@ -11,7 +11,10 @@ use Tests\FunctionalTestCase;
 
 class SubjectTest extends FunctionalTestCase
 {
+    private bool $tested = false;
     private int $responseCounter = 0;
+    private $socket;
+
     public function testPublishSubscribe()
     {
         $this->tested = false;
@@ -91,13 +94,13 @@ class SubjectTest extends FunctionalTestCase
         $client = $this->createClient();
 
         //subscriptions should be empty to begin with
-        $this->assertEquals(0, sizeof($refSubscriptions->getValue($client)));
+        $this->assertEquals(0, count($refSubscriptions->getValue($client)));
 
         $client->subscribe('hello.request', $this->greet(...));
         $this->responseCounter = 0;
 
         //Adding one subscription for hello.request
-        $this->assertEquals(1, sizeof($refSubscriptions->getValue($client)));
+        $this->assertEquals(1, count($refSubscriptions->getValue($client)));
 
         $client->request('hello.request', 'Nekufa1', function ($response) use ($client) {
             $this->assertEquals($response->body, 'Hello, Nekufa1');
@@ -105,7 +108,7 @@ class SubjectTest extends FunctionalTestCase
         });
 
         //Added second subscription for reply message
-        $this->assertEquals(2, sizeof($refSubscriptions->getValue($client)));
+        $this->assertEquals(2, count($refSubscriptions->getValue($client)));
         $this->assertStringStartsWith('_INBOX.', $refSubscriptions->getValue($client)[1]['name']);
 
         // processing requests
@@ -118,7 +121,7 @@ class SubjectTest extends FunctionalTestCase
         $this->assertEquals(1, $this->responseCounter);
 
         //back down to one subscription when reply is received
-        $this->assertEquals(1, sizeof($refSubscriptions->getValue($client)));
+        $this->assertEquals(1, count($refSubscriptions->getValue($client)));
     }
 
     public function testRequestWithCustomReplyTo()
@@ -133,14 +136,14 @@ class SubjectTest extends FunctionalTestCase
         $client->subscribe('hello.request', $this->greet(...));
         $this->responseCounter = 0;
 
-        $this->assertEquals(1, sizeof($property->getValue($client)));
+        $this->assertEquals(1, count($property->getValue($client)));
 
         $client->request('hello.request', 'Nekufa1', function ($response) use ($client) {
             $this->assertEquals($response->body, 'Hello, Nekufa1');
             $this->responseCounter++;
         });
 
-        $this->assertEquals(2, sizeof($property->getValue($client)));
+        $this->assertEquals(2, count($property->getValue($client)));
         $this->assertStringStartsWith('_MY_CUSTOM_PREFIX.', $property->getValue($client)[1]['name']);
 
         // processing requests
@@ -152,7 +155,7 @@ class SubjectTest extends FunctionalTestCase
 
         $this->assertEquals(1, $this->responseCounter);
 
-        $this->assertEquals(1, sizeof($property->getValue($client)));
+        $this->assertEquals(1, count($property->getValue($client)));
     }
 
     public function testUnsubscribe()

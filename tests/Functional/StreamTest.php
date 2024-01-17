@@ -355,7 +355,7 @@ class StreamTest extends FunctionalTestCase
     private function assertWrongNumPending(Consumer $consumer, ?int $expected = null, int $loops = 100): void
     {
         for ($i = 1; $i <= $loops; $i++) {
-            $actual =  $consumer->info()->getValue('num_pending');
+            $actual = $consumer->info()->getValue('num_pending');
 
             if ($actual === $expected) {
                 break;

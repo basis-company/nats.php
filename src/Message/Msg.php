@@ -107,8 +107,8 @@ class Msg extends Prototype
 
     private static function tryParseMessageTime(array $values): array
     {
-        if (!array_key_exists('replyTo', $values)
-            || !str_starts_with($values['replyTo'], '$JS.ACK')
+        if (
+            !array_key_exists('replyTo', $values) || !str_starts_with($values['replyTo'], '$JS.ACK')
         ) {
             # This is not a JetStream message
             return $values;
@@ -129,7 +129,7 @@ class Msg extends Prototype
             return $values;
         }
 
-        $values['timestampNanos'] = (int)$tokens[9];
+        $values['timestampNanos'] = (int) $tokens[9];
 
         return $values;
     }

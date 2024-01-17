@@ -302,6 +302,9 @@ class Client
 
             case Msg::class:
                 $payload = '';
+                if (!($message instanceof Msg)) {
+                    continue;
+                }
                 if ($message->length) {
                     $iteration = 0;
                     while (strlen($payload) < $message->length) {
@@ -316,7 +319,9 @@ class Client
                             continue;
                         }
                         if (strlen($payloadLine) != $message->length) {
-                            $this->logger?->debug('got ' . strlen($payloadLine) . '/' . $message->length . ': ' . $payloadLine);
+                            $this->logger?->debug(
+                                'got ' . strlen($payloadLine) . '/' . $message->length . ': ' . $payloadLine
+                            );
                         }
                         $payload .= $payloadLine;
                     }
@@ -379,11 +384,7 @@ class Client
             stream_context_set_option($this->context, 'ssl', 'cafile', $this->configuration->tlsCaFile);
         }
 
-        if (!stream_socket_enable_crypto(
-            $this->socket,
-            true,
-            STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
-        )) {
+        if (!stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT)) {
             throw new Exception('Failed to connect: Error enabling TLS');
         }
     }
