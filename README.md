@@ -248,6 +248,10 @@ $bucket->purge('username');
 
 // get bucket stats
 var_dump($bucket->getStatus());
+
+// in advance, you can fetch all bucket values
+$bucket->update('email', 'nekufa@gmail.com');
+var_dump($bucket->getAll()); // ['email' => 'nekufa@gmail.com', 'username' => 'nekufa']
 ```
 
 ## Using NKeys with JWT
