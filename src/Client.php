@@ -303,7 +303,7 @@ class Client
             case Msg::class:
                 $payload = '';
                 if (!($message instanceof Msg)) {
-                    continue;
+                    break;
                 }
                 if ($message->length) {
                     $iteration = 0;
