@@ -23,6 +23,7 @@ class Configuration
     private ?int $maxMessageSize = null;
     private ?int $maxMessagesPerSubject = null;
     private ?string $description = null;
+    private ?bool $allowDirect = null;
 
     public function __construct(
         public readonly string $name
@@ -193,6 +194,17 @@ class Configuration
         return $this;
     }
 
+    public function getAllowDirect(): ?bool
+    {
+        return $this->allowDirect;
+    }
+
+    public function setAllowDirect(?bool $allowDirect): self
+    {
+        $this->allowDirect = $allowDirect;
+        return $this;
+    }
+
     public function toArray(): array
     {
         $config = [
@@ -211,6 +223,7 @@ class Configuration
             'retention' => $this->getRetentionPolicy(),
             'storage' => $this->getStorageBackend(),
             'subjects' => $this->getSubjects(),
+            'allow_direct' => $this->getAllowDirect(),
         ];
 
         foreach ($config as $k => $v) {
