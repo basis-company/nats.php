@@ -20,6 +20,7 @@ use Psr\Log\NullLogger;
 use Revolt\EventLoop;
 
 use function Amp\Socket\socketConnector;
+use function Amp\Sync\createChannelPair;
 
 class AsyncClient extends Client
 {
@@ -95,6 +96,21 @@ class AsyncClient extends Client
     public function background(bool $enableAutoReply, int $concurrency = 10): \Closure  {
         $this->socket->switchToAsync($concurrency, fn(Prototype|null $message) => $message && $this->onMessage($message, $enableAutoReply, false));
         return $this->socket->switchToSync(...);
+    }
+
+    public function dispatch(string $name, mixed $payload, ?float $timeout = null)
+    {
+        if($timeout !== null) {
+            $timeout = new TimeoutCancellation($timeout);
+        }
+
+        [$left, $right] = createChannelPair();
+
+        $this->request($name, $payload, function ($result) use ($left) {
+            $left->send($result);
+        });
+
+        return $right->receive($timeout);
     }
 
     private function onMessage(Prototype $message, bool $reply = true, bool $async = false): Info|null {
