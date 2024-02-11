@@ -27,18 +27,18 @@ class Client
     public Info $info;
     public readonly Api $api;
 
-    private readonly ?Authenticator $authenticator;
+    protected readonly ?Authenticator $authenticator;
 
     private $socket;
     private $context;
-    private array $handlers = [];
+    protected array $handlers = [];
     private float $ping = 0;
     private float $pong = 0;
-    private ?float $lastDataReadFailureAt = null;
-    private string $name = '';
+    protected ?float $lastDataReadFailureAt = null;
+    protected string $name = '';
     private array $subscriptions = [];
 
-    private bool $skipInvalidMessages = false;
+    protected bool $skipInvalidMessages = false;
 
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
@@ -439,7 +439,7 @@ class Client
         return $this;
     }
 
-    private function send(Prototype $message): self
+    protected function send(Prototype $message): self
     {
         $this->connect();
 

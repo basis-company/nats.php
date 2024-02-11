@@ -14,6 +14,9 @@ abstract class FunctionalTestCase extends TestCase
 
     public function createClient(array ...$options): Client
     {
+        $class = $options[0]['client'] ?? Client::class;
+        unset($options[0]['client']);
+
         $configuration = $this->getConfiguration(...$options);
 
         $logger = null;
@@ -21,7 +24,7 @@ abstract class FunctionalTestCase extends TestCase
             $logger = $this->getLogger();
         }
 
-        return new Client($configuration, $logger);
+        return new $class($configuration, $logger);
     }
 
     protected ?Client $client = null;

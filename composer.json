@@ -3,7 +3,9 @@
     "description": "nats jetstream client for php",
     "keywords": ["nats", "client", "streaming", "jetstream", "queue", "messaging", "subscribe", "publish", "request", "response", "bucket", "key-value", "storage"],
     "require": {
-        "php": ">=8.1"
+        "php": ">=8.1",
+        "amphp/parser": "^1.1",
+        "amphp/socket": "^2.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -14,7 +16,9 @@
     },
     "suggest": {
         "paragonie/sodium_compat": "Provides Ed25519 for nkey authentication if sodium is not available",
-        "ext-sodium": "Provides Ed25519 for nkey authentication"
+        "ext-sodium": "Provides Ed25519 for nkey authentication",
+        "amphp/parser": "Provides async parsing of messages",
+        "amphp/socket": "Provides support for the async client"
     },
     "license": "mit",
     "autoload": {
