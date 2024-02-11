@@ -101,7 +101,7 @@ class AsyncClient extends Client
     public function dispatch(string $name, mixed $payload, ?float $timeout = null)
     {
         if($timeout !== null) {
-            $timeout = new TimeoutCancellation($timeout);
+            $timeoutCancellation = new TimeoutCancellation($timeout);
         }
 
         [$left, $right] = createChannelPair();
@@ -110,7 +110,9 @@ class AsyncClient extends Client
             $left->send($result);
         });
 
-        return $right->receive($timeout);
+        $this->process($timeout);
+
+        return $right->receive($timeoutCancellation);
     }
 
     private function onMessage(Prototype $message, bool $reply = true, bool $async = false): Info|null {
