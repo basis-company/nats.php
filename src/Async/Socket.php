@@ -70,6 +70,10 @@ class Socket
         });
     }
 
+    public function isAsync(): bool {
+        return $this->async;
+    }
+
     public function switchToSync() {
         $this->queue = $queue = new Queue();
 

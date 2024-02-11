@@ -134,6 +134,9 @@ class AsyncClient extends Client
     }
 
     public function process(null|int|float $timeout = 0, bool $reply = true, bool $async = false): Info|null {
+        if($this->socket->isAsync()) {
+            return null;
+        }
         $this->lastDataReadFailureAt = null;
         $message = $this->socket->read($timeout, $reply);
         if($message === null) {
