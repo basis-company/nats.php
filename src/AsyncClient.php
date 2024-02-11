@@ -94,6 +94,7 @@ class AsyncClient extends Client
     }
 
     public function background(bool $enableAutoReply, int $concurrency = 10): \Closure  {
+        $this->connect();
         $this->socket->switchToAsync($concurrency, fn(Prototype|null $message) => $message && $this->onMessage($message, $enableAutoReply, false));
         return $this->socket->switchToSync(...);
     }
