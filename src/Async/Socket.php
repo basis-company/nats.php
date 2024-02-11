@@ -63,8 +63,7 @@ class Socket
             foreach (
                 $this->queue->pipe()
                     ->concurrent($concurrency)
-                    ->map($this->handleLine(...))
-                    ->map($closure(...)) as $_
+                    ->map(fn($message) => $closure($this->handleLine($message))) as $_
             ) {
             }
         });
