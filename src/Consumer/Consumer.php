@@ -143,7 +143,8 @@ class Consumer
             foreach (range(1, $this->batch) as $_) {
                 $runtime->empty = true;
                 // expires request means that we should receive answer from stream
-                $this->client->process($this->expires ? PHP_INT_MAX : null, $ack);
+                // consumer timeout can be more that client connection timeout
+                $this->client->process($this->expires ? PHP_INT_MAX : null, $ack, false);
 
                 if ($runtime->empty) {
                     if ($emptyHandler) {

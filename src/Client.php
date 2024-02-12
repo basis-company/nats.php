@@ -229,7 +229,7 @@ class Client
     /**
      * @throws Throwable
      */
-    public function process(null|int|float $timeout = 0, bool $reply = true)
+    public function process(null|int|float $timeout = 0, bool $reply = true, bool $checkTimeout = true)
     {
         $this->lastDataReadFailureAt = null;
         $max = microtime(true) + $timeout;
@@ -238,7 +238,7 @@ class Client
         $iteration = 0;
         while (true) {
             try {
-                $line = $this->readLine(1024, "\r\n");
+                $line = $this->readLine(1024, "\r\n", $checkTimeout);
 
                 if ($line && ($this->ping || trim($line) != 'PONG')) {
                     break;
