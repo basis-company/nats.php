@@ -1,10 +1,13 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Basis\Nats\Async;
 
 use Amp\Pipeline\Queue;
 
-class Parser extends \Amp\Parser\Parser {
+class Parser extends \Amp\Parser\Parser
+{
     private const CRLF = "\r\n";
 
     public function __construct(Queue $queue)
@@ -12,7 +15,8 @@ class Parser extends \Amp\Parser\Parser {
         parent::__construct(self::parser($queue));
     }
 
-    private static function parser(Queue $queue): \Generator {
+    private static function parser(Queue $queue): \Generator
+    {
         while(true) {
             try {
                 $line = yield self::CRLF;

@@ -52,7 +52,8 @@ class Socket
         });
     }
 
-    public function switchToAsync(int $concurrency, \Closure $closure) {
+    public function switchToAsync(int $concurrency, \Closure $closure)
+    {
         if($this->async) {
             return ;
         }
@@ -63,17 +64,19 @@ class Socket
             foreach (
                 $this->queue->pipe()
                     ->concurrent($concurrency)
-                    ->map(fn($message) => $closure($this->handleLine($message))) as $_
+                    ->map(fn ($message) => $closure($this->handleLine($message))) as $_
             ) {
             }
         });
     }
 
-    public function isAsync(): bool {
+    public function isAsync(): bool
+    {
         return $this->async;
     }
 
-    public function switchToSync() {
+    public function switchToSync()
+    {
         $this->queue = $queue = new Queue();
 
         $this->iterator = $queue->iterate();
@@ -120,11 +123,11 @@ class Socket
             case 'PING':
                 $this->logger->debug("Receive: $line");
                 $this->write("PONG");
-                ($this->onPing ?? static fn() => null)();
+                ($this->onPing ?? static fn () => null)();
                 return null;
             case 'PONG':
                 $this->logger->debug("Receive: $line");
-                ($this->onPong ?? static fn() => null)();
+                ($this->onPong ?? static fn () => null)();
                 return null;
             case '+OK':
                 $this->logger->debug("Message acknowledged");

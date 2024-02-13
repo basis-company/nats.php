@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Basis\Nats;
@@ -86,21 +87,24 @@ class AsyncClient extends Client
         throw new \LogicException('timeout is set via configuration');
     }
 
-    public function ping():bool {
+    public function ping(): bool
+    {
         $this->send(new Ping([]));
 
         // todo: handle this result better
         return true;
     }
 
-    public function background(bool $enableAutoReply, int $concurrency = 10): \Closure  {
+    public function background(bool $enableAutoReply, int $concurrency = 10): \Closure
+    {
         $this->connect();
-        $this->socket->switchToAsync($concurrency, fn(Prototype|null $message) => $message && $this->onMessage($message, $enableAutoReply, false));
+        $this->socket->switchToAsync($concurrency, fn (Prototype|null $message) => $message && $this->onMessage($message, $enableAutoReply, false));
         return $this->socket->switchToSync(...);
     }
 
     public function dispatch(string $name, mixed $payload, ?float $timeout = null)
     {
+        $timeoutCancellation = null;
         if($timeout !== null) {
             $timeoutCancellation = new TimeoutCancellation($timeout);
         }
@@ -116,10 +120,11 @@ class AsyncClient extends Client
         return $right->receive($timeoutCancellation);
     }
 
-    private function onMessage(Prototype $message, bool $reply = true, bool $async = false): Info|null {
+    private function onMessage(Prototype $message, bool $reply = true, bool $async = false): Info|null
+    {
         switch($message::class) {
             case Info::class:
-                if(($message->tls_verify ?? false) || ($message->tls_required ?? false )) {
+                if(($message->tls_verify ?? false) || ($message->tls_required ?? false)) {
                     $this->socket->enableTls();
                 }
                 return $message;
@@ -152,7 +157,8 @@ class AsyncClient extends Client
         return null;
     }
 
-    public function process(null|int|float $timeout = 0, bool $reply = true, bool $async = false): Info|null {
+    public function process(null|int|float $timeout = 0, bool $reply = true, bool $async = false): Info|null
+    {
         if($this->socket->isAsync()) {
             return null;
         }
@@ -165,7 +171,8 @@ class AsyncClient extends Client
         return $this->onMessage($message, $reply);
     }
 
-    protected function send(Prototype $message): self {
+    protected function send(Prototype $message): self
+    {
         $this->connect();
 
         $line = $message->render() . "\r\n";
