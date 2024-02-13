@@ -7,6 +7,7 @@ namespace Basis\Nats;
 use Amp\Socket\Certificate;
 use Amp\Socket\ClientTlsContext;
 use Amp\Socket\ConnectContext;
+use Amp\Sync\Barrier;
 use Amp\TimeoutCancellation;
 use Basis\Nats\Async\Socket;
 use Basis\Nats\Message\Connect;
@@ -100,6 +101,8 @@ class AmpClient extends Client
         }
 
         $this->send($connect);
+
+        EventLoop::repeat($this->configuration->pingInterval, fn () => $this->ping());
 
         return $this;
     }
