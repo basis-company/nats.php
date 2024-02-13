@@ -12,8 +12,8 @@ class AsyncPerformanceTest extends FunctionalTestCase
 
     public function testBackgroundPerformance()
     {
-        /** @var \Basis\Nats\AsyncClient $client */
-        $client = $this->createClient(['client' => \Basis\Nats\AsyncClient::class])->setDelay(0);
+        /** @var \Basis\Nats\AmpClient $client */
+        $client = $this->createClient(['client' => \Basis\Nats\AmpClient::class])->setDelay(0);
         $client->setLogger(new \Psr\Log\NullLogger());
 
         $this->logger?->info('start performance test');
@@ -59,8 +59,8 @@ class AsyncPerformanceTest extends FunctionalTestCase
 
     public function testForegroundPerformance()
     {
-        /** @var \Basis\Nats\AsyncClient $client */
-        $client = $this->createClient(['client' => \Basis\Nats\AsyncClient::class])->setDelay(0);
+        /** @var \Basis\Nats\AmpClient $client */
+        $client = $this->createClient(['client' => \Basis\Nats\AmpClient::class])->setDelay(0);
         $client->setLogger(new \Psr\Log\NullLogger());
 
         $this->logger?->info('start performance test');
