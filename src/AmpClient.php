@@ -102,7 +102,7 @@ class AmpClient extends Client
 
         $this->send($connect);
 
-        EventLoop::repeat($this->configuration->pingInterval, fn () => $this->ping());
+        EventLoop::repeat($this->configuration->pingInterval, fn () => $this->ping() ? null : null);
 
         return $this;
     }
