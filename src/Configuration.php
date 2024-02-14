@@ -30,6 +30,12 @@ class Configuration
     public readonly ?string $tlsCertFile;
     public readonly ?string $tlsCaFile;
 
+    public readonly array $servers;
+    public readonly bool  $serversRandomize;
+    public readonly bool  $ignoreClusterUpdates;
+    public readonly int   $maxReconnectAttempts;
+    public readonly float $reconnectTimeWait;
+
     public const DELAY_CONSTANT = 'constant';
     public const DELAY_LINEAR = 'linear';
     public const DELAY_EXPONENTIAL = 'exponential';
@@ -56,6 +62,11 @@ class Configuration
         'tlsKeyFile' => null,
         'tlsCertFile' => null,
         'tlsCaFile' => null,
+        'servers' => [],
+        'serversRandomize' => true,
+        'ignoreClusterUpdates' => false,
+        'maxReconnectAttempts' => 10,
+        'reconnectTimeWait' => 0.200
     ];
 
     /**
@@ -80,6 +91,7 @@ class Configuration
             'verbose' => $this->verbose,
             'version' => $this->version,
             'headers' => true,
+            'protocol' => 1,
         ];
 
         if ($this->user !== null) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Basis\Nats;
 
+use Basis\Nats\Connection\ServerPool;
 use Basis\Nats\Message\Connect;
 use Basis\Nats\Message\Factory;
 use Basis\Nats\Message\Info;
@@ -28,6 +29,7 @@ class Client
     public readonly Api $api;
 
     private readonly ?Authenticator $authenticator;
+    private readonly ServerPool $serversManager;
 
     private $socket;
     private $context;
@@ -39,7 +41,12 @@ class Client
     private array $subscriptions = [];
 
     private bool $skipInvalidMessages = false;
+    private bool $tlsEnabled = false;
+    private int $counter = 1;
 
+    /**
+     * @throws Exception
+     */
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
         public ?LoggerInterface $logger = null,
@@ -47,6 +54,7 @@ class Client
         $this->api = new Api($this);
 
         $this->authenticator = Authenticator::create($this->configuration);
+        $this->serversManager = new ServerPool($this->configuration);
     }
 
     public function api($command, array $args = [], ?Closure $callback = null): ?object
@@ -83,12 +91,26 @@ class Client
 
         $config = $this->configuration;
 
-        $dsn = "$config->host:$config->port";
+        if ($this->serversManager->hasServers()) {
+            if ($this->serversManager->allExceededReconnectionAttempts()) {
+                throw new Exception("Connection error: maximum reconnect attempts exceeded for all servers.");
+            }
+            $dsn = $this->serversManager->nextServer()->getConnectionString();
+        } else {
+            $dsn = "$config->host:$config->port";
+        }
+
         $flags = STREAM_CLIENT_CONNECT;
         $this->context = stream_context_create();
         $this->socket = @stream_socket_client($dsn, $errorCode, $errorMessage, $config->timeout, $flags, $this->context);
 
         if ($errorCode || !$this->socket) {
+            if ($config->reconnect && $this->serversManager->hasServers()) {
+                $this->logger?->error("Error connecting to: (" . $dsn . ")");
+                $this->socket = null;
+                $this->tlsEnabled = false;
+                return $this->connect(); /** @phan-suppress-current-line PhanPossiblyInfiniteRecursionSameParams */
+            }
             throw new Exception($errorMessage ?: "Connection error", $errorCode);
         }
 
@@ -347,11 +369,15 @@ class Client
      */
     private function handleInfoMessage(Info $info): void
     {
-        if (isset($info->tls_verify) && $info->tls_verify) {
-            $this->enableTls(true);
-        } elseif (isset($info->tls_required) && $info->tls_required) {
-            $this->enableTls(false);
+        if (!$this->tlsEnabled) {
+            if (isset($info->tls_verify) && $info->tls_verify) {
+                $this->enableTls(true);
+            } elseif (isset($info->tls_required) && $info->tls_required) {
+                $this->enableTls(false);
+            }
         }
+
+        $this->serversManager->processInfoMessage($info);
     }
 
 
@@ -387,12 +413,12 @@ class Client
         if (!stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT)) {
             throw new Exception('Failed to connect: Error enabling TLS');
         }
+        $this->tlsEnabled = true;
     }
-
 
     private function doSubscribe(string $subject, ?string $group, Closure $handler): self
     {
-        $sid = bin2hex(random_bytes(4));
+        $sid = "" . $this->counter++;
 
         $this->handlers[$sid] = $handler;
 
@@ -422,6 +448,7 @@ class Client
         while (true) {
             try {
                 $this->socket = null;
+                $this->tlsEnabled = false;
                 $this->connect();
             } catch (Throwable $e) {
                 $this->configuration->delay($iteration++);
