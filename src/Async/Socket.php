@@ -89,7 +89,7 @@ class Socket
             throw $line;
         }
 
-        $payload = null;
+        $payload = '';
         if (is_array($line)) {
             [$line, $payload] = $line;
         }
@@ -112,7 +112,7 @@ class Socket
 
         try {
             $result = Factory::create($line);
-            if ($result instanceof Msg && $payload) {
+            if ($result instanceof Msg) {
                 return $result->parse($payload);
             }
             return $result;
