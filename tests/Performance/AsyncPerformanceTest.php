@@ -38,7 +38,7 @@ class AsyncPerformanceTest extends FunctionalTestCase
             'time' => $publishing,
         ]);
 
-        $stop = $client->background(true, 5);
+        $stop = $client->background(true, 50);
 
         $processing = microtime(true);
         $right->receive();
