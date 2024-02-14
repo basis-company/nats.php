@@ -61,7 +61,7 @@ class AmpClient extends Client
 
     public function connect(): Client
     {
-        if (isset($this->socket)) {
+        if (isset($this->socket) && !$this->socket->isClosed()) {
             return $this;
         }
 
