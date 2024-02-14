@@ -14,13 +14,14 @@ use Basis\Nats\Message\Prototype;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Revolt\EventLoop;
-use Symfony\Contracts\EventDispatcher\Event;
 
 class Socket
 {
     private ConcurrentIterator $iterator;
     private Queue $queue;
     private Parser $parser;
+
+    private string $pingEvent;
 
     private bool $async = false;
 
@@ -29,6 +30,7 @@ class Socket
         private readonly LoggerInterface $logger = new NullLogger(),
         private readonly \Closure|null $onPing = null,
         private readonly \Closure|null $onPong = null,
+        private readonly int $idleTimeout = 0,
     ) {
         $this->queue = $queue = new Queue();
 
@@ -50,37 +52,10 @@ class Socket
                 $socket->close();
             }
         });
-    }
 
-    public function switchToAsync(int $concurrency, \Closure $closure)
-    {
-        if($this->async) {
-            return ;
+        if ($this->idleTimeout > 0) {
+            $this->pingEvent = EventLoop::delay($this->idleTimeout, $this->ping(...));
         }
-        $this->async = true;
-        $this->queue = new Queue();
-        $this->parser = new Parser($this->queue);
-        EventLoop::queue(function () use ($closure, $concurrency) {
-            foreach (
-                $this->queue->pipe()
-                    ->concurrent($concurrency)
-                    ->map(fn ($message) => $closure($this->handleLine($message))) as $_
-            ) {
-            }
-        });
-    }
-
-    public function isAsync(): bool
-    {
-        return $this->async;
-    }
-
-    public function switchToSync()
-    {
-        $this->queue = $queue = new Queue();
-
-        $this->iterator = $queue->iterate();
-        $this->parser = new Parser($this->queue);
     }
 
     public function read(int|float|null $timeout = null, bool $reply = true): Prototype|null
@@ -114,7 +89,7 @@ class Socket
             throw $line;
         }
 
-        if(is_array($line)) {
+        if (is_array($line)) {
             [$line, $payload] = $line;
         }
 
@@ -136,7 +111,7 @@ class Socket
 
         try {
             $result = Factory::create($line);
-            if($result instanceof Msg) {
+            if ($result instanceof Msg) {
                 return $result->parse($payload);
             }
             return $result;
@@ -148,6 +123,11 @@ class Socket
 
     public function write(string $line): void
     {
+        if ($this->idleTimeout) {
+            EventLoop::cancel($this->pingEvent);
+            EventLoop::delay($this->idleTimeout, $this->ping(...));
+        }
+
         // just throw the exception to be caught by the client, which is responsible for connection logic
         $this->socket->write($line);
     }
@@ -155,6 +135,37 @@ class Socket
     public function close(): void
     {
         $this->socket->close();
+    }
+
+    public function switchToAsync(int $concurrency, \Closure $closure)
+    {
+        if ($this->async) {
+            return;
+        }
+        $this->async = true;
+        $this->queue = new Queue();
+        $this->parser = new Parser($this->queue);
+        EventLoop::queue(function () use ($closure, $concurrency) {
+            foreach (
+                $this->queue->pipe()
+                    ->concurrent($concurrency)
+                    ->map(fn ($message) => $closure($this->handleLine($message))) as $_
+            ) {
+            }
+        });
+    }
+
+    public function isAsync(): bool
+    {
+        return $this->async;
+    }
+
+    public function switchToSync()
+    {
+        $this->queue = $queue = new Queue();
+
+        $this->iterator = $queue->iterate();
+        $this->parser = new Parser($this->queue);
     }
 
     public function enableTls(): void
@@ -188,5 +199,10 @@ class Socket
     public function __destruct()
     {
         $this->socket->close();
+    }
+
+    private function ping(): void
+    {
+        $this->write('PING');
     }
 }

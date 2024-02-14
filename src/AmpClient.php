@@ -82,7 +82,7 @@ class AmpClient extends Client
             if ($tlsContext) {
                 $context = $context->withTlsContext($tlsContext);
             }
-            $this->socket = new Socket(socketConnector()->connect($dsn, $context));
+            $this->socket = new Socket(socketConnector()->connect($dsn, $context), idleTimeout: $config->pingInterval);
         } catch (\Throwable $exception) {
             // todo: handle exception
             throw $exception;
@@ -101,8 +101,6 @@ class AmpClient extends Client
         }
 
         $this->send($connect);
-
-        EventLoop::repeat($this->configuration->pingInterval, fn () => $this->ping() ? null : null);
 
         return $this;
     }
