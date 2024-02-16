@@ -21,7 +21,7 @@ class Socket
     private Queue $queue;
     private Parser $parser;
 
-    private string $pingEvent;
+    private int $pingEvent = 0;
 
     private bool $async = false;
 
@@ -54,7 +54,7 @@ class Socket
         });
 
         if ($this->idleTimeout > 0) {
-            $this->pingEvent = EventLoop::delay($this->idleTimeout, $this->ping(...));
+            EventLoop::repeat($this->idleTimeout, $this->ping(...));
         }
     }
 
@@ -124,11 +124,6 @@ class Socket
 
     public function write(string $line): void
     {
-        if ($this->idleTimeout) {
-            EventLoop::cancel($this->pingEvent);
-            EventLoop::delay($this->idleTimeout, $this->ping(...));
-        }
-
         // just throw the exception to be caught by the client, which is responsible for connection logic
         $this->socket->write($line);
     }
@@ -204,6 +199,9 @@ class Socket
 
     private function ping(): void
     {
-        $this->write('PING');
+        if(time() - $this->pingEvent > $this->idleTimeout) {
+            $this->write('PING');
+            $this->pingEvent = time();
+        }
     }
 }
