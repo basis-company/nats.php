@@ -1,0 +1,19 @@
+{
+    "$schema":"./vendor/phpbench/phpbench/phpbench.schema.json",
+    "runner.bootstrap": "vendor/autoload.php",
+    "report.generators": {
+        "clients": {
+            "title": "client comparisons",
+            "generator": "component",
+            "filter": "benchmark_name = 'AsyncPerformanceBench'",
+            "components": [
+                {
+                    "component": "bar_chart_aggregate",
+                    "bar_partition": "'Client: ' ~ variant_params['client']",
+                    "x_partition": "variant_params['messages'] ~ ' msgs'",
+                    "y_expr": "mode(partition['result_time_avg']) as time"
+                }
+            ]
+        }
+    }
+}

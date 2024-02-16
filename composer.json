@@ -12,7 +12,8 @@
         "monolog/monolog": "^2.3.5",
         "ext-sodium": "*",
         "friendsofphp/php-cs-fixer": "^3.9",
-        "phan/phan": "^5.3"
+        "phan/phan": "^5.3",
+        "phpbench/phpbench": "^1.2"
     },
     "suggest": {
         "paragonie/sodium_compat": "Provides Ed25519 for nkey authentication if sodium is not available",

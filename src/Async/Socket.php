@@ -28,8 +28,6 @@ class Socket
     public function __construct(
         private readonly \Amp\Socket\Socket $socket,
         private readonly LoggerInterface $logger = new NullLogger(),
-        private readonly \Closure|null $onPing = null,
-        private readonly \Closure|null $onPong = null,
         private readonly int $idleTimeout = 0,
     ) {
         $this->queue = $queue = new Queue();
@@ -139,15 +137,16 @@ class Socket
             return;
         }
         $this->async = true;
-        $this->queue = new Queue();
+        $this->queue = new Queue($concurrency);
         $this->parser = new Parser($this->queue);
-        EventLoop::queue(function () use ($closure, $concurrency) {
-            foreach (
-                $this->queue->pipe()
-                    ->concurrent($concurrency)
-                    ->map(fn ($message) => $closure($this->handleLine($message))) as $_
-            ) {
+        EventLoop::queue(function () use ($closure) {
+            foreach($this->queue->iterate() as $message) {
+                $closure($this->handleLine($message));
             }
+            //$this->queue->pipe()
+                //->sequential()
+                //->concurrent($concurrency)
+            //    ->forEach(fn ($message) => $closure($this->handleLine($message)));
         });
     }
 
