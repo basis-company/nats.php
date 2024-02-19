@@ -338,7 +338,7 @@ class Client
                 if ($reply && $message->replyTo) {
                     $this->publish($message->replyTo, $result);
                 }
-                break;
+                return $result;
         }
     }
 
