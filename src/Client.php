@@ -276,7 +276,7 @@ class Client
                 if ($now >= $max) {
                     return null;
                 }
-                return $this->process($max - $now);
+                return $this->process($max - $now, $reply, $checkTimeout);
 
             case 'PONG':
                 $this->logger?->debug('receive ' . $line);

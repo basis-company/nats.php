@@ -17,6 +17,24 @@ class StreamTest extends FunctionalTestCase
 
     private bool $empty;
 
+    public function testConsumerExpiration()
+    {
+        $client = $this->createClient(['timeout' => 0.1, 'delay' => 0.1]);
+        $stream = $client->getApi()->getStream('empty');
+        $stream->getConfiguration()
+            ->setSubjects(['empty']);
+
+        $stream->create();
+        $consumer = $stream->getConsumer('empty')->create();
+        $consumer->getConfiguration()->setSubjectFilter('empty');
+
+        $info = $client->info;
+
+        $consumer->setIterations(1)->setExpires(3)->handle(function () {
+        });
+        $this->assertSame($info, $client->info);
+    }
+
     public function testDeduplication()
     {
         $stream = $this->getClient()->getApi()->getStream('tester');
