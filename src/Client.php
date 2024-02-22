@@ -317,6 +317,8 @@ class Client
             }
 
             $message->parse($payload);
+        } elseif ($message instanceof Msg) {
+            $message->parse($payload);
         }
 
         $this->logger?->debug('receive ' . $line . $payload);
