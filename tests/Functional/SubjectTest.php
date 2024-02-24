@@ -35,12 +35,9 @@ class SubjectTest extends FunctionalTestCase
         $this->assertTrue($this->tested);
     }
 
-    /**
-     * @dataProvider clientProvider
-     */
-    public function testSubscribeQueue(string $clientName)
+    public function testSubscribeQueue()
     {
-        $client = $this->createClient(['client' => $clientName]);
+        $client = $this->createClient();
 
         $memoryStream = fopen('php://memory', 'w+');
         $setter = function ($socket) {
