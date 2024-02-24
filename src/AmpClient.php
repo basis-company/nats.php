@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Basis\Nats;
 
+use Amp\ByteStream\ClosedException;
 use Amp\Socket\Certificate;
 use Amp\Socket\ClientTlsContext;
 use Amp\Socket\ConnectContext;
-use Amp\Sync\Barrier;
 use Amp\TimeoutCancellation;
 use Basis\Nats\Async\Socket;
 use Basis\Nats\Message\Connect;
@@ -54,7 +54,12 @@ class AmpClient extends Client
 
         $line = $message->render() . "\r\n";
 
-        $this->socket->write($line);
+        try {
+            $this->socket->write($line);
+        } catch (ClosedException) {
+            $this->connect();
+            return $this->send($message);
+        }
 
         return $this;
     }
@@ -73,22 +78,33 @@ class AmpClient extends Client
             $tlsContext = null;
             if ($config->tlsKeyFile || $config->tlsCertFile) {
                 $tlsContext ??= new ClientTlsContext();
-                $tlsContext = $tlsContext->withCertificate(new Certificate($config->tlsCertFile, $config->tlsKeyFile));
+                $tlsContext = $tlsContext->withoutPeerVerification()
+                    ->withCertificate(new Certificate($config->tlsCertFile, $config->tlsKeyFile));
+
+                $this->logger->debug(
+                    'tls connection params',
+                    ['certFile' => is_readable($config->tlsCertFile), 'key' => is_readable($config->tlsKeyFile)]
+                );
             }
             if ($config->tlsCaFile) {
                 $tlsContext ??= new ClientTlsContext();
-                $tlsContext = $tlsContext->withCaFile($config->tlsCaFile);
+                $tlsContext = $tlsContext
+                    ->withCaFile($config->tlsCaFile);
             }
             if ($tlsContext) {
-                $context = $context->withTlsContext($tlsContext);
+                $context = $context->withTlsContext($tlsContext->withMinimumVersion(ClientTlsContext::TLSv1_2));
             }
-            $this->socket = new Socket(socketConnector()->connect($dsn, $context), idleTimeout: $config->pingInterval);
+            $this->socket = new Socket(
+                socketConnector()->connect($dsn, $context),
+                logger: $this->logger ?? new NullLogger(),
+                idleTimeout: $config->pingInterval
+            );
         } catch (\Throwable $exception) {
             // todo: handle exception
             throw $exception;
         }
 
-        $info = $this->process($config->timeout);
+        $this->info = $info = $this->process($config->timeout);
         assert($info instanceof Info);
 
         $this->connect = $connect = new Connect($config->getOptions());
