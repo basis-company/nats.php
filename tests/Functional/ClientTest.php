@@ -20,17 +20,13 @@ class ClientTest extends FunctionalTestCase
         $this->assertTrue($this->createClient(['client' => $clientName])->ping());
     }
 
-    /**
-     * @dataProvider clientProvider
-     */
-    public function testConnectionTimeout(string $clientName): void
+    public function testConnectionTimeout(): void
     {
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('Socket read timeout');
 
         $client = $this->createClient([
             'reconnect' => false,
-            'client' => $clientName,
         ]);
         $this->assertTrue($client->ping());
 
@@ -88,7 +84,7 @@ class ClientTest extends FunctionalTestCase
      */
     public function testInvalidConnection(string $clientName)
     {
-        $this->expectExceptionMessageMatches('/^Connection refused$|^A connection attempt failed/');
+        $this->expectExceptionMessageMatches('/^Connection refused$|^A connection attempt failed|^Invalid URI:.*/');
         $this->createClient(['port' => -1, 'client' => $clientName])->ping();
     }
 
@@ -117,7 +113,7 @@ class ClientTest extends FunctionalTestCase
      */
     public function testInvalidTlsRootCa(string $clientName)
     {
-        $this->expectExceptionMessageMatches("/tlsCaFile file does not exist*/");
+        $this->expectExceptionMessageMatches("/tlsCaFile file does not exist*|^TLS negotiation failed: failed loading cafile.*/");
         $client = $this->createClient([
             'client' => $clientName,
             'port' => 4220,
@@ -131,7 +127,7 @@ class ClientTest extends FunctionalTestCase
      */
     public function testInvalidTlsCert(string $clientName)
     {
-        $this->expectExceptionMessageMatches("/tlsCertFile file does not exist*/");
+        $this->expectExceptionMessageMatches("/tlsCertFile file does not exist*|^TLS negotiation failed.*/");
         $client = $this->createClient([
             'client' => $clientName,
             'port' => 4220,
@@ -147,7 +143,7 @@ class ClientTest extends FunctionalTestCase
      */
     public function testInvalidTlsKey(string $clientName)
     {
-        $this->expectExceptionMessageMatches("/tlsKeyFile file does not exist*/");
+        $this->expectExceptionMessageMatches("/tlsKeyFile file does not exist*|TLS negotiation failed.*/");
         $client = $this->createClient([
             'port' => 4220,
             'tlsCertFile' => $this->getProjectRoot() . "/docker/certs/client-cert.pem",

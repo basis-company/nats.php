@@ -8,6 +8,7 @@ use Amp\ByteStream\ClosedException;
 use Amp\Socket\Certificate;
 use Amp\Socket\ClientTlsContext;
 use Amp\Socket\ConnectContext;
+use Amp\Sync\Barrier;
 use Amp\TimeoutCancellation;
 use Basis\Nats\Async\Socket;
 use Basis\Nats\Message\Connect;
@@ -51,15 +52,20 @@ class AmpClient extends Client
 
     protected function send(Prototype $message): self
     {
-        $this->connect();
+        if($this->configuration->reconnect || ($this->socket ?? null) === null) {
+            $this->connect();
+        }
 
         $line = $message->render() . "\r\n";
 
         try {
             $this->socket->write($line);
         } catch (ClosedException) {
-            $this->connect();
-            return $this->send($message);
+            if($this->configuration->reconnect || ($this->socket ?? null) === null) {
+                $this->connect();
+                return $this->send($message);
+            }
+            throw new \LogicException('Socket read timeout');
         }
 
         return $this;
@@ -175,7 +181,9 @@ class AmpClient extends Client
 
     public function background(bool $enableAutoReply, int $concurrency = 10): \Closure
     {
-        $this->connect();
+        if($this->configuration->reconnect || ($this->socket ?? null) === null) {
+            $this->connect();
+        }
         $this->socket->switchToAsync(
             $concurrency,
             fn (Prototype|null $message) => $message && $this->onMessage($message, $enableAutoReply, false)
@@ -190,14 +198,16 @@ class AmpClient extends Client
             $timeoutCancellation = new TimeoutCancellation($timeout);
         }
 
-        [$left, $right] = createChannelPair();
+        $writeBarrier = new Barrier(1);
+        $value = null;
 
-        $this->request($name, $payload, function ($result) use ($left) {
-            $left->send($result);
+        $this->request($name, $payload, function ($result) use ($writeBarrier, &$value) {
+            $value = $result;
+            $writeBarrier->arrive();
         });
 
-        $this->process($timeout);
+        $writeBarrier->await($timeoutCancellation);
 
-        return $right->receive($timeoutCancellation);
+        return $value;
     }
 }

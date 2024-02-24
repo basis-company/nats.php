@@ -42,7 +42,8 @@ class Socket
 
         if ($this->idleTimeout > 0) {
             $this->logger->debug('registering idle timeout');
-            EventLoop::repeat($this->idleTimeout, $this->ping(...));
+            $pinger = EventLoop::repeat($this->idleTimeout, $this->ping(...));
+            $this->socket->onClose(fn () => EventLoop::cancel($pinger));
         }
     }
 
