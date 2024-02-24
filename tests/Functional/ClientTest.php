@@ -54,6 +54,7 @@ class ClientTest extends FunctionalTestCase
     {
         /** @var AmpClient $client */
         $client = $this->createClient(['client' => AmpClient::class]);
+        $client->connect();
         $property = new ReflectionProperty(AmpClient::class, 'socket');
         /** @var Socket $socket */
         $socket = $property->getValue($client);
