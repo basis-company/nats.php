@@ -17,6 +17,24 @@ class StreamTest extends FunctionalTestCase
 
     private bool $empty;
 
+    public function testConsumerExpiration()
+    {
+        $client = $this->createClient(['timeout' => 0.1, 'delay' => 0.1]);
+        $stream = $client->getApi()->getStream('empty');
+        $stream->getConfiguration()
+            ->setSubjects(['empty']);
+
+        $stream->create();
+        $consumer = $stream->getConsumer('empty')->create();
+        $consumer->getConfiguration()->setSubjectFilter('empty');
+
+        $info = $client->info;
+
+        $consumer->setIterations(1)->setExpires(3)->handle(function () {
+        });
+        $this->assertSame($info, $client->info);
+    }
+
     public function testDeduplication()
     {
         $stream = $this->getClient()->getApi()->getStream('tester');
@@ -116,7 +134,7 @@ class StreamTest extends FunctionalTestCase
         $this->called = false;
         $this->empty = false;
 
-        $stream = $this->getClient()->getApi()->getStream('no_messages');
+        $stream = $this->createClient(['reconnect' => false])->getApi()->getStream('no_messages');
         $stream->getConfiguration()->setSubjects(['cucumber']);
         $stream->create();
 
@@ -126,6 +144,7 @@ class StreamTest extends FunctionalTestCase
         $consumer->create()
             ->setDelay(0)
             ->setIterations(1)
+            ->setExpires(1)
             ->handle(function ($response) {
                 $this->called = $response;
             }, function () {
