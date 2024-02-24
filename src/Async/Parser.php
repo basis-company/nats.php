@@ -27,7 +27,7 @@ class Parser extends \Amp\Parser\Parser
                     continue;
                 }
 
-                if(str_starts_with($line,'HMSG')) {
+                if(str_starts_with($line, 'HMSG')) {
                     // headers contain CRLF, but are deliminated by CRLFCRLF
                     $headers = yield self::CRLF.self::CRLF;
                     $payload = yield self::CRLF;

@@ -30,7 +30,7 @@ class AsyncPerformanceBench extends FunctionalTestCase
             [$sender, $this->channel] = \Amp\Sync\createChannelPair();
         }
         $received = 0;
-        $client->subscribe($this->subject, function() use ($sender, &$received, $params) {
+        $client->subscribe($this->subject, function () use ($sender, &$received, $params) {
             if(++$received >= $params['messages']) {
                 $this->received = true;
                 if ($this->channel !== null) {
@@ -48,7 +48,8 @@ class AsyncPerformanceBench extends FunctionalTestCase
      * @Iterations(100)
      * @ParamProviders({"provideClient", "messagesToReceive"})
      */
-    public function benchPerformance($params): void {
+    public function benchPerformance($params): void
+    {
         if($params['client'] === 'async-background') {
             $this->client->background(true, 50);
         }
@@ -62,13 +63,15 @@ class AsyncPerformanceBench extends FunctionalTestCase
         }
     }
 
-    public function provideClient(): Generator {
+    public function provideClient(): Generator
+    {
         yield ['client' => 'async-background'];
         yield ['client' => 'async-process'];
         yield ['client' => 'sync'];
     }
 
-    public function messagesToReceive(): Generator {
+    public function messagesToReceive(): Generator
+    {
         yield ['messages' => 1];
         yield ['messages' => 1_000];
         yield ['messages' => 5_000];

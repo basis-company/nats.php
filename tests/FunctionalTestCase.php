@@ -48,7 +48,8 @@ abstract class FunctionalTestCase extends TestCase
         ], ...$options);
     }
 
-    public function clientProvider() {
+    public function clientProvider()
+    {
         return [
             'ampClient' => [AmpClient::class],
             'client' => [Client::class],

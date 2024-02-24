@@ -144,8 +144,8 @@ class Socket
                 $closure($this->handleLine($message));
             }
             //$this->queue->pipe()
-                //->sequential()
-                //->concurrent($concurrency)
+            //->sequential()
+            //->concurrent($concurrency)
             //    ->forEach(fn ($message) => $closure($this->handleLine($message)));
         });
     }

@@ -50,7 +50,8 @@ class ClientTest extends FunctionalTestCase
         $this->assertTrue($client->ping());
     }
 
-    public function testReconnectAmpClient() {
+    public function testReconnectAmpClient()
+    {
         /** @var AmpClient $client */
         $client = $this->createClient(['client' => AmpClient::class]);
         $property = new ReflectionProperty(AmpClient::class, 'socket');
