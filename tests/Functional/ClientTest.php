@@ -17,7 +17,7 @@ class ClientTest extends FunctionalTestCase
      */
     public function test(string $clientName)
     {
-        $this->assertTrue($this->createClient(['cient' => $clientName])->ping());
+        $this->assertTrue($this->createClient(['client' => $clientName])->ping());
     }
 
     /**
