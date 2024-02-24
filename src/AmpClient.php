@@ -119,7 +119,7 @@ class AmpClient extends Client
         return $this->onMessage($message, $reply);
     }
 
-    private function onMessage(Prototype $message, bool $reply = true, bool $async = false): Info|null
+    protected function onMessage(Prototype $message, bool $reply = true, bool $async = false): Info|null
     {
         switch ($message::class) {
             case Info::class:
