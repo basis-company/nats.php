@@ -13,9 +13,12 @@ use Tests\FunctionalTestCase;
 
 class DeliveryPolicyTest extends FunctionalTestCase
 {
-    public function testDeliveryPolicyByStartSeq(): void
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testDeliveryPolicyByStartSeq(string $clientName): void
     {
-        $api = $this->getClient()
+        $api = $this->getClient($clientName)
             ->skipInvalidMessages(true)
             ->getApi();
 
@@ -49,9 +52,12 @@ class DeliveryPolicyTest extends FunctionalTestCase
         $this->assertTrue($handled, 'Message was not handled.');
     }
 
-    public function testDeliveryPolicyByStartTime(): void
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testDeliveryPolicyByStartTime(string $clientName): void
     {
-        $api = $this->getClient()
+        $api = $this->getClient($clientName)
             ->skipInvalidMessages(true)
             ->getApi();
 

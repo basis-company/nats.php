@@ -155,11 +155,4 @@ class ClientTest extends FunctionalTestCase
         ]);
         $client->ping();
     }
-
-    public function clientProvider() {
-        return [
-            'ampClient' => [AmpClient::class],
-            'client' => [Client::class],
-        ];
-    }
 }

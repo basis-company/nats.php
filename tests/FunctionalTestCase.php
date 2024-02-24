@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Basis\Nats\AmpClient;
 use Basis\Nats\Client;
 use Basis\Nats\Configuration;
 use Tests\Utils\Logger;
@@ -29,9 +30,12 @@ abstract class FunctionalTestCase extends TestCase
 
     protected ?Client $client = null;
 
-    public function getClient(): Client
+    public function getClient(string $clientName = Client::class): Client
     {
-        return $this->client ?: $this->client = $this->createClient();
+        if($this->client instanceof $clientName) {
+            return $this->client;
+        }
+        return $this->client ?? $this->createClient(['client' => $clientName]);
     }
 
     public function getConfiguration(array ...$options): Configuration
@@ -42,6 +46,13 @@ abstract class FunctionalTestCase extends TestCase
             'timeout' => 0.5,
             'verbose' => getenv('NATS_CLIENT_VERBOSE') == '1',
         ], ...$options);
+    }
+
+    public function clientProvider() {
+        return [
+            'ampClient' => [AmpClient::class],
+            'client' => [Client::class],
+        ];
     }
 
     public function setup(): void

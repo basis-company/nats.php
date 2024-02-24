@@ -17,9 +17,12 @@ class StreamTest extends FunctionalTestCase
 
     private bool $empty;
 
-    public function testConsumerExpiration()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testConsumerExpiration(string $clientName)
     {
-        $client = $this->createClient(['timeout' => 0.1, 'delay' => 0.1]);
+        $client = $this->createClient(['timeout' => 0.1, 'delay' => 0.1, 'client' => $clientName]);
         $stream = $client->getApi()->getStream('empty');
         $stream->getConfiguration()
             ->setSubjects(['empty']);
@@ -35,9 +38,12 @@ class StreamTest extends FunctionalTestCase
         $this->assertSame($info, $client->info);
     }
 
-    public function testDeduplication()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testDeduplication(string $clientName)
     {
-        $stream = $this->getClient()->getApi()->getStream('tester');
+        $stream = $this->getClient($clientName)->getApi()->getStream('tester');
         $stream->getConfiguration()
             ->setSubjects(['tester'])
             ->setDuplicateWindow(0.5); // 500ms windows duplicate
@@ -95,9 +101,12 @@ class StreamTest extends FunctionalTestCase
         $this->assertWrongNumPending($consumer, 1);
     }
 
-    public function testInterrupt()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testInterrupt(string $clientName)
     {
-        $stream = $this->getClient()->getApi()->getStream('no_messages');
+        $stream = $this->getClient($clientName)->getApi()->getStream('no_messages');
         $stream->getConfiguration()->setSubjects(['cucumber']);
         $stream->create();
 
@@ -129,12 +138,15 @@ class StreamTest extends FunctionalTestCase
         $this->assertWrongNumPending($consumer, 1);
     }
 
-    public function testNoMessages()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testNoMessages(string $clientName)
     {
         $this->called = false;
         $this->empty = false;
 
-        $stream = $this->createClient(['reconnect' => false])->getApi()->getStream('no_messages');
+        $stream = $this->createClient(['reconnect' => false, 'client' => $clientName])->getApi()->getStream('no_messages');
         $stream->getConfiguration()->setSubjects(['cucumber']);
         $stream->create();
 
@@ -155,9 +167,12 @@ class StreamTest extends FunctionalTestCase
         $this->assertTrue($this->empty);
     }
 
-    public function testSingletons()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testSingletons(string $clientName)
     {
-        $api = $this->getClient()->getApi();
+        $api = $this->getClient($clientName)->getApi();
         $this->assertSame($api, $this->getClient()->getApi());
 
         $stream = $api->getStream('tester');
@@ -167,9 +182,12 @@ class StreamTest extends FunctionalTestCase
         $this->assertSame($consumer, $stream->getConsumer('worker'));
     }
 
-    public function testConfguration()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testConfguration(string $clientName)
     {
-        $api = $this->createClient()->getApi();
+        $api = $this->createClient(['client' => $clientName])->getApi();
         $stream = $api->getStream('tester');
 
         $stream->getConfiguration()
@@ -204,9 +222,12 @@ class StreamTest extends FunctionalTestCase
         $this->assertSame($configuration->getSubjects(), ['tester.greet', 'tester.bye']);
     }
 
-    public function testConsumer()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testConsumer(string $clientName)
     {
-        $api = $this->getClient()
+        $api = $this->getClient($clientName)
             ->skipInvalidMessages(true)
             ->getApi();
 
@@ -251,9 +272,12 @@ class StreamTest extends FunctionalTestCase
         $this->assertNull($this->called);
     }
 
-    public function testEphemeralConsumer()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testEphemeralConsumer(string $clientName)
     {
-        $api = $this->getClient()
+        $api = $this->getClient($clientName)
             ->skipInvalidMessages(true)
             ->getApi();
 
@@ -324,9 +348,12 @@ class StreamTest extends FunctionalTestCase
         $this->called = $message->isEmpty() ? null : $message;
     }
 
-    public function testBatching()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testBatching(string $clientName)
     {
-        $client = $this->createClient();
+        $client = $this->createClient(['client' => $clientName]);
         $stream = $client->getApi()->getStream('tester_' . rand(111, 999));
         $name = $stream->getConfiguration()->name;
         $stream->getConfiguration()->setSubjects([$name]);
