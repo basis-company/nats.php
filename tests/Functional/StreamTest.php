@@ -173,7 +173,7 @@ class StreamTest extends FunctionalTestCase
     public function testSingletons(string $clientName)
     {
         $api = $this->getClient($clientName)->getApi();
-        $this->assertSame($api, $this->getClient()->getApi());
+        $this->assertSame($api, $this->getClient($clientName)->getApi());
 
         $stream = $api->getStream('tester');
         $this->assertSame($stream, $api->getStream('tester'));

@@ -35,7 +35,7 @@ abstract class FunctionalTestCase extends TestCase
         if($this->client instanceof $clientName) {
             return $this->client;
         }
-        return $this->client ?? $this->createClient(['client' => $clientName]);
+        return $this->client = $this->createClient(['client' => $clientName]);
     }
 
     public function getConfiguration(array ...$options): Configuration
