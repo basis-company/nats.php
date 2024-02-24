@@ -91,7 +91,7 @@ class AmpClient extends Client
         $info = $this->process($config->timeout);
         assert($info instanceof Info);
 
-        $connect = new Connect($config->getOptions());
+        $this->connect = $connect = new Connect($config->getOptions());
         if ($this->name) {
             $connect->name = $this->name;
         }
