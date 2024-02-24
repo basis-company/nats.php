@@ -33,6 +33,7 @@ class AmpClient extends Client
         LoggerInterface|null $logger = new NullLogger(),
     ) {
         parent::__construct($configuration, $logger);
+        $this->logger ??= new NullLogger();
     }
 
     public function setTimeout(float $value): Client
