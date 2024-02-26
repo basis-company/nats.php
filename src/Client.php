@@ -294,28 +294,29 @@ class Client
         }
 
         $payload = '';
-        if ($message instanceof Msg && $message->length) {
-            $iteration = 0;
-            while (strlen($payload) < $message->length) {
-                $payloadLine = $this->readLine($message->length, '', false);
-                if (!$payloadLine) {
-                    if ($iteration > 16) {
-                        $this->processSocketException(
-                            new LogicException("No payload for message $message->sid")
-                        );
-                        break;
+        if ($message instanceof Msg) {
+            if ($message->length) {
+                $iteration = 0;
+                while (strlen($payload) < $message->length) {
+                    $payloadLine = $this->readLine($message->length, '', false);
+                    if (!$payloadLine) {
+                        if ($iteration > 16) {
+                            $this->processSocketException(
+                                new LogicException("No payload for message $message->sid")
+                            );
+                            break;
+                        }
+                        $this->configuration->delay($iteration++);
+                        continue;
                     }
-                    $this->configuration->delay($iteration++);
-                    continue;
+                    if (strlen($payloadLine) != $message->length) {
+                        $this->logger?->debug(
+                            'got ' . strlen($payloadLine) . '/' . $message->length . ': ' . $payloadLine
+                        );
+                    }
+                    $payload .= $payloadLine;
                 }
-                if (strlen($payloadLine) != $message->length) {
-                    $this->logger?->debug(
-                        'got ' . strlen($payloadLine) . '/' . $message->length . ': ' . $payloadLine
-                    );
-                }
-                $payload .= $payloadLine;
             }
-
             $message->parse($payload);
         }
 
