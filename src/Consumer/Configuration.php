@@ -159,6 +159,18 @@ class Configuration
         return $this;
     }
 
+    public function setMaxDeliver(int $maxDeliver): self
+    {
+        $this->maxDeliver = $maxDeliver;
+        return $this;
+    }
+
+    public function setMaxWaiting(int $maxWaiting): self
+    {
+        $this->maxWaiting = $maxWaiting;
+        return $this;
+    }
+
     public function setName(string $name): self
     {
         if ($this->isEphemeral()) {
