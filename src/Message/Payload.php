@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpStrictTypeCheckingInspection */
 
 declare(strict_types=1);
 
@@ -6,7 +6,13 @@ namespace Basis\Nats\Message;
 
 class Payload
 {
-    public static function parse(mixed $data): self
+
+    public $body;
+    public $headers;
+    public $subject;
+    public $timestampNanos;
+
+    public static function parse($data): self
     {
         if ($data instanceof self) {
             return $data;
@@ -21,12 +27,18 @@ class Payload
         return new self("");
     }
 
+
+
     public function __construct(
-        public string $body,
-        public array $headers = [],
-        public ?string $subject = null,
-        public ?int $timestampNanos = null
+        string $body,
+        array $headers = [],
+        string $subject = null,
+        ?int $timestampNanos = null
     ) {
+        $this->body = $body;
+        $this->headers = $headers;
+        $this->subject = $subject;
+        $this->timestampNanos = $timestampNanos;
         $hdrs = $this->getValue('message.hdrs');
         if ($hdrs) {
             foreach (explode("\r\n", base64_decode($hdrs)) as $line) {
@@ -39,7 +51,7 @@ class Payload
         }
     }
 
-    public function __get(string $name): mixed
+    public function __get(string $name)
     {
         $values = $this->getValues();
 

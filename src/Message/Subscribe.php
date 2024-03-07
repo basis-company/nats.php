@@ -6,9 +6,9 @@ namespace Basis\Nats\Message;
 
 class Subscribe extends Prototype
 {
-    public string $sid;
-    public string $subject;
-    public ?string $group = null;
+    public $sid;
+    public $subject;
+    public $group = null;
 
     public function render(): string
     {

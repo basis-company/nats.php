@@ -8,15 +8,17 @@ use Tests\FunctionalTestCase;
 
 class PerformanceTest extends FunctionalTestCase
 {
-    private int $limit = 100_000;
-    private int $counter = 0;
+    private $limit = 100000;
+    private $counter = 0;
 
     public function testPerformance()
     {
         $client = $this->createClient()->setTimeout(0.1)->setDelay(0);
         $client->setLogger(null);
 
-        $this->logger?->info('start performance test');
+        if ($this->logger) {
+            $this->logger->info('start performance test');
+        }
 
         $client->subscribe('hello', function ($n) {
             $this->counter++;
@@ -28,11 +30,16 @@ class PerformanceTest extends FunctionalTestCase
         }
         $publishing = microtime(true) - $publishing;
 
-        $this->logger?->info('publishing', [
-            'rps' => floor($this->limit / $publishing),
-            'length' => $this->limit,
-            'time' => $publishing,
-        ]);
+        if ($this->logger) {
+            $this->logger->info(
+                'publishing',
+                [
+                    'rps' => floor($this->limit / $publishing),
+                    'length' => $this->limit,
+                    'time' => $publishing,
+                ]
+            );
+        }
 
         $processing = microtime(true);
         while ($this->counter < $this->limit) {
@@ -40,11 +47,16 @@ class PerformanceTest extends FunctionalTestCase
         }
         $processing = microtime(true) - $processing;
 
-        $this->logger?->info('processing', [
-            'rps' => floor($this->limit / $processing),
-            'length' => $this->limit,
-            'time' => $processing,
-        ]);
+        if ($this->logger) {
+            $this->logger->info(
+                'processing',
+                [
+                    'rps' => floor($this->limit / $processing),
+                    'length' => $this->limit,
+                    'time' => $processing,
+                ]
+            );
+        }
 
         // at least 5000rps should be enough for test
         $this->assertGreaterThan(5000, $this->limit / $processing);

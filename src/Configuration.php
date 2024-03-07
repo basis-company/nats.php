@@ -8,36 +8,36 @@ use InvalidArgumentException;
 
 class Configuration
 {
-    public readonly bool $pedantic;
-    public readonly bool $reconnect;
-    public readonly bool $verbose;
-    public readonly int $port;
-    public readonly string $host;
-    public readonly string $lang;
-    public readonly string $version;
-    public readonly float $timeout;
-    public readonly int $pingInterval;
+    public $pedantic;
+    public $reconnect;
+    public $verbose;
+    public $port;
+    public $host;
+    public $lang;
+    public $version;
+    public $timeout;
+    public $pingInterval;
 
-    public readonly string $inboxPrefix;
+    public $inboxPrefix;
 
-    public readonly ?string $jwt;
-    public readonly ?string $pass;
-    public readonly ?string $token;
-    public readonly ?string $user;
-    public readonly ?string $nkey;
+    public $jwt;
+    public $pass;
+    public $token;
+    public $user;
+    public $nkey;
 
-    public readonly ?string $tlsKeyFile;
-    public readonly ?string $tlsCertFile;
-    public readonly ?string $tlsCaFile;
+    public $tlsKeyFile;
+    public $tlsCertFile;
+    public $tlsCaFile;
 
     public const DELAY_CONSTANT = 'constant';
     public const DELAY_LINEAR = 'linear';
     public const DELAY_EXPONENTIAL = 'exponential';
 
-    protected float $delay = 0.001;
-    protected string $delayMode = self::DELAY_CONSTANT;
+    protected $delay = 0.001;
+    protected $delayMode = self::DELAY_CONSTANT;
 
-    protected array $defaults = [
+    protected $defaults = [
         'host' => 'localhost',
         'jwt' => null,
         'lang' => 'php',
@@ -96,7 +96,7 @@ class Configuration
 
     public function delay(int $iteration)
     {
-        $milliseconds = intval($this->delay * 1_000);
+        $milliseconds = intval($this->delay * 1000);
 
         switch ($this->delayMode) {
             case self::DELAY_EXPONENTIAL:
@@ -108,7 +108,7 @@ class Configuration
                 break;
         }
 
-        usleep($milliseconds * 1_000);
+        usleep($milliseconds * 1000);
     }
 
     public function setDelay(float $delay, string $mode = self::DELAY_CONSTANT): self

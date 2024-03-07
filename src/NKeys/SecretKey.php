@@ -16,13 +16,19 @@ class SecretKey
     private const PREFIX_BYTE_ACCOUNT  = 0;
     private const PREFIX_BYTE_USER     = 20 << 3;
 
-    private ?string $publicKey = null;
+    private $publicKey = null;
+    public $value;
+    private $verifyingKey;
+    private $prefix;
 
     public function __construct(
-        public readonly string $value,
-        private readonly string $verifyingKey,
-        private readonly int $prefix
+        string $value,
+        string $verifyingKey,
+        int $prefix
     ) {
+        $this->value = $value;
+        $this->verifyingKey = $verifyingKey;
+        $this->prefix = $prefix;
         if (strlen($this->value) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
             throw new InvalidArgumentException("Invalid secret key provided");
         }

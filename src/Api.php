@@ -9,11 +9,14 @@ use Basis\Nats\Stream\Stream;
 
 class Api
 {
-    private array $streams = [];
-    private array $buckets = [];
+    private $streams = [];
+    private $buckets = [];
 
-    public function __construct(public readonly Client $client)
+    public $client;
+
+    public function __construct(Client $client)
     {
+        $this->client = $client;
     }
 
     public function getBucket(string $name): Bucket

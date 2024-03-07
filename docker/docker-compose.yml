@@ -46,3 +46,14 @@ services:
       - ./certs:/certs
     working_dir: /app
     command: generate-certs.sh
+  php-cli-7.3:
+    image: php:7.3-cli-bullseye
+    user: root
+   # build:
+   #   context: php-cli/7.3
+    volumes:
+      - .././:/opt/project:rw
+    working_dir: /opt/project
+    network_mode: "host"
+    environment:
+      TZ: ${TZ-America/Sao_Paulo}

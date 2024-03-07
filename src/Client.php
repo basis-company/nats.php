@@ -23,27 +23,31 @@ use Throwable;
 
 class Client
 {
-    public Connect $connect;
-    public Info $info;
-    public readonly Api $api;
+    public $connect;
+    public $info;
+    public $api;
 
-    private readonly ?Authenticator $authenticator;
+    private $authenticator;
 
     private $socket;
     private $context;
-    private array $handlers = [];
-    private float $ping = 0;
-    private float $pong = 0;
-    private ?float $lastDataReadFailureAt = null;
-    private string $name = '';
-    private array $subscriptions = [];
+    private $handlers = [];
+    private $ping = 0;
+    private $pong = 0;
+    private $lastDataReadFailureAt = null;
+    public $name = '';//TODO SEE CONSUMER.PHP ACCESS
+    private $subscriptions = [];
 
-    private bool $skipInvalidMessages = false;
+    private $skipInvalidMessages = false;
+    public $configuration;
+    public $logger;
 
     public function __construct(
-        public readonly Configuration $configuration = new Configuration(),
-        public ?LoggerInterface $logger = null,
+        Configuration $configuration = null,
+        $logger = null
     ) {
+        $this->configuration = $configuration ?? new Configuration();
+        $this->logger = $logger;
         $this->api = new Api($this);
 
         $this->authenticator = Authenticator::create($this->configuration);
@@ -86,9 +90,7 @@ class Client
         $dsn = "$config->host:$config->port";
         $flags = STREAM_CLIENT_CONNECT;
         $this->context = stream_context_create();
-        $this->socket = @stream_socket_client($dsn, $error, $errorMessage, $config->timeout, $flags, $this->context);
-
-        if ($error || !$this->socket) {
+        $this->socket = @stream_socket_client($dsn, $error, $errorMessage, $config->timeout, $flags, $this->context);        if ($error || !$this->socket) {
             throw new Exception($errorMessage ?: "Connection error", $error);
         }
 
@@ -111,7 +113,7 @@ class Client
         return $this;
     }
 
-    public function dispatch(string $name, mixed $payload, ?float $timeout = null)
+    public function dispatch(string $name, $payload, ?float $timeout = null)
     {
         if ($timeout === null) {
             $timeout = $this->configuration->timeout;
@@ -155,7 +157,7 @@ class Client
         return $result;
     }
 
-    public function publish(string $name, mixed $payload, ?string $replyTo = null): self
+    public function publish(string $name, $payload, ?string $replyTo = null): self
     {
         return $this->send(new Publish([
             'payload' => Payload::parse($payload),
@@ -164,7 +166,7 @@ class Client
         ]));
     }
 
-    public function request(string $name, mixed $payload, Closure $handler): self
+    public function request(string $name, $payload, Closure $handler): self
     {
         $replyTo = $this->configuration->inboxPrefix . '.' . bin2hex(random_bytes(16));
 
@@ -228,7 +230,7 @@ class Client
     /**
      * @throws Throwable
      */
-    public function process(null|int|float $timeout = 0, bool $reply = true, bool $checkTimeout = true)
+    public function process($timeout = 0, bool $reply = true, bool $checkTimeout = true)
     {
         $this->lastDataReadFailureAt = null;
         $max = microtime(true) + $timeout;
@@ -261,7 +263,9 @@ class Client
                 if ($now >= $max) {
                     return null;
                 }
-                $this->logger?->debug('sleep', compact('max', 'now'));
+                if ($this->logger) {
+                    $this->logger->debug('sleep', compact('max', 'now'));
+                }
                 $this->configuration->delay($iteration++);
             } catch (Throwable $e) {
                 $this->processSocketException($e);
@@ -270,7 +274,9 @@ class Client
 
         switch (trim($line)) {
             case 'PING':
-                $this->logger?->debug('receive ' . $line);
+                if ($this->logger) {
+                    $this->logger->debug('receive ' . $line);
+                }
                 $this->send(new Pong([]));
                 $now = microtime(true);
                 if ($now >= $max) {
@@ -279,17 +285,24 @@ class Client
                 return $this->process($max - $now, $reply, $checkTimeout);
 
             case 'PONG':
-                $this->logger?->debug('receive ' . $line);
+                if ($this->logger) {
+                    $this->logger->debug('receive ' . $line);
+                }
                 return $this->pong = microtime(true);
 
             case '+OK':
-                return $this->logger?->debug('receive ' . $line);
+                if ($this->logger) {
+                    return $this->logger->debug('receive ' . $line);
+                }
+                return null;
         }
 
         try {
             $message = Factory::create(trim($line));
         } catch (Throwable $exception) {
-            $this->logger?->debug($line);
+            if ($this->logger) {
+                $this->logger->debug($line);
+            }
             throw $exception;
         }
 
@@ -310,9 +323,11 @@ class Client
                         continue;
                     }
                     if (strlen($payloadLine) != $message->length) {
-                        $this->logger?->debug(
-                            'got ' . strlen($payloadLine) . '/' . $message->length . ': ' . $payloadLine
-                        );
+                        if ($this->logger) {
+                            $this->logger->debug(
+                                'got ' . strlen($payloadLine) . '/' . $message->length . ': ' . $payloadLine
+                            );
+                        }
                     }
                     $payload .= $payloadLine;
                 }
@@ -320,7 +335,9 @@ class Client
             $message->parse($payload);
         }
 
-        $this->logger?->debug('receive ' . $line . $payload);
+        if ($this->logger) {
+            $this->logger->debug('receive ' . $line . $payload);
+        }
         return $this->onMessage($message, $reply);
     }
 
@@ -410,7 +427,9 @@ class Client
     private function processSocketException(Throwable $e): self
     {
         if (!$this->configuration->reconnect) {
-            $this->logger?->error($e->getMessage());
+            if ($this->logger) {
+                $this->logger->error($e->getMessage());
+            }
             throw $e;
         }
 
@@ -443,7 +462,9 @@ class Client
         $line = $message->render() . "\r\n";
         $length = strlen($line);
 
-        $this->logger?->debug('send ' . $line);
+        if ($this->logger) {
+            $this->logger->debug('send ' . $line);
+        }
 
         while (strlen($line)) {
             try {
@@ -484,7 +505,7 @@ class Client
         return $this;
     }
 
-    private function readLine(int $length, string $ending = '', bool $checkTimeout = true): string|bool
+    private function readLine(int $length, string $ending = '', bool $checkTimeout = true)
     {
         $line = stream_get_line($this->socket, $length, $ending);
         if ($line || !$checkTimeout) {

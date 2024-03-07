@@ -10,11 +10,13 @@ use Basis\Nats\Consumer\Configuration as ConsumerConfiguration;
 
 class Stream
 {
-    private array $consumers = [];
-    private readonly Configuration $configuration;
+    private $consumers = [];
+    private $configuration;
+    public $client;
 
-    public function __construct(public readonly Client $client, string $name)
+    public function __construct(Client $client, string $name)
     {
+        $this->client = $client;
         $this->configuration = new Configuration($name);
     }
 
@@ -93,13 +95,13 @@ class Stream
         return $this->client->api("STREAM.INFO." . $this->getName());
     }
 
-    public function put(string $subject, mixed $payload): self
+    public function put(string $subject, $payload): self
     {
         $this->client->publish($subject, $payload);
         return $this;
     }
 
-    public function publish(string $subject, mixed $payload)
+    public function publish(string $subject, $payload)
     {
         return $this->client->dispatch($subject, $payload);
     }

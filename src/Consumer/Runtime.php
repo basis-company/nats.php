@@ -4,9 +4,13 @@ namespace Basis\Nats\Consumer;
 
 class Runtime
 {
+    public $processed ;
+    public $empty;
     public function __construct(
-        public int $processed = 0,
-        public bool $empty = false,
+        int $processed = 0,
+        bool $empty = false
     ) {
+        $this->processed = $processed;
+        $this->empty = $empty;
     }
 }

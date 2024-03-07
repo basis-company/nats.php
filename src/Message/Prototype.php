@@ -16,7 +16,7 @@ abstract class Prototype
         return new static(Payload::parse($data));
     }
 
-    public function __construct(array|Payload $payload)
+    public function __construct($payload)
     {
         $values = is_array($payload) ? $payload : $payload->getValues();
 

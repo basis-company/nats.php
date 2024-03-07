@@ -10,17 +10,21 @@ use Basis\Nats\Client;
 
 class Consumer
 {
-    private ?bool $exists = null;
-    private bool $interrupt = false;
-    private float $delay = 1;
-    private float $expires = 0.1;
-    private int $batch = 1;
-    private int $iterations = PHP_INT_MAX;
+    private $exists = null;
+    private $interrupt = false;
+    private $delay = 1;
+    private $expires = 0.1;
+    private $batch = 1;
+    private $iterations = PHP_INT_MAX;
+    public $client;
+    private $configuration;
 
     public function __construct(
-        public readonly Client $client,
-        private readonly Configuration $configuration,
+        Client $client,
+        Configuration $configuration
     ) {
+        $this->client = $client;
+        $this->configuration = $configuration;
     }
 
     public function create($ifNotExists = true): self
@@ -104,7 +108,7 @@ class Consumer
         ];
 
         // convert to nanoseconds
-        $expires = intval(1_000_000_000 * $this->getExpires());
+        $expires = intval(1000000000 * $this->getExpires());
         if ($expires) {
             $args['expires'] = $expires;
         } else {
@@ -160,7 +164,7 @@ class Consumer
             }
 
             if ($iteration && $runtime->empty && !$expires) {
-                usleep((int) floor($this->getDelay() * 1_000_000));
+                usleep((int) floor($this->getDelay() * 1000000));
             }
         }
 

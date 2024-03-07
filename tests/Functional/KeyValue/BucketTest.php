@@ -23,7 +23,7 @@ class BucketTest extends FunctionalTestCase
         $this->assertSame($bucket->get('username'), 'nekufa');
 
         // invalid update
-        $bucket->update('username', 'bazyaba', 100_500);
+        $bucket->update('username', 'bazyaba', 100500);
         $this->assertSame($bucket->get('username'), 'nekufa');
         $this->assertSame(1, $bucket->getStatus()->values);
 

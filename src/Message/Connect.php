@@ -6,21 +6,21 @@ namespace Basis\Nats\Message;
 
 class Connect extends Prototype
 {
-    public bool $headers;
-    public bool $pedantic;
-    public bool $verbose;
-    public string $auth_token;
-    public string $echo;
-    public string $jwt;
-    public string $lang;
-    public string $name;
-    public string $pass;
-    public string $protocol;
-    public string $sig;
-    public string $tls_required;
-    public string $user;
-    public string $version;
-    public string $nkey;
+    public $headers;
+    public $pedantic;
+    public $verbose;
+    public $auth_token;
+    public $echo;
+    public $jwt;
+    public $lang;
+    public $name;
+    public $pass;
+    public $protocol;
+    public $sig;
+    public $tls_required;
+    public $user;
+    public $version;
+    public $nkey;
 
     public function render(): string
     {

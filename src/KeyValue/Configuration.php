@@ -9,14 +9,16 @@ use Basis\Nats\Stream\DiscardPolicy;
 
 class Configuration
 {
-    private ?int $history = null;
-    private ?int $maxBytes = null;
-    private ?int $maxValueSize = null;
-    private ?int $replicas = null;
-    private ?int $ttl = null;
+    private $history = null;
+    private $maxBytes = null;
+    private $maxValueSize = null;
+    private $replicas = null;
+    private $ttl = null;
+    private $name;
 
-    public function __construct(private readonly string $name)
+    public function __construct(string $name)
     {
+        $this->name = $name;
     }
 
     public function configureStream(StreamConfiguration $configuration): self

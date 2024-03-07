@@ -8,25 +8,27 @@ use DomainException;
 
 class Configuration
 {
-    private array $subjects = [];
-    private bool $allowRollupHeaders = true;
-    private bool $denyDelete = true;
-    private int $maxAge = 0;
-    private int $maxConsumers = -1;
-    private int $replicas = 1;
-    private string $discardPolicy = DiscardPolicy::OLD;
-    private string $retentionPolicy = RetentionPolicy::LIMITS;
-    private string $storageBackend = StorageBackend::FILE;
+    private $subjects = [];
+    private $allowRollupHeaders = true;
+    private $denyDelete = true;
+    private $maxAge = 0;
+    private $maxConsumers = -1;
+    private $replicas = 1;
+    private $discardPolicy = DiscardPolicy::OLD;
+    private $retentionPolicy = RetentionPolicy::LIMITS;
+    private $storageBackend = StorageBackend::FILE;
 
-    private ?float $duplicateWindow = null;
-    private ?int $maxBytes = null;
-    private ?int $maxMessageSize = null;
-    private ?int $maxMessagesPerSubject = null;
-    private ?string $description = null;
+    private $duplicateWindow = null;
+    private $maxBytes = null;
+    private $maxMessageSize = null;
+    private $maxMessagesPerSubject = null;
+    private $description = null;
+    public $name = '';
 
     public function __construct(
-        public readonly string $name
+        string $name
     ) {
+        $this->name = $name;
     }
 
     public function fromArray(array $array): self
@@ -200,7 +202,7 @@ class Configuration
             'deny_delete' => $this->getDenyDelete(),
             'description' => $this->getDescription(),
             'discard' => $this->getDiscardPolicy(),
-            'duplicate_window' => $this->getDuplicateWindow() * 1_000_000_000,
+            'duplicate_window' => $this->getDuplicateWindow() * 1000000000,
             'max_age' => $this->getMaxAge(),
             'max_bytes' => $this->getMaxBytes(),
             'max_consumers' => $this->getMaxConsumers(),

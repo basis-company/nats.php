@@ -11,7 +11,7 @@ use ReflectionClass;
 
 trait Logger
 {
-    protected ?LoggerInterface $logger = null;
+    protected $logger = null;
 
     public function getLogger(): LoggerInterface
     {

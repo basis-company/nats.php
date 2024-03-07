@@ -8,8 +8,11 @@ use Basis\Nats\Authenticator as AuthenticatorInterface;
 
 class Authenticator extends AuthenticatorInterface
 {
-    public function __construct(private SecretKey $key)
+    private $key;
+    public function __construct(SecretKey $key)
     {
+        $this->key = $key;
+
     }
 
     public function sign(string $nonce): string

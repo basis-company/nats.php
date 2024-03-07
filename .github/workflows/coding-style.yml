@@ -8,11 +8,11 @@ jobs:
       - name: Install dependencies
         uses: php-actions/composer@v6
         with:
-          php_version: 8.1
+          php_version: 7.3
       - name: php-cs-fixer
         uses: php-actions/composer@v6
         with:
-          php_version: 8.1
+          php_version: 7.3
           command: run cs-verify
   editorconfig-verify:
     runs-on: ubuntu-latest

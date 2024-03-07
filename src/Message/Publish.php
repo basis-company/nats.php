@@ -6,9 +6,9 @@ namespace Basis\Nats\Message;
 
 class Publish extends Prototype
 {
-    public string $subject;
-    public Payload $payload;
-    public ?string $replyTo = null;
+    public $subject;
+    public $payload;
+    public $replyTo = null;
 
     public function render(): string
     {

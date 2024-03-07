@@ -8,15 +8,15 @@ use Exception;
 
 class Msg extends Prototype
 {
-    public ?int $hlength = null;
-    public ?string $replyTo = null;
-    public int $length;
-    public Payload $payload;
-    public string $sid;
-    public string $subject;
-    public ?int $timestampNanos = null;
+    public $hlength = null;
+    public $replyTo = null;
+    public $length;
+    public $payload;
+    public $sid;
+    public $subject;
+    public $timestampNanos = null;
 
-    public static function create(string $data): self
+    public static function create(string $data): Prototype
     {
         $args = explode(' ', $data, 5);
         $values = [];

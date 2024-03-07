@@ -11,15 +11,19 @@ use Basis\Nats\Message\Payload;
 
 class Bucket
 {
-    private ?bool $exists = null;
-    private ?Stream $stream = null;
-    private Configuration $configuration;
+    private $exists = null;
+    private $stream = null;
+    private $configuration;
+    public $client;
+    public $name;
 
     public function __construct(
-        public readonly Client $client,
-        public readonly string $name,
+        Client $client,
+        string $name
     ) {
         $this->configuration = new Configuration($name);
+        $this->client = $client;
+        $this->name = $name;
     }
 
     public function get(string $key)

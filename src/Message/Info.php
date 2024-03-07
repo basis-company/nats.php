@@ -6,34 +6,34 @@ namespace Basis\Nats\Message;
 
 class Info extends Prototype
 {
-    public string $server_id;
-    public string $server_name;
-    public string $version;
-    public int $proto;
-    public ?string $git_commit;
-    public string $go;
-    public string $host;
-    public int $port;
-    public bool $headers;
-    public ?bool $auth_required;
-    public ?bool $tls_required;
-    public ?bool $tls_verify;
-    public ?bool $tls_available;
-    public int $max_payload;
-    public ?bool $jetstream;
-    public ?string $ip;
-    public ?int $client_id;
-    public ?string $client_ip;
-    public ?string $nonce;
-    public ?string $cluster;
-    public ?bool $cluster_dynamic;
-    public ?string $domain;
+    public $server_id;
+    public $server_name;
+    public $version;
+    public $proto;
+    public $git_commit;
+    public $go;
+    public $host;
+    public $port;
+    public $headers;
+    public $auth_required;
+    public $tls_required;
+    public $tls_verify;
+    public $tls_available;
+    public $max_payload;
+    public $jetstream;
+    public $ip;
+    public $client_id;
+    public $client_ip;
+    public $nonce;
+    public $cluster;
+    public $cluster_dynamic;
+    public $domain;
     /** @var string[]|null  */
-    public ?array $connect_urls;
+    public $connect_urls;
     /** @var string[]|null  */
-    public ?array $ws_connect_urls;
-    public ?bool $ldm;
-    public ?string $xkey;
+    public $ws_connect_urls;
+    public $ldm;
+    public $xkey;
 
     public function render(): string
     {

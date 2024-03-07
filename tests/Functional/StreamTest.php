@@ -9,13 +9,14 @@ use Basis\Nats\Consumer\Consumer;
 use Basis\Nats\Message\Payload;
 use Basis\Nats\Stream\RetentionPolicy;
 use Basis\Nats\Stream\StorageBackend;
+use Closure;
 use Tests\FunctionalTestCase;
 
 class StreamTest extends FunctionalTestCase
 {
-    private mixed $called;
+    private $called;
 
-    private bool $empty;
+    private $empty;
 
     public function testConsumerExpiration()
     {
@@ -45,7 +46,7 @@ class StreamTest extends FunctionalTestCase
         $stream->create();
 
         // windows value using nanoseconds
-        $this->assertEquals(0.5 * 1_000_000_000, $stream->info()->getValue('config.duplicate_window'));
+        $this->assertEquals(0.5 * 1000000000, $stream->info()->getValue('config.duplicate_window'));
 
         $stream->put('tester', new Payload("hello", [
             'Nats-Msg-Id' => 'the-message'
@@ -62,7 +63,7 @@ class StreamTest extends FunctionalTestCase
         $this->called = null;
         $this->assertWrongNumPending($consumer, 1);
 
-        $consumer->handle($this->persistMessage(...));
+        $consumer->handle(Closure::fromCallable([$this, 'persistMessage']));
 
         $this->assertNotNull($this->called);
 
@@ -74,14 +75,14 @@ class StreamTest extends FunctionalTestCase
         $this->assertWrongNumPending($consumer);
 
         // 500ms sleep
-        usleep(500 * 1_000);
+        usleep(500 * 1000);
 
         $stream->put('tester', new Payload("hello", [
             'Nats-Msg-Id' => 'the-message'
         ]));
         $this->assertWrongNumPending($consumer, 1);
 
-        usleep(500 * 1_000);
+        usleep(500 * 1000);
 
         $stream->put('tester', new Payload("hello", [
             'Nats-Msg-Id' => 'the-message'
@@ -227,12 +228,12 @@ class StreamTest extends FunctionalTestCase
 
         $this->assertNull($this->called);
         $consumer->setIterations(1);
-        $consumer->handle($this->persistMessage(...));
+        $consumer->handle(Closure::fromCallable([$this, 'persistMessage']));
 
         $this->assertNull($this->called);
         $stream->put('tester.greet', [ 'name' => 'nekufa' ]);
         $consumer->setIterations(1)->setExpires(1);
-        $consumer->handle($this->persistMessage(...));
+        $consumer->handle(Closure::fromCallable([$this, 'persistMessage']));
 
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->name, 'nekufa');
@@ -246,7 +247,7 @@ class StreamTest extends FunctionalTestCase
 
         $stream->put('tester.greet', [ 'name' => 'nekufa' ]);
         $consumer->setIterations(1)->setDelay(0);
-        $consumer->handle($this->persistMessage(...));
+        $consumer->handle(Closure::fromCallable([$this, 'persistMessage']));
 
         $this->assertNull($this->called);
     }
@@ -278,12 +279,12 @@ class StreamTest extends FunctionalTestCase
         $this->assertSame($consumer1, $stream->getConsumer($consumer1->getName()));
 
         $consumer1->setIterations(1);
-        $consumer1->handle($this->persistMessage(...));
+        $consumer1->handle(Closure::fromCallable([$this, 'persistMessage']));
 
         $this->assertNull($this->called);
         $stream->put('tester.greet', [ 'name' => 'oxidmod' ]);
         $consumer1->setIterations(1)->setExpires(1);
-        $consumer1->handle($this->persistMessage(...));
+        $consumer1->handle(Closure::fromCallable([$this, 'persistMessage']));
 
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->name, 'oxidmod');
@@ -295,7 +296,7 @@ class StreamTest extends FunctionalTestCase
 
         $stream->put('tester.greet', [ 'name' => 'oxidmod' ]);
         $consumer2->setIterations(1)->setDelay(0);
-        $consumer2->handle($this->persistMessage(...));
+        $consumer2->handle(Closure::fromCallable([$this, 'persistMessage']));
 
         $this->assertNull($this->called);
 
@@ -342,33 +343,33 @@ class StreamTest extends FunctionalTestCase
 
         // [1] using 1 iteration
         $consumer->setIterations(1);
-        $this->assertSame(1, $consumer->handle($this->persistMessage(...)));
+        $this->assertSame(1, $consumer->handle(Closure::fromCallable([$this, 'persistMessage'])));
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->tid, 1);
 
         // [2], [3] using 2 iterations
         $consumer->setIterations(2);
-        $this->assertSame(2, $consumer->handle($this->persistMessage(...)));
+        $this->assertSame(2, $consumer->handle(Closure::fromCallable([$this, 'persistMessage'])));
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->tid, 3);
 
         // [4, 5] using 1 iteration
         $consumer->setBatching(2)->setIterations(1);
-        $this->assertSame(2, $consumer->handle($this->persistMessage(...)));
+        $this->assertSame(2, $consumer->handle(Closure::fromCallable([$this, 'persistMessage'])));
         $this->assertNotNull($this->called);
         $this->assertSame($this->called->tid, 5);
 
         // [6, 7], [8, 9] using 2 iterations
         $consumer->setBatching(2)->setIterations(2);
-        $this->assertSame(4, $consumer->handle($this->persistMessage(...)));
+        $this->assertSame(4, $consumer->handle(Closure::fromCallable([$this, 'persistMessage'])));
 
         // [10] using 1 iteration
         $consumer->setBatching(1)->setIterations(1);
-        $this->assertSame(1, $consumer->handle($this->persistMessage(...)));
+        $this->assertSame(1, $consumer->handle(Closure::fromCallable([$this, 'persistMessage'])));
 
         // no more messages
         $consumer->setIterations(1);
-        $this->assertSame(0, $consumer->handle($this->persistMessage(...)));
+        $this->assertSame(0, $consumer->handle(Closure::fromCallable([$this, 'persistMessage'])));
     }
 
     private function assertWrongNumPending(Consumer $consumer, ?int $expected = null, int $loops = 100): void

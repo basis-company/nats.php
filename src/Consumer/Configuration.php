@@ -10,28 +10,32 @@ class Configuration
 {
     private const OPT_START_TIME_FORMAT = 'Y-m-d\TH:i:s.uP'; # ISO8601 with microseconds
 
-    private bool $ephemeral = false;
-    private ?bool $flowControl = null;
-    private ?bool $headersOnly = null;
-    private ?int $ackWait = null;
-    private ?int $idleHeartbeat = null;
-    private ?int $maxAckPending = null;
-    private ?int $maxDeliver = null;
-    private ?int $maxWaiting = null;
-    private ?int $startSequence = null;
-    private ?DateTimeInterface $startTime = null;
-    private ?string $deliverGroup = null;
-    private ?string $deliverSubject = null;
-    private ?string $description = null;
-    private ?string $subjectFilter = null;
-    private string $ackPolicy = AckPolicy::EXPLICIT;
-    private string $deliverPolicy = DeliverPolicy::ALL;
-    private string $replayPolicy = ReplayPolicy::INSTANT;
+    private $ephemeral = false;
+    private $flowControl = null;
+    private $headersOnly = null;
+    private $ackWait = null;
+    private $idleHeartbeat = null;
+    private $maxAckPending = null;
+    private $maxDeliver = null;
+    private $maxWaiting = null;
+    private $startSequence = null;
+    private $startTime = null;
+    private $deliverGroup = null;
+    private $deliverSubject = null;
+    private $description = null;
+    private $subjectFilter = null;
+    private $ackPolicy = AckPolicy::EXPLICIT;
+    private $deliverPolicy = DeliverPolicy::ALL;
+    private $replayPolicy = ReplayPolicy::INSTANT;
+    private $stream;
+    private $name;
 
     public function __construct(
-        private readonly string $stream,
-        private ?string $name = null
+        string $stream,
+        ?string $name = null
     ) {
+        $this->stream = $stream;
+        $this->name = $name;
     }
 
     public function getAckPolicy(): string
@@ -229,7 +233,10 @@ class Configuration
                 break;
 
             case DeliverPolicy::BY_START_TIME:
-                $config['opt_start_time'] = $this->getStartTime()?->format(self::OPT_START_TIME_FORMAT);
+                $config['opt_start_time'] = null;
+                if ($this->getStartTime() !== null) {
+                    $config['opt_start_time'] = $this->getStartTime()->format(self::OPT_START_TIME_FORMAT);
+                }
                 break;
         }
 

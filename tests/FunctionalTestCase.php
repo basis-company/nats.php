@@ -16,6 +16,7 @@ abstract class FunctionalTestCase extends TestCase
     {
         $configuration = $this->getConfiguration(...$options);
 
+
         $logger = null;
         if (getenv('NATS_CLIENT_LOG')) {
             $logger = $this->getLogger();
@@ -24,7 +25,7 @@ abstract class FunctionalTestCase extends TestCase
         return new Client($configuration, $logger);
     }
 
-    protected ?Client $client = null;
+    protected $client = null;
 
     public function getClient(): Client
     {

@@ -6,13 +6,14 @@ namespace Tests\Functional;
 
 use Basis\Nats\Client;
 use Basis\Nats\Message\Payload;
+use Closure;
 use ReflectionProperty;
 use Tests\FunctionalTestCase;
 
 class SubjectTest extends FunctionalTestCase
 {
-    private bool $tested = false;
-    private int $responseCounter = 0;
+    private $tested = false;
+    private $responseCounter = 0;
     private $socket;
 
     public function testPublishSubscribe()
@@ -53,7 +54,7 @@ class SubjectTest extends FunctionalTestCase
     public function testProcessing()
     {
         $client = $this->createClient();
-        $client->subscribe('hello.sync', $this->greet(...));
+        $client->subscribe('hello.sync', Closure::fromCallable([$this, 'greet']));
         $this->assertSame($client->dispatch('hello.sync', 'Dmitry')->body, 'Hello, Dmitry');
     }
 
@@ -61,7 +62,7 @@ class SubjectTest extends FunctionalTestCase
     {
         $client = $this->createClient();
 
-        $client->subscribe('hello.request', $this->greet(...));
+        $client->subscribe('hello.request', Closure::fromCallable([$this, 'greet']));
         $this->responseCounter = 0;
 
         $client->request('hello.request', 'Nekufa1', function ($response) use ($client) {
@@ -96,7 +97,7 @@ class SubjectTest extends FunctionalTestCase
         //subscriptions should be empty to begin with
         $this->assertEquals(0, count($refSubscriptions->getValue($client)));
 
-        $client->subscribe('hello.request', $this->greet(...));
+        $client->subscribe('hello.request', Closure::fromCallable([$this, 'greet']));
         $this->responseCounter = 0;
 
         //Adding one subscription for hello.request
@@ -133,7 +134,7 @@ class SubjectTest extends FunctionalTestCase
             'inboxPrefix' => '_MY_CUSTOM_PREFIX'
         ]);
 
-        $client->subscribe('hello.request', $this->greet(...));
+        $client->subscribe('hello.request', Closure::fromCallable([$this, 'greet']));
         $this->responseCounter = 0;
 
         $this->assertEquals(1, count($property->getValue($client)));
@@ -167,7 +168,7 @@ class SubjectTest extends FunctionalTestCase
 
         $subjects = ['hello.request1', 'hello.request2'];
         foreach ($subjects as $subject) {
-            $client->subscribe($subject, $this->greet(...));
+            $client->subscribe($subject, Closure::fromCallable([$this, 'greet']));
         }
         $this->assertCount(2, $property->getValue($client));
 

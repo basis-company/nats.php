@@ -6,7 +6,7 @@ namespace Basis\Nats\Message;
 
 class Unsubscribe extends Prototype
 {
-    public string $sid;
+    public $sid;
 
     public function render(): string
     {
