@@ -49,8 +49,12 @@ services:
   php-cli-7.3:
     image: php:7.3-cli-bullseye
     user: root
-   # build:
-   #   context: php-cli/7.3
+    depends_on:
+      - credentials-generator
+      - nats
+      - certs-generator
+      - nats-with-jwt-nkey
+      - nats-with-certs
     volumes:
       - .././:/opt/project:rw
     working_dir: /opt/project
