@@ -239,7 +239,7 @@ class Client
             try {
                 $line = $this->readLine(1024, "\r\n", $checkTimeout);
 
-                if ($line && ($this->ping || trim($line) != 'PONG')) {
+                if ($line && ($this->ping || trim($line) != 'PONG') && ($this->pong || trim($line) != 'PING')) {
                     break;
                 }
                 if ($line === false && $ping < time()) {
@@ -247,7 +247,7 @@ class Client
                         $this->send(new Ping([]));
                         $line = $this->readLine(1024, "\r\n");
                         $ping = time() + $this->configuration->pingInterval;
-                        if ($line && ($this->ping || trim($line) != 'PONG')) {
+                        if ($line && ($this->ping || trim($line) != 'PONG') && ($this->pong || trim($line) != 'PING')) {
                             break;
                         }
                     } catch (Throwable $e) {
