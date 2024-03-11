@@ -180,6 +180,8 @@ class Connection
         }
 
         $this->infoMessage = $this->getMessage($config->timeout);
+        assert($this->infoMessage instanceof Info);
+
         if (isset($this->infoMessage->nonce) && $this->authenticator) {
             $this->connectMessage->sig = $this->authenticator->sign($this->infoMessage->nonce);
             $this->connectMessage->nkey = $this->authenticator->getPublicKey();
