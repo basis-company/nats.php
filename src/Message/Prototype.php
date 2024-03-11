@@ -16,9 +16,16 @@ abstract class Prototype
         return new static(Payload::parse($data));
     }
 
-    public function __construct(array|Payload $payload)
+    public function __construct(array|Payload|null $payload = null)
     {
+        if ($payload === null) {
+            return;
+        }
+
         $values = is_array($payload) ? $payload : $payload->getValues();
+        if ($values === null) {
+            return;
+        }
 
         foreach ($values as $k => $v) {
             if (!property_exists($this, $k)) {

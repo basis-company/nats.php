@@ -4,14 +4,8 @@ declare(strict_types=1);
 
 namespace Basis\Nats;
 
-use Basis\Nats\Message\Connect;
-use Basis\Nats\Message\Factory;
-use Basis\Nats\Message\Info;
 use Basis\Nats\Message\Msg;
 use Basis\Nats\Message\Payload;
-use Basis\Nats\Message\Ping;
-use Basis\Nats\Message\Pong;
-use Basis\Nats\Message\Prototype;
 use Basis\Nats\Message\Publish;
 use Basis\Nats\Message\Subscribe;
 use Basis\Nats\Message\Unsubscribe;
@@ -19,23 +13,14 @@ use Closure;
 use Exception;
 use LogicException;
 use Psr\Log\LoggerInterface;
-use Throwable;
 
 class Client
 {
-    public Connect $connect;
-    public Info $info;
     public readonly Api $api;
 
-    private readonly ?Authenticator $authenticator;
-
-    private $socket;
-    private $context;
-    private array $handlers = [];
-    private float $ping = 0;
-    private float $pong = 0;
-    private ?float $lastDataReadFailureAt = null;
     private string $name = '';
+
+    private array $handlers = [];
     private array $subscriptions = [];
 
     private bool $skipInvalidMessages = false;
@@ -43,10 +28,12 @@ class Client
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
         public ?LoggerInterface $logger = null,
+        public ?Connection $connection = null,
     ) {
         $this->api = new Api($this);
-
-        $this->authenticator = Authenticator::create($this->configuration);
+        if (!$connection) {
+            $this->connection = new Connection(client: $this, logger: $logger);
+        }
     }
 
     public function api($command, array $args = [], ?Closure $callback = null): ?object
@@ -69,46 +56,6 @@ class Client
         }
 
         return $result;
-    }
-
-    /**
-     * @return $this
-     * @throws Throwable
-     */
-    public function connect(): self
-    {
-        if ($this->socket) {
-            return $this;
-        }
-
-        $config = $this->configuration;
-
-        $dsn = "$config->host:$config->port";
-        $flags = STREAM_CLIENT_CONNECT;
-        $this->context = stream_context_create();
-        $this->socket = @stream_socket_client($dsn, $error, $errorMessage, $config->timeout, $flags, $this->context);
-
-        if ($error || !$this->socket) {
-            throw new Exception($errorMessage ?: "Connection error", $error);
-        }
-
-        $this->setTimeout($config->timeout);
-
-        $this->connect = new Connect($config->getOptions());
-
-        if ($this->name) {
-            $this->connect->name = $this->name;
-        }
-
-        $this->info = $this->process($config->timeout);
-        if (isset($this->info->nonce) && $this->authenticator) {
-            $this->connect->sig = $this->authenticator->sign($this->info->nonce);
-            $this->connect->nkey = $this->authenticator->getPublicKey();
-        }
-
-        $this->send($this->connect);
-
-        return $this;
     }
 
     public function dispatch(string $name, mixed $payload, ?float $timeout = null)
@@ -146,22 +93,18 @@ class Client
 
     public function ping(): bool
     {
-        $this->ping = microtime(true);
-        $this->send(new Ping([]));
-        $this->process($this->configuration->timeout);
-        $result = $this->ping <= $this->pong;
-        $this->ping = 0;
-
-        return $result;
+        return $this->connection->ping();
     }
 
     public function publish(string $name, mixed $payload, ?string $replyTo = null): self
     {
-        return $this->send(new Publish([
+        $this->connection->sendMessage(new Publish([
             'payload' => Payload::parse($payload),
             'replyTo' => $replyTo,
             'subject' => $name,
         ]));
+
+        return $this;
     }
 
     public function request(string $name, mixed $payload, Closure $handler): self
@@ -194,12 +137,17 @@ class Client
         foreach ($this->subscriptions as $i => $subscription) {
             if ($subscription['name'] == $name) {
                 unset($this->subscriptions[$i]);
-                $this->send(new Unsubscribe(['sid' => $subscription['sid']]));
+                $this->connection->sendMessage(new Unsubscribe(['sid' => $subscription['sid']]));
                 unset($this->handlers[$subscription['sid']]);
             }
         }
 
         return $this;
+    }
+
+    public function getSubscriptions(): array
+    {
+        return $this->subscriptions;
     }
 
     public function setDelay(float $delay, string $mode = Configuration::DELAY_CONSTANT): self
@@ -214,126 +162,9 @@ class Client
         return $this;
     }
 
-    public function setTimeout(float $value): self
+    public function process(null|int|float $timeout = 0, bool $reply = true)
     {
-        $this->connect();
-        $seconds = (int) floor($value);
-        $milliseconds = (int) (1000 * ($value - $seconds));
-
-        stream_set_timeout($this->socket, $seconds, $milliseconds);
-
-        return $this;
-    }
-
-    /**
-     * @throws Throwable
-     */
-    public function process(null|int|float $timeout = 0, bool $reply = true, bool $checkTimeout = true)
-    {
-        $this->lastDataReadFailureAt = null;
-        $max = microtime(true) + $timeout;
-        $ping = time() + $this->configuration->pingInterval;
-
-        $iteration = 0;
-        while (true) {
-            try {
-                $line = $this->readLine(1024, "\r\n", $checkTimeout);
-
-                if ($line && ($this->ping || trim($line) != 'PONG') && ($this->pong || trim($line) != 'PING')) {
-                    break;
-                }
-                if ($line === false && $ping < time()) {
-                    try {
-                        $this->send(new Ping([]));
-                        $line = $this->readLine(1024, "\r\n");
-                        $ping = time() + $this->configuration->pingInterval;
-                        if ($line && ($this->ping || trim($line) != 'PONG') && ($this->pong || trim($line) != 'PING')) {
-                            break;
-                        }
-                    } catch (Throwable $e) {
-                        if ($this->ping) {
-                            return;
-                        }
-                        $this->processSocketException($e);
-                    }
-                }
-                $now = microtime(true);
-                if ($now >= $max) {
-                    return null;
-                }
-                $this->logger?->debug('sleep', compact('max', 'now'));
-                $this->configuration->delay($iteration++);
-            } catch (Throwable $e) {
-                $this->processSocketException($e);
-            }
-        }
-
-        switch (trim($line)) {
-            case 'PING':
-                $this->logger?->debug('receive ' . $line);
-                $this->send(new Pong([]));
-                $now = microtime(true);
-                if ($now >= $max) {
-                    return null;
-                }
-                return $this->process($max - $now, $reply, $checkTimeout);
-
-            case 'PONG':
-                $this->logger?->debug('receive ' . $line);
-                return $this->pong = microtime(true);
-
-            case '+OK':
-                return $this->logger?->debug('receive ' . $line);
-        }
-
-        try {
-            $message = Factory::create(trim($line));
-        } catch (Throwable $exception) {
-            $this->logger?->debug($line);
-            throw $exception;
-        }
-
-        $payload = '';
-        if ($message instanceof Msg) {
-            if ($message->length) {
-                $iteration = 0;
-                while (strlen($payload) < $message->length) {
-                    $payloadLine = $this->readLine($message->length, '', false);
-                    if (!$payloadLine) {
-                        if ($iteration > 16) {
-                            $this->processSocketException(
-                                new LogicException("No payload for message $message->sid")
-                            );
-                            break;
-                        }
-                        $this->configuration->delay($iteration++);
-                        continue;
-                    }
-                    if (strlen($payloadLine) != $message->length) {
-                        $this->logger?->debug(
-                            'got ' . strlen($payloadLine) . '/' . $message->length . ': ' . $payloadLine
-                        );
-                    }
-                    $payload .= $payloadLine;
-                }
-            }
-            $message->parse($payload);
-        }
-
-        $this->logger?->debug('receive ' . $line . $payload);
-        return $this->onMessage($message, $reply);
-    }
-
-    protected function onMessage(Prototype $message, bool $reply)
-    {
-        if ($message instanceof Info) {
-            if (isset($message->tls_verify) && $message->tls_verify) {
-                $this->enableTls(true);
-            } elseif (isset($message->tls_required) && $message->tls_required) {
-                $this->enableTls(false);
-            }
-            return $message;
-        }
+        $message = $this->connection->getMessage($timeout);
 
         if ($message instanceof Msg) {
             if (!array_key_exists($message->sid, $this->handlers)) {
@@ -347,53 +178,17 @@ class Client
                 $this->publish($message->replyTo, $result);
             }
             return $result;
-        }
-
-        return null;
-    }
-
-    /**
-     *
-     *
-     * @throws Exception
-     */
-    private function enableTls(bool $requireClientCert): void
-    {
-        if ($requireClientCert) {
-            if (!empty($this->configuration->tlsKeyFile)) {
-                if (!file_exists($this->configuration->tlsKeyFile)) {
-                    throw new Exception("tlsKeyFile file does not exist: " . $this->configuration->tlsKeyFile);
-                }
-                stream_context_set_option($this->context, 'ssl', 'local_pk', $this->configuration->tlsKeyFile);
-            }
-            if (!empty($this->configuration->tlsCertFile)) {
-                if (!file_exists($this->configuration->tlsCertFile)) {
-                    throw new Exception("tlsCertFile file does not exist: " . $this->configuration->tlsCertFile);
-                }
-                stream_context_set_option($this->context, 'ssl', 'local_cert', $this->configuration->tlsCertFile);
-            }
-        }
-
-        if (!empty($this->configuration->tlsCaFile)) {
-            if (!file_exists($this->configuration->tlsCaFile)) {
-                throw new Exception("tlsCaFile file does not exist: " . $this->configuration->tlsCaFile);
-            }
-            stream_context_set_option($this->context, 'ssl', 'cafile', $this->configuration->tlsCaFile);
-        }
-
-        if (!stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT)) {
-            throw new Exception('Failed to connect: Error enabling TLS');
+        } else {
+            return $message;
         }
     }
-
 
     private function doSubscribe(string $subject, ?string $group, Closure $handler): self
     {
         $sid = bin2hex(random_bytes(4));
-
         $this->handlers[$sid] = $handler;
 
-        $this->send(new Subscribe([
+        $this->connection->sendMessage(new Subscribe([
             'sid' => $sid,
             'subject' => $subject,
             'group' => $group,
@@ -407,69 +202,9 @@ class Client
         return $this;
     }
 
-    private function processSocketException(Throwable $e): self
+    public function getName(): string
     {
-        if (!$this->configuration->reconnect) {
-            $this->logger?->error($e->getMessage());
-            throw $e;
-        }
-
-        $iteration = 0;
-
-        while (true) {
-            try {
-                $this->socket = null;
-                $this->connect();
-            } catch (Throwable $e) {
-                $this->configuration->delay($iteration++);
-                continue;
-            }
-            break;
-        }
-
-        foreach ($this->subscriptions as $i => $subscription) {
-            $this->send(new Subscribe([
-                'sid' => $subscription['sid'],
-                'subject' => $subscription['name'],
-            ]));
-        }
-        return $this;
-    }
-
-    private function send(Prototype $message): self
-    {
-        $this->connect();
-
-        $line = $message->render() . "\r\n";
-        $length = strlen($line);
-
-        $this->logger?->debug('send ' . $line);
-
-        while (strlen($line)) {
-            try {
-                $written = @fwrite($this->socket, $line, 1024);
-                if ($written === false) {
-                    throw new LogicException('Error sending data');
-                }
-                if ($written === 0) {
-                    throw new LogicException('Broken pipe or closed connection');
-                }
-                if ($length == $written) {
-                    break;
-                }
-                $line = substr($line, $written);
-            } catch (Throwable $e) {
-                $this->processSocketException($e);
-                $line = $message->render() . "\r\n";
-            }
-        }
-
-        if ($this->configuration->verbose && $line !== "PING\r\n") {
-            // get feedback
-            $this->process($this->configuration->timeout);
-        }
-
-        return $this;
+        return $this->name;
     }
 
     public function setName(string $name): self
@@ -478,28 +213,15 @@ class Client
         return $this;
     }
 
+    public function setTimeout(float $value): self
+    {
+        $this->connection->setTimeout($value);
+        return $this;
+    }
+
     public function skipInvalidMessages(bool $skipInvalidMessages): self
     {
         $this->skipInvalidMessages = $skipInvalidMessages;
         return $this;
-    }
-
-    private function readLine(int $length, string $ending = '', bool $checkTimeout = true): string|bool
-    {
-        $line = stream_get_line($this->socket, $length, $ending);
-        if ($line || !$checkTimeout) {
-            $this->lastDataReadFailureAt = null;
-            return $line;
-        }
-
-        $now = microtime(true);
-        $this->lastDataReadFailureAt = $this->lastDataReadFailureAt ?? $now;
-        $timeWithoutDataRead = $now - $this->lastDataReadFailureAt;
-
-        if ($timeWithoutDataRead > $this->configuration->timeout) {
-            throw new LogicException('Socket read timeout');
-        }
-
-        return false;
     }
 }

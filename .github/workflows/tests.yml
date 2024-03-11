@@ -9,11 +9,13 @@ jobs:
     strategy:
       matrix:
         php: ["8.1", "8.2", "8.3"]
+        verbose: ['0', '1']
     steps:
       - uses: actions/checkout@v2
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          NATS_CLIENT_VERBOSE: ${{ matrix.verbose }}
       - uses: php-actions/composer@v6
       - run: docker compose up -d
         working-directory: docker

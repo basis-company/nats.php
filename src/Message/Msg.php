@@ -8,13 +8,14 @@ use Exception;
 
 class Msg extends Prototype
 {
-    public ?int $hlength = null;
-    public ?string $replyTo = null;
     public int $length;
     public Payload $payload;
     public string $sid;
     public string $subject;
+
+    public ?int $hlength = null;
     public ?int $timestampNanos = null;
+    public ?string $replyTo = null;
 
     public static function create(string $data): self
     {

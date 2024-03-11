@@ -23,7 +23,7 @@ The recommended way to install the library is through [Composer](http://getcompo
 $ composer require basis-company/nats
 ```
 
-The NKeys functionality requires Ed25519, which is provided in `libsodium` extension or `sodium_compat` package. 
+The NKeys functionality requires Ed25519, which is provided in `libsodium` extension or `sodium_compat` package.
 
 ## Connection
 ```php
@@ -63,9 +63,9 @@ $client->ping(); // true
 ```
 
 ### Connecting to a cluster with TLS enabled
-Typically, when connecting to a cluster with TLS enabled the connection settings do not change. The client lib will automatically switch over to TLS 1.2. However, if you're using a self-signed certificate you may have to point to your local CA file using the tlsCaFile setting. 
+Typically, when connecting to a cluster with TLS enabled the connection settings do not change. The client lib will automatically switch over to TLS 1.2. However, if you're using a self-signed certificate you may have to point to your local CA file using the tlsCaFile setting.
 
-When connecting to a nats cluster that requires the client to provide TLS certificates use the tlsCertFile and tlsKeyFile to point at your local TLS certificate and private key file. 
+When connecting to a nats cluster that requires the client to provide TLS certificates use the tlsCertFile and tlsKeyFile to point at your local TLS certificate and private key file.
 
 Nats Server documentation for:
 - [Enabling TLS](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/tls)
@@ -191,7 +191,7 @@ $goodbyer
         // batch will be processed to the end and the handling would be stopped
         // $goodbyer->interrupt();
     });
-    
+
 // you also can create ephemeral consumer
 // the only thing that ephemeral consumer is created as soon as object is created
 // you have to create full consumer configuration first
@@ -201,7 +201,7 @@ use Basis\Nats\Consumer\DeliverPolicy;
 $configuration = (new ConsumerConfiguration($stream->getName()))
     ->setDeliverPolicy(DeliverPolicy::NEW)
     ->setSubjectFilter('mailer.greet');
-    
+
 $ephemeralConsumer = $stream->createEphemeralConsumer($configuration);
 
 // now you can use ephemeral consumer in the same way as durable consumer
@@ -210,12 +210,12 @@ $ephemeralConsumer->handle(function ($address) {
 });
 
 // the only difference - you don't have to remove it manually, it will be deleted by NATS when socket connection is closed
-// be aware that NATS will not remove that consumer immediately, process can take few seconds 
+// be aware that NATS will not remove that consumer immediately, process can take few seconds
 var_dump(
     $ephemeralConsumer->getName(),
     $ephemeralConsumer->info(),
 );
-    
+
 // if you need to append some headers, construct payload manually
 use Basis\Nats\Message\Payload;
 
@@ -224,7 +224,7 @@ $payload = new Payload('nekufa@gmail.com', [
 ]);
 
 $stream->put('mailer.bye', $payload);
-    
+
 ```
 
 ## Key Value Storage
@@ -292,32 +292,34 @@ Installing dependencies from lock file (including require-dev)
  % export NATS_PORT=4222
  % export NATS_CLIENT_LOG=1
  % composer run perf-test
-PHPUnit 9.5.10 by Sebastian Bergmann and contributors.
+PHPUnit 9.5.28 by Sebastian Bergmann and contributors.
 
-Runtime:       PHP 8.1.1
+Runtime:       PHP 8.3.3-1+ubuntu22.04.1+deb.sury.org+1
 Configuration: /home/nekufa/software/github/nats.php/phpunit.xml.dist
 Warning:       No code coverage driver available
 
-[2022-01-19T10:42:14.008230+00:00] SubjectTest.testPerformance.INFO: start performance test [] []
-[2022-01-19T10:42:14.246606+00:00] SubjectTest.testPerformance.INFO: publishing {"rps":421871.0,"length":100000,"time":0.23703885078430176} []
-[2022-01-19T10:42:14.530670+00:00] SubjectTest.testPerformance.INFO: processing {"rps":355120.0,"length":100000,"time":0.2839939594268799} []
+[2024-03-11T17:06:30.907277+00:00] PerformanceTest.testPerformance.DEBUG: send CONNECT {"headers":true,"pedantic":false,"verbose":false,"lang":"php","version":"dev"}  [] []
+[2024-03-11T17:06:30.907312+00:00] PerformanceTest.testPerformance.INFO: start performance test [] []
+[2024-03-11T17:06:32.135674+00:00] PerformanceTest.testPerformance.INFO: publishing {"rps":407072.0,"length":500000,"time":1.228281021118164} []
+[2024-03-11T17:06:33.412134+00:00] PerformanceTest.testPerformance.INFO: processing {"rps":391723.0,"length":500000,"time":1.2764089107513428} []
 
 
  % export NATS_CLIENT_VERBOSE=1
  % composer run perf-test
-PHPUnit 9.5.10 by Sebastian Bergmann and contributors.
+PHPUnit 9.5.28 by Sebastian Bergmann and contributors.
 
-Runtime:       PHP 8.1.1
+Runtime:       PHP 8.3.3-1+ubuntu22.04.1+deb.sury.org+1
 Configuration: /home/nekufa/software/github/nats.php/phpunit.xml.dist
 Warning:       No code coverage driver available
 
-[2022-01-19T10:42:21.319838+00:00] SubjectTest.testPerformance.INFO: start performance test [] []
-[2022-01-19T10:42:21.766501+00:00] SubjectTest.testPerformance.INFO: publishing {"rps":224640.0,"length":100000,"time":0.4451560974121094} []
-[2022-01-19T10:42:21.922010+00:00] SubjectTest.testPerformance.INFO: processing {"rps":353317.0,"length":100000,"time":0.15544414520263672} []
+[2024-03-11T17:07:12.829135+00:00] PerformanceTest.testPerformance.DEBUG: send CONNECT {"headers":true,"pedantic":false,"verbose":true,"lang":"php","version":"dev"}  [] []
+[2024-03-11T17:07:12.829172+00:00] PerformanceTest.testPerformance.INFO: start performance test [] []
+[2024-03-11T17:07:14.069321+00:00] PerformanceTest.testPerformance.INFO: publishing {"rps":403207.0,"length":500000,"time":1.2400550842285156} []
+[2024-03-11T17:07:15.548207+00:00] PerformanceTest.testPerformance.INFO: processing {"rps":338104.0,"length":500000,"time":1.4788329601287842} []
 .                                                                   1 / 1 (100%)
 
-nekufa@fasiga ~ % cat /proc/cpuinfo | grep i5
-model name  : Intel(R) Core(TM) i5-4670K CPU @ 3.40GHz
+nekufa@fasiga ~ % cat /proc/cpuinfo | grep AMD
+model name	: AMD Ryzen 5 3600X 6-Core Processor
 ```
 
 ## Configuration Options

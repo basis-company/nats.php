@@ -40,7 +40,7 @@ class SubjectTest extends FunctionalTestCase
         $setter = function ($socket) {
             $this->socket = $socket;
         };
-        $setter->call($client, $memoryStream);
+        $setter->call($client->connection, $memoryStream);
 
         $client->subscribeQueue('subject', 'group', function () {
         });

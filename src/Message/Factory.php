@@ -14,25 +14,36 @@ final class Factory
 
     public static function create(string $line): Prototype
     {
-        if (!str_contains($line, ' ')) {
-            throw new LogicException("Parse message failure: $line");
+        $message = match ($line) {
+            '+OK' => new Ok(),
+            'PING' => new Ping(),
+            'PONG' => new Pong(),
+            default => null,
+        };
+
+        if ($message == null) {
+            if (!str_contains($line, ' ')) {
+                throw new LogicException("Parse message failure: $line");
+            }
+
+            [$type, $body] = explode(' ', $line, 2);
+
+            if ($type == '-ERR') {
+                $message = trim($body, "'");
+                throw new LogicException($message);
+            }
+
+            $message = match ($type) {
+                'CONNECT' => Connect::create($body),
+                'INFO' => Info::create($body),
+                'PUBLISH' => Publish::create($body),
+                'SUBSCRIBE' => Subscribe::create($body),
+                'UNSUBSCRIBE' => Unsubscribe::create($body),
+                'HMSG' => Msg::create($body),
+                'MSG' => Msg::create($body),
+            };
         }
 
-        [$type, $body] = explode(' ', $line, 2);
-
-        $nick = ucfirst(strtolower($type));
-
-        if ($nick == '-err') {
-            $message = trim($body, "'");
-            throw new LogicException($message);
-        }
-
-        if ($nick == 'Hmsg') {
-            $nick = 'Msg';
-        }
-
-        $class = 'Basis\\Nats\\Message\\' . $nick;
-
-        return call_user_func_array([$class, 'create'], [$body]);
+        return $message;
     }
 }

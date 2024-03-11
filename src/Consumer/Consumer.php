@@ -144,7 +144,7 @@ class Consumer
                 $runtime->empty = true;
                 // expires request means that we should receive answer from stream
                 // consumer timeout can be more that client connection timeout
-                $this->client->process($this->expires ? PHP_INT_MAX : null, $ack, false);
+                $this->client->process($this->expires ? PHP_INT_MAX : null, $ack);
 
                 if ($runtime->empty) {
                     if ($emptyHandler) {

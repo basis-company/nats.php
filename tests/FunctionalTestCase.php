@@ -36,6 +36,8 @@ abstract class FunctionalTestCase extends TestCase
         return new Configuration([
             'host' => getenv('NATS_HOST'),
             'port' => +getenv('NATS_PORT'),
+            'delay' => 0.05,
+            'delayMode' => Configuration::DELAY_LINEAR,
             'timeout' => 0.5,
             'verbose' => getenv('NATS_CLIENT_VERBOSE') == '1',
         ], ...$options);

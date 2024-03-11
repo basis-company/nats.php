@@ -19,7 +19,7 @@ class StreamTest extends FunctionalTestCase
 
     public function testConsumerExpiration()
     {
-        $client = $this->createClient(['timeout' => 0.1, 'delay' => 0.1]);
+        $client = $this->createClient(['timeout' => 0.2, 'delay' => 0.1]);
         $stream = $client->getApi()->getStream('empty');
         $stream->getConfiguration()
             ->setSubjects(['empty']);
@@ -28,11 +28,11 @@ class StreamTest extends FunctionalTestCase
         $consumer = $stream->getConsumer('empty')->create();
         $consumer->getConfiguration()->setSubjectFilter('empty');
 
-        $info = $client->info;
+        $info = $client->connection->getInfoMessage();
 
         $consumer->setIterations(1)->setExpires(3)->handle(function () {
         });
-        $this->assertSame($info, $client->info);
+        $this->assertSame($info, $client->connection->getInfoMessage());
     }
 
     public function testDeduplication()

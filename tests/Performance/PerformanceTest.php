@@ -8,13 +8,13 @@ use Tests\FunctionalTestCase;
 
 class PerformanceTest extends FunctionalTestCase
 {
-    private int $limit = 100_000;
+    private int $limit = 500_000;
     private int $counter = 0;
 
     public function testPerformance()
     {
         $client = $this->createClient()->setTimeout(0.1)->setDelay(0);
-        $client->setLogger(null);
+        $client->connection->setLogger(null);
 
         $this->logger?->info('start performance test');
 
