@@ -15,11 +15,14 @@ class SubjectTest extends FunctionalTestCase
     private int $responseCounter = 0;
     private $socket;
 
-    public function testPublishSubscribe()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testPublishSubscribe(string $clientName)
     {
         $this->tested = false;
 
-        $client = $this->createClient();
+        $client = $this->createClient(['client' => $clientName]);
         $client->subscribe('hello', function ($message) {
             $this->assertSame('tester', $message->body);
             $this->assertSame('hello', $message->subject);
@@ -50,16 +53,22 @@ class SubjectTest extends FunctionalTestCase
         $this->assertStringContainsString('SUB subject group', $content);
     }
 
-    public function testProcessing()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testProcessing(string $clientName)
     {
-        $client = $this->createClient();
+        $client = $this->createClient(['client' => $clientName]);
         $client->subscribe('hello.sync', $this->greet(...));
         $this->assertSame($client->dispatch('hello.sync', 'Dmitry')->body, 'Hello, Dmitry');
     }
 
-    public function testRequestResponse()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testRequestResponse(string $clientName)
     {
-        $client = $this->createClient();
+        $client = $this->createClient(['client' => $clientName]);
 
         $client->subscribe('hello.request', $this->greet(...));
         $this->responseCounter = 0;
@@ -86,12 +95,15 @@ class SubjectTest extends FunctionalTestCase
         $this->assertSame($this->responseCounter, 2);
     }
 
-    public function testRequestReplyToDefault()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testRequestReplyToDefault(string $clientName)
     {
         $refSubscriptions = new ReflectionProperty(Client::class, 'subscriptions');
         $refSubscriptions->setAccessible(true);
 
-        $client = $this->createClient();
+        $client = $this->createClient(['client' => $clientName]);
 
         //subscriptions should be empty to begin with
         $this->assertEquals(0, count($refSubscriptions->getValue($client)));
@@ -124,13 +136,17 @@ class SubjectTest extends FunctionalTestCase
         $this->assertEquals(1, count($refSubscriptions->getValue($client)));
     }
 
-    public function testRequestWithCustomReplyTo()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testRequestWithCustomReplyTo(string $clientName)
     {
         $property = new ReflectionProperty(Client::class, 'subscriptions');
         $property->setAccessible(true);
 
         $client = $this->createClient([
-            'inboxPrefix' => '_MY_CUSTOM_PREFIX'
+            'inboxPrefix' => '_MY_CUSTOM_PREFIX',
+            'client' => $clientName,
         ]);
 
         $client->subscribe('hello.request', $this->greet(...));
@@ -158,12 +174,15 @@ class SubjectTest extends FunctionalTestCase
         $this->assertEquals(1, count($property->getValue($client)));
     }
 
-    public function testUnsubscribe()
+    /**
+     * @dataProvider clientProvider
+     */
+    public function testUnsubscribe(string $clientName)
     {
         $property = new ReflectionProperty(Client::class, 'handlers');
         $property->setAccessible(true);
 
-        $client = $this->createClient();
+        $client = $this->createClient(['client' => $clientName]);
 
         $subjects = ['hello.request1', 'hello.request2'];
         foreach ($subjects as $subject) {
