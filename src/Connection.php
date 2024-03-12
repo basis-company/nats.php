@@ -244,7 +244,7 @@ class Connection
 
     private function processException(Throwable $e)
     {
-        $this->logger?->error($e->getMessage());
+        $this->logger?->error($e->getMessage(), ['exception' => $e]);
 
         if (!$this->config->reconnect) {
             throw $e;
