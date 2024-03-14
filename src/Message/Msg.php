@@ -19,7 +19,7 @@ class Msg extends Prototype
     public ?int $timestampNanos = null;
     public ?string $replyTo = null;
 
-    public readonly Client $client;
+    private ?Client $client = null;
 
     public static function create(string $data): self
     {
@@ -70,6 +70,11 @@ class Msg extends Prototype
         ]));
     }
 
+    public function getClient(): ?Client
+    {
+        return $this->client;
+    }
+
     public function nack(float $delay = 0): void
     {
         $this->reply(new Ack([
@@ -78,14 +83,6 @@ class Msg extends Prototype
             'payload' => Payload::parse([
                 'delay' => $delay,
             ]),
-        ]));
-    }
-
-    public function progress(): void
-    {
-        $this->reply(new Ack([
-            'command' => '+WPI',
-            'subject' => $this->replyTo,
         ]));
     }
 
@@ -124,6 +121,14 @@ class Msg extends Prototype
         );
 
         return $this;
+    }
+
+    public function progress(): void
+    {
+        $this->reply(new Ack([
+            'command' => '+WPI',
+            'subject' => $this->replyTo,
+        ]));
     }
 
     public function render(): string
