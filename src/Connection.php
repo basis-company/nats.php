@@ -10,6 +10,7 @@ use Basis\Nats\Message\Info;
 use Basis\Nats\Message\Msg;
 use Basis\Nats\Message\Ok;
 use Basis\Nats\Message\Ping;
+use Basis\Nats\Message\Publish;
 use Basis\Nats\Message\Pong;
 use Basis\Nats\Message\Prototype as Message;
 use Basis\Nats\Message\Subscribe;
@@ -26,6 +27,7 @@ class Connection
     private float $activityAt = 0;
     private float $pingAt = 0;
     private float $pongAt = 0;
+    private float $prolongateTill = 0;
 
     private ?Authenticator $authenticator;
     private Configuration $config;
@@ -56,15 +58,17 @@ class Connection
         $max = $now + $timeout;
         $iteration = 0;
 
-        while ($now <= $max) {
+        while (true) {
+            $message = null;
             $line = stream_get_line($this->socket, 1024, "\r\n");
             $now = microtime(true);
             if ($line) {
                 $message = Factory::create($line);
-                $this->activityAt = microtime(true);
+                $this->activityAt = $now;
                 if ($message instanceof Msg) {
                     $payload = $this->getPayload($message->length);
                     $message->parse($payload);
+                    $message->setClient($this->client);
                     $this->logger?->debug('receive ' . $line . $payload);
                     return $message;
                 }
@@ -74,7 +78,7 @@ class Connection
                 } elseif ($message instanceof Ping) {
                     $this->sendMessage(new Pong([]));
                 } elseif ($message instanceof Pong) {
-                    $this->pongAt = microtime(true);
+                    $this->pongAt = $now;
                 } elseif ($message instanceof Info) {
                     if (isset($message->tls_verify) && $message->tls_verify) {
                         $this->enableTls(true);
@@ -83,18 +87,28 @@ class Connection
                     }
                     return $message;
                 }
-            } elseif ($this->activityAt && $this->activityAt + $this->config->timeout < microtime(true)) {
-                if ($this->pingAt + $this->config->pingInterval < microtime(true)) {
-                    $this->sendMessage(new Ping());
+            } elseif ($this->activityAt && $this->activityAt + $this->config->timeout < $now) {
+                if ($this->pingAt + $this->config->pingInterval < $now) {
+                    if ($this->prolongateTill < $now) {
+                        $this->sendMessage(new Ping());
+                    }
                 }
-            } elseif ($now < $max) {
+            }
+            if ($now > $max) {
+                break;
+            }
+            if ($message && $now < $max) {
                 $this->logger?->debug('sleep', compact('max', 'now'));
                 $this->config->delay($iteration++);
             }
         }
 
-        if ($this->activityAt + $this->config->timeout < microtime(true)) {
-            $this->processException(new LogicException('Socket read timeout'));
+        if ($this->activityAt + $this->config->timeout < $now) {
+            if ($this->pongAt + $this->config->pingInterval < $now) {
+                if ($this->prolongateTill < $now) {
+                    $this->processException(new LogicException('Socket read timeout'));
+                }
+            }
         }
 
         return null;
@@ -136,6 +150,12 @@ class Connection
             }
         }
 
+        if ($message instanceof Publish) {
+            if (strpos($message->subject, '$JS.API.CONSUMER.MSG.NEXT.') === 0) {
+                $prolongate = $message->payload->expires / 1_000_000_000;
+                $this->prolongateTill = microtime(true) + $prolongate;
+            }
+        }
         if ($message instanceof Ping) {
             $this->pingAt = microtime(true);
         }
