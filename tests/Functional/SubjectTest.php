@@ -15,6 +15,51 @@ class SubjectTest extends FunctionalTestCase
     private int $responseCounter = 0;
     private $socket;
 
+    public function testQueue()
+    {
+        $client = $this->createClient(['timeout' => 0.1]);
+
+        $queue = $client->subscribe('handler');
+        $queue->setTimeout(0.1);
+
+        $client->publish('handler', 'tester');
+        $client->logger?->info('published');
+        $message = $queue->fetch(1);
+        $this->assertNotNull($message);
+        $this->assertSame("$message->payload", 'tester');
+
+        $message = $queue->fetch(1);
+        $this->assertNull($message);
+        $this->assertCount(0, $queue->fetchAll(10));
+        $this->assertCount(0, $queue->fetchAll(10));
+
+        $client->publish('handler', 'tester1');
+        $client->publish('handler', 'tester2');
+        $this->assertCount(1, $queue->fetchAll(1));
+        $this->assertCount(1, $queue->fetchAll(1));
+        $this->assertCount(0, $queue->fetchAll(1));
+
+        $client->publish('handler', 'tester3');
+        $client->publish('handler', 'tester4');
+        $this->assertCount(2, $queue->fetchAll(10));
+        $this->assertCount(0, $queue->fetchAll(10));
+
+        $client->publish('handler', 'tester5');
+        $this->assertNotNull($queue->next());
+
+        $this->expectExceptionMessage("Subject handler is empty");
+        $queue->next(0.1);
+    }
+
+    public function testQueueUnsubscribe()
+    {
+        $client = $this->createClient(['timeout' => 0.1]);
+        $queue = $client->subscribe('bazyaba');
+        $this->assertCount(1, $client->getSubscriptions());
+        $client->unsubscribe($queue);
+        $this->assertCount(0, $client->getSubscriptions());
+    }
+
     public function testPublishSubscribe()
     {
         $this->tested = false;

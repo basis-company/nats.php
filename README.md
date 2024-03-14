@@ -106,6 +106,39 @@ $client->ping(); // true
 ## Publish Subscribe
 
 ```php
+// queue usage example
+$queue = $client->subscribe('test_subject');
+
+$client->publish('test_subject', 'hello');
+$client->publish('test_subject', 'world');
+
+// optional message fetch
+// if there are no updates null will be returned
+$message1 = $queue->fetch();
+echo $message1->getPayload(); // hello
+
+// locks untill message is fetched from subject
+// to limit lock timeout, pass optional timeout value
+$message2 = $queue->next();
+echo $message2->getPayload(); // world
+
+$client->publish('test_subject', 'hello');
+$client->publish('test_subject', 'batching');
+
+// batch message fetching, limit argument is optional
+$messages = $queue->fetchAll(10);
+echo count($messages);
+
+// fetch all messages that are published to the subject client connection
+// queue will stop message fetching when another subscription receives a message
+// in advance you can time limit batch fetching
+$queue->setLimit(1); // limit to 1 second
+$messages = $queue->fetchAll();
+
+// reset subscription
+$client->unsubscribe($queue);
+
+// callback hell example
 $client->subscribe('hello', function ($message) {
     var_dump('got message', $message); // tester
 });
@@ -191,6 +224,46 @@ $goodbyer
         // batch will be processed to the end and the handling would be stopped
         // $goodbyer->interrupt();
     });
+
+// consumer can be used via queue interface
+$queue = $goodbyer->getQueue();
+while ($message = $queue->next()) {
+    if (rand(1, 10) % 2 == 0) {
+        mail($address, "See you later");
+        $message->ack();
+    } else {
+        // ack with 1 second timeout
+        $message->nack(1);
+    }
+    // stop processing
+    if (rand(1, 10) % 2 == 10) {
+        // don't forget to unsubscribe
+        $client->unsubscribe($queue);
+        break;
+    }
+}
+
+// use fetchAll method to batch process messages
+// let's set batch size to 50
+$queue = $goodbyer->setBatching(50)->create()->getQueue();
+
+// fetching 100 messages provides 2 stream requests
+// limit message fetching to 1 second
+// it means no more that 100 messages would be fetched
+$messages = $queue->setLimit(1)->fetchAll(100);
+
+$recipients = [];
+foreach ($messages as $message) {
+    $recipients[] = (string) $message->payload;
+}
+
+mail_to_all($recipients, "See you later");
+
+// ack all messages
+foreach ($messages as $message) {
+    $message->ack();
+}
+
 
 // you also can create ephemeral consumer
 // the only thing that ephemeral consumer is created as soon as object is created

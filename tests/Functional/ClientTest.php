@@ -17,14 +17,16 @@ class ClientTest extends FunctionalTestCase
 
     public function testConnectionTimeout(): void
     {
-        $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('Socket read timeout');
-
         $client = $this->createClient([
             'reconnect' => false,
         ]);
         $this->assertTrue($client->ping());
 
+        $property = new ReflectionProperty(Connection::class, 'socket');
+        $property->setAccessible(true);
+        fclose($property->getValue($client->connection));
+
+        $this->expectExceptionMessage('supplied resource is not a valid stream resource');
         $client->process(1);
     }
 

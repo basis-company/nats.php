@@ -122,18 +122,21 @@ class Client
         return $this;
     }
 
-    public function subscribe(string $name, Closure $handler): self
+    public function subscribe(string $name, ?Closure $handler = null): self|Queue
     {
         return $this->doSubscribe($name, null, $handler);
     }
 
-    public function subscribeQueue(string $name, string $group, Closure $handler)
+    public function subscribeQueue(string $name, string $group, ?Closure $handler = null): self|Queue
     {
         return $this->doSubscribe($name, $group, $handler);
     }
 
-    public function unsubscribe(string $name): self
+    public function unsubscribe(string|Queue $name): self
     {
+        if ($name instanceof Queue) {
+            $name = $name->subject;
+        }
         foreach ($this->subscriptions as $i => $subscription) {
             if ($subscription['name'] == $name) {
                 unset($this->subscriptions[$i]);
@@ -162,7 +165,7 @@ class Client
         return $this;
     }
 
-    public function process(null|int|float $timeout = 0, bool $reply = true)
+    public function process(null|int|float $timeout = 0, bool $reply = true): mixed
     {
         $message = $this->connection->getMessage($timeout);
 
@@ -173,20 +176,30 @@ class Client
                 }
                 throw new LogicException("No handler for message $message->sid");
             }
-            $result = $this->handlers[$message->sid]($message->payload, $message->replyTo);
-            if ($reply && $message->replyTo) {
-                $this->publish($message->replyTo, $result);
+            $handler = $this->handlers[$message->sid];
+            if ($handler instanceof Queue) {
+                $handler->handle($message);
+                return $handler;
+            } else {
+                $result = $handler($message->payload, $message->replyTo);
+                if ($reply && $message->replyTo) {
+                    $message->reply($result);
+                }
+                return $result;
             }
-            return $result;
         } else {
             return $message;
         }
     }
 
-    private function doSubscribe(string $subject, ?string $group, Closure $handler): self
+    private function doSubscribe(string $subject, ?string $group, ?Closure $handler = null): self|Queue
     {
         $sid = bin2hex(random_bytes(4));
-        $this->handlers[$sid] = $handler;
+        if ($handler == null) {
+            $this->handlers[$sid] = new Queue($this, $subject);
+        } else {
+            $this->handlers[$sid] = $handler;
+        }
 
         $this->connection->sendMessage(new Subscribe([
             'sid' => $sid,
@@ -199,6 +212,9 @@ class Client
             'sid' => $sid,
         ];
 
+        if ($handler == null) {
+            return $this->handlers[$sid];
+        }
         return $this;
     }
 
