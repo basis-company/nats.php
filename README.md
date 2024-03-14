@@ -232,7 +232,7 @@ while ($message = $queue->next()) {
         mail($address, "See you later");
         $message->ack();
     } else {
-        // ack with 1 second timeout
+        // not ack with 1 second timeout
         $message->nack(1);
     }
     // stop processing
