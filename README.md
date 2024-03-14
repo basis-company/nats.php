@@ -349,7 +349,7 @@ $client = new Client($configuration);
 ```
 
 ## Performance
-Testing on i5-4670k with nats running in docker gives 420k rps for publish and 350k rps for receive in non-verbose mode.
+Testing on AMD Ryzen 5 3600X with nats running in docker gives about 400k rps for publish and 330k rps for receive in non-verbose mode.
 
 You can run tests on your environment.
 ```bash
