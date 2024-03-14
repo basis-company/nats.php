@@ -229,7 +229,7 @@ $goodbyer
 $queue = $goodbyer->getQueue();
 while ($message = $queue->next()) {
     if (rand(1, 10) % 2 == 0) {
-        mail($address, "See you later");
+        mail($message->payload, "See you later");
         $message->ack();
     } else {
         // not ack with 1 second timeout
