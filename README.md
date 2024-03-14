@@ -132,7 +132,7 @@ echo count($messages);
 // fetch all messages that are published to the subject client connection
 // queue will stop message fetching when another subscription receives a message
 // in advance you can time limit batch fetching
-$queue->setLimit(1); // limit to 1 second
+$queue->setTimeout(1); // limit to 1 second
 $messages = $queue->fetchAll();
 
 // reset subscription
@@ -250,7 +250,7 @@ $queue = $goodbyer->setBatching(50)->create()->getQueue();
 // fetching 100 messages provides 2 stream requests
 // limit message fetching to 1 second
 // it means no more that 100 messages would be fetched
-$messages = $queue->setLimit(1)->fetchAll(100);
+$messages = $queue->setTimeout(1)->fetchAll(100);
 
 $recipients = [];
 foreach ($messages as $message) {
