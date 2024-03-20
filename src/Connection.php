@@ -75,8 +75,6 @@ class Connection
                 $this->logger?->debug('receive ' . $line);
                 if ($message instanceof Ok) {
                     continue;
-                } elseif ($message instanceof Ping) {
-                    $this->sendMessage(new Pong([]));
                 } elseif ($message instanceof Pong) {
                     $this->pongAt = $now;
                 } elseif ($message instanceof Info) {
