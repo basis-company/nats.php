@@ -34,7 +34,7 @@ class Configuration
         return $this
             ->setDiscardPolicy($array['discard'])
             ->setMaxConsumers($array['max_consumers'])
-            ->setReplicas($array['replicas'])
+            ->setReplicas($array['replicas'] ?? $array['num_replicas'])
             ->setRetentionPolicy($array['retention'])
             ->setStorageBackend($array['storage'])
             ->setSubjects($array['subjects']);
