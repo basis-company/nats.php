@@ -88,8 +88,8 @@ class Connection
                     return $message;
                 }
             } elseif ($this->activityAt && $this->activityAt + $this->config->timeout < $now) {
-                if ($this->pingAt + $this->config->pingInterval < $now) {
-                    if ($this->prolongateTill < $now) {
+                if ($this->pingAt && $this->pingAt + $this->config->pingInterval < $now) {
+                    if ($this->prolongateTill && $this->prolongateTill < $now) {
                         $this->sendMessage(new Ping());
                     }
                 }
@@ -103,9 +103,9 @@ class Connection
             }
         }
 
-        if ($this->activityAt + $this->config->timeout < $now) {
-            if ($this->pongAt + $this->config->pingInterval < $now) {
-                if ($this->prolongateTill < $now) {
+        if ($this->activityAt && $this->activityAt + $this->config->timeout < $now) {
+            if ($this->pongAt && $this->pongAt + $this->config->pingInterval < $now) {
+                if ($this->prolongateTill && $this->prolongateTill < $now) {
                     $this->processException(new LogicException('Socket read timeout'));
                 }
             }
