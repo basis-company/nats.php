@@ -207,7 +207,7 @@ class Configuration
             'max_msg_size' => $this->getMaxMessageSize(),
             'max_msgs_per_subject' => $this->getMaxMessagesPerSubject(),
             'name' => $this->getName(),
-            'replicas' => $this->getReplicas(),
+            'num_replicas' => $this->getReplicas(),
             'retention' => $this->getRetentionPolicy(),
             'storage' => $this->getStorageBackend(),
             'subjects' => $this->getSubjects(),
