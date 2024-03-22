@@ -47,7 +47,7 @@ class Client
 
         $result = $this->dispatch($subject, $options);
 
-        if (property_exists($result, 'error')) {
+        if ($result->error ?? false) {
             throw new Exception($result->error->description, $result->error->err_code);
         }
 
