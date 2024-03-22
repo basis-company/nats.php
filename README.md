@@ -206,7 +206,7 @@ $greeter->handle(function ($address) {
     mail($address, "Hi there!");
 });
 
-var_dump($greater->info()); // can consumer info
+var_dump($greeter->info()); // can consumer info
 
 $goodbyer = $stream->getConsumer('goodbyer');
 $goodbyer->getConfiguration()->setSubjectFilter('mailer.bye');
