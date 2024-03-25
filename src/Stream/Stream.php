@@ -42,6 +42,15 @@ class Stream
         return $this;
     }
 
+    public function purge(): self
+    {
+        if ($this->exists()) {
+            $this->client->api("STREAM.PURGE." . $this->getName());
+        }
+
+        return $this;
+    }
+
     public function exists(): bool
     {
         return in_array($this->getName(), $this->client->getApi()->getStreamNames());
