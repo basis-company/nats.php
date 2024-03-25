@@ -61,6 +61,32 @@ class StreamTest extends FunctionalTestCase
         $this->assertSame(0, $consumer->info()->num_pending);
     }
 
+    public function testPurge()
+    {
+        $client = $this->createClient();
+        $stream = $client->getApi()->getStream('purge');
+        $stream->getConfiguration()->setSubjects(['purge'])->setRetentionPolicy(RetentionPolicy::WORK_QUEUE);
+        $stream->create();
+
+        $consumer = $stream->getConsumer('purge');
+        $consumer->setExpires(5);
+        $consumer->getConfiguration()
+            ->setSubjectFilter('purge')
+            ->setReplayPolicy(ReplayPolicy::INSTANT)
+            ->setAckPolicy(AckPolicy::EXPLICIT);
+
+        $consumer->create();
+
+        $stream->publish('purge', 'first');
+        $stream->publish('purge', 'second');
+
+        $this->assertSame(2, $consumer->info()->num_pending);
+
+        $stream->purge();
+
+        $this->assertSame(0, $consumer->info()->num_pending);
+    }
+
     public function testConsumerExpiration()
     {
         $client = $this->createClient(['timeout' => 0.2, 'delay' => 0.1]);
