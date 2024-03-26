@@ -9,6 +9,16 @@ use Tests\FunctionalTestCase;
 
 class BucketTest extends FunctionalTestCase
 {
+    public function testNullValues()
+    {
+        $bucket = $this->createClient()
+            ->getApi()
+            ->getBucket('test_bucket');
+
+        $this->assertSame(0, $bucket->getStatus()->values);
+        $this->assertNull($bucket->get('username'));
+    }
+
     public function testBasics()
     {
         $bucket = $this->createClient()

@@ -6,8 +6,9 @@ namespace Basis\Nats\KeyValue;
 
 use Basis\Nats\Client;
 use Basis\Nats\Consumer\Configuration as ConsumerConfiguration;
-use Basis\Nats\Stream\Stream;
 use Basis\Nats\Message\Payload;
+use Basis\Nats\Stream\Stream;
+use Exception;
 
 class Bucket
 {
@@ -24,8 +25,15 @@ class Bucket
 
     public function get(string $key)
     {
-        $entry = $this->getEntry($key);
-        return $entry ? $entry->value : null;
+        try {
+            $entry = $this->getEntry($key);
+            return $entry ? $entry->value : null;
+        } catch (Exception $e) {
+            if ($e->getMessage() == 'no message found') {
+                return null;
+            }
+            throw $e;
+        }
     }
 
     public function getConfiguration(): Configuration
