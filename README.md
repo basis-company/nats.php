@@ -115,12 +115,12 @@ $client->publish('test_subject', 'world');
 // optional message fetch
 // if there are no updates null will be returned
 $message1 = $queue->fetch();
-echo $message1->getPayload(); // hello
+echo $message1->payload . PHP_EOL; // hello
 
 // locks untill message is fetched from subject
 // to limit lock timeout, pass optional timeout value
 $message2 = $queue->next();
-echo $message2->getPayload(); // world
+echo $message2->payload() . PHP_EOL; // world
 
 $client->publish('test_subject', 'hello');
 $client->publish('test_subject', 'batching');
