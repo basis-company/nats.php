@@ -120,7 +120,7 @@ echo $message1->payload . PHP_EOL; // hello
 // locks untill message is fetched from subject
 // to limit lock timeout, pass optional timeout value
 $message2 = $queue->next();
-echo $message2->payload() . PHP_EOL; // world
+echo $message2->payload . PHP_EOL; // world
 
 $client->publish('test_subject', 'hello');
 $client->publish('test_subject', 'batching');
