@@ -290,4 +290,12 @@ class Connection
             ]));
         }
     }
+
+    public function close(): void
+    {
+        if ($this->socket) {
+            fclose($this->socket);
+            $this->socket = null;
+        }
+    }
 }

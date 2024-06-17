@@ -20,6 +20,7 @@ class Client
 
     private string $name = '';
 
+    /** @var array<Closure|Queue> */
     private array $handlers = [];
     private array $subscriptions = [];
 
@@ -238,6 +239,25 @@ class Client
     public function skipInvalidMessages(bool $skipInvalidMessages): self
     {
         $this->skipInvalidMessages = $skipInvalidMessages;
+        return $this;
+    }
+
+    public function unsubscribeAll(): self
+    {
+        foreach ($this->subscriptions as $index => $subscription) {
+            unset($this->subscriptions[$index]);
+            $this->connection->sendMessage(new Unsubscribe(['sid' => $subscription['sid']]));
+            unset($this->handlers[$subscription['sid']]);
+        }
+
+        return $this;
+    }
+
+    public function disconnect(): self
+    {
+        $this->unsubscribeAll();
+        $this->connection->close();
+
         return $this;
     }
 }
