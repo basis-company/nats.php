@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Functional;
 
 use Basis\Nats\Client;
+use Basis\Nats\Connection;
 use Basis\Nats\Message\Payload;
 use ReflectionProperty;
 use Tests\FunctionalTestCase;
@@ -225,5 +226,46 @@ class SubjectTest extends FunctionalTestCase
     public function greet(Payload $payload): string
     {
         return 'Hello, ' . $payload->body;
+    }
+
+    public function testUnsubscribeAll(): void
+    {
+        $property = new ReflectionProperty(Client::class, 'handlers');
+        $property->setAccessible(true);
+
+        $client = $this->createClient();
+
+        $subjects = ['hello.request1', 'hello.request2'];
+        foreach ($subjects as $subject) {
+            $client->subscribe($subject, $this->greet(...));
+        }
+        self::assertCount(2, $property->getValue($client));
+
+        $client->unsubscribeAll();
+        self::assertCount(0, $property->getValue($client));
+    }
+
+    public function testDisconnect(): void
+    {
+        $property = new ReflectionProperty(Client::class, 'handlers');
+        $property->setAccessible(true);
+
+        $client = $this->createClient();
+        $connection = $client->connection;
+
+        $subjects = ['hello.request1', 'hello.request2'];
+        foreach ($subjects as $subject) {
+            $client->subscribe($subject, $this->greet(...));
+        }
+        self::assertCount(2, $property->getValue($client));
+
+        $client->disconnect();
+        self::assertCount(0, $property->getValue($client));
+
+        $property = new ReflectionProperty(Connection::class, 'socket');
+        $property->setAccessible(true);
+
+        // Assert that the socket is closed and set to null
+        self::assertNull($property->getValue($connection));
     }
 }

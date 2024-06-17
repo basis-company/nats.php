@@ -112,4 +112,21 @@ class ClientTest extends FunctionalTestCase
         ]);
         $client->ping();
     }
+
+    public function testCloseClosesSocket(): void
+    {
+        $client = $this->createClient([]);
+        self::assertTrue($client->ping());
+
+        $connection = $client->connection;
+
+        // Call the close method
+        $connection->close();
+
+        $property = new ReflectionProperty(Connection::class, 'socket');
+        $property->setAccessible(true);
+
+        // Assert that the socket is closed and set to null
+        self::assertNull($property->getValue($connection));
+    }
 }
