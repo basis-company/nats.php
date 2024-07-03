@@ -44,7 +44,7 @@ class StreamTest extends FunctionalTestCase
         $message = $queue->fetch();
         $this->assertNotNull($message);
         $this->assertSame((string) $message->payload, 'first');
-        $message->nack(1);
+        $message->nack(30);
 
         $this->assertSame(1, $consumer->info()->num_ack_pending);
         $this->assertSame(1, $consumer->info()->num_pending);

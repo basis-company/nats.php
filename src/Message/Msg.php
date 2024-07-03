@@ -77,12 +77,9 @@ class Msg extends Prototype
 
     public function nack(float $delay = 0): void
     {
-        $this->reply(new Ack([
-            'command' => '-NAK',
+        $this->reply(new Nak([
             'subject' => $this->replyTo,
-            'payload' => Payload::parse([
-                'delay' => $delay,
-            ]),
+            'delay' => $delay,
         ]));
     }
 
@@ -125,8 +122,7 @@ class Msg extends Prototype
 
     public function progress(): void
     {
-        $this->reply(new Ack([
-            'command' => '+WPI',
+        $this->reply(new Progress([
             'subject' => $this->replyTo,
         ]));
     }
