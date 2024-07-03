@@ -105,6 +105,55 @@ class StreamTest extends FunctionalTestCase
         $this->assertSame($info, $client->connection->getInfoMessage());
     }
 
+    public function testSetConfigRetentionPolicyToMaxAge(): void
+    {
+        $api = $this->createClient()
+            ->getApi();
+        $stream = $api->getStream('tester');
+
+        $stream->getConfiguration()
+            ->setRetentionPolicy(RetentionPolicy::LIMITS)
+            ->setMaxAge(3_600_000_000_000)
+            ->setStorageBackend(StorageBackend::MEMORY)
+            ->setSubjects(['tester.greet', 'tester.bye']);
+
+        $stream->create();
+
+        $config = $stream->info()->config;
+
+        self::assertSame($config->retention, 'limits');
+        self::assertSame($config->storage, 'memory');
+        self::assertSame($config->subjects, ['tester.greet', 'tester.bye']);
+        self::assertSame($config->max_age, 3_600_000_000_000);
+
+        $stream->getConfiguration()
+            ->setSubjects(['tester.greet']);
+        $stream->update();
+
+        self::assertSame($stream->info()->config->subjects, ['tester.greet']);
+
+        $stream->getConfiguration()
+            ->setMaxAge(3_600_000_000_001)
+            ->setSubjects(['tester.greet', 'tester.bye']);
+        $stream->update();
+
+        $api = $this->createClient()
+            ->getApi();
+
+        $api->getStream('tester')
+            ->getConfiguration()
+            ->fromArray(
+                $stream->getConfiguration()
+                    ->toArray()
+            );
+
+        $configuration = $api->getStream('tester')
+            ->getConfiguration();
+        self::assertSame($configuration->getRetentionPolicy(), 'limits');
+        self::assertSame($configuration->getStorageBackend(), 'memory');
+        self::assertSame($configuration->getSubjects(), ['tester.greet', 'tester.bye']);
+    }
+
     public function testDeduplication()
     {
         $stream = $this->getClient()->getApi()->getStream('tester');
