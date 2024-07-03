@@ -139,9 +139,12 @@ class Configuration
         return $this;
     }
 
-    public function setMaxAge(int $maxAge): self
+    /**
+     * set the max age in nanoSeconds
+     */
+    public function setMaxAge(int $maxAgeNanoSeconds): self
     {
-        $this->maxAge = $maxAge;
+        $this->maxAge = $maxAgeNanoSeconds;
         return $this;
     }
 
