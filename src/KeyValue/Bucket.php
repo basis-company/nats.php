@@ -98,7 +98,7 @@ class Bucket
     {
         if (!$this->stream) {
             $this->stream = $this->client->getApi()
-                ->getStream(strtoupper("kv_$this->name"));
+                ->getStream("KV_$this->name");
 
             if (!$this->stream->exists()) {
                 $this->getConfiguration()
@@ -112,7 +112,7 @@ class Bucket
 
     public function getSubject(string $key): string
     {
-        return strtoupper("\$kv.$this->name.$key");
+        return "\$KV.$this->name.$key";
     }
 
     public function delete($key)
