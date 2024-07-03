@@ -30,7 +30,7 @@ class Configuration
             ->setMaxMessageSize($this->getMaxValueSize())
             ->setMaxMessagesPerSubject($this->getHistory() ?? 1)
             ->setReplicas($this->getReplicas() ?? 1)
-            ->setSubjects([strtoupper("\$kv.$this->name.*")]);
+            ->setSubjects(["\$KV.$this->name.*"]);
 
         return $this;
     }
