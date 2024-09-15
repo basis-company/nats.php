@@ -300,6 +300,46 @@ $stream->put('mailer.bye', $payload);
 
 ```
 
+## Microservices
+The services feature provides a simple way to create microservices that leverage NATS.
+
+In the example below, you will see an example of creating an index function for the posts microservice. The request can 
+be accessed under "v1.posts.index". You can add multiple endpoints to support your service. 
+```php
+// Define a service
+$service = $client->service('PostsService', 'This service is responsible for handling all things post related.', '1.0');
+
+// Create the version group
+$version = $service->addGroup('v1');
+
+// Create the service group
+$posts = $version->addGroup('posts')
+
+// Create the endpoint handler
+class IndexPosts implements \Basis\Nats\Service\ServiceHandler {
+
+    public function handle(\Basis\Nats\Message\Payload $payload): array 
+    {
+        // Your application logic
+        return [
+            'hello' => 'world'
+        ];
+    }
+}
+
+// Create an endpoint
+$posts->addEndpoint(
+    'index',
+    new IndexPosts()
+);
+
+// Run the service
+while (true) {
+    $client->process();
+}
+```
+
+
 ## Key Value Storage
 ```php
 $bucket = $client->getApi()->getBucket('bucket_name');

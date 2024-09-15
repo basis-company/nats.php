@@ -9,6 +9,7 @@ use Basis\Nats\Message\Payload;
 use Basis\Nats\Message\Publish;
 use Basis\Nats\Message\Subscribe;
 use Basis\Nats\Message\Unsubscribe;
+use Basis\Nats\Service\Service;
 use Closure;
 use Exception;
 use LogicException;
@@ -23,6 +24,8 @@ class Client
     /** @var array<Closure|Queue> */
     private array $handlers = [];
     private array $subscriptions = [];
+
+    private array $services = [];
 
     private bool $skipInvalidMessages = false;
 
@@ -259,5 +262,12 @@ class Client
         $this->connection->close();
 
         return $this;
+    }
+
+    public function service(string $name, string $description, string $version): Service
+    {
+        $this->services[$name] = new Service($this, $name, $description, $version);
+
+        return $this->services[$name];
     }
 }
