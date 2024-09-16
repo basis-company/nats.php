@@ -113,7 +113,9 @@ class Service
 
     public function addGroup(string $name): ServiceGroup
     {
-        $this->groups[$name] = new ServiceGroup($this, $name);
+        if (!array_key_exists($name, $this->groups)) {
+            $this->groups[$name] = new ServiceGroup($this, $name);
+        }
 
         return $this->groups[$name];
     }
@@ -134,6 +136,10 @@ class Service
             $queue_group = $options['queue_group'];
         }
 
+        if (array_key_exists($name, $this->endpoints)) {
+            throw new \LogicException("Endpoint $name already is defined");
+        }
+
         $this->endpoints[$name] = new ServiceEndpoint(
             $this,
             $name,
@@ -145,9 +151,12 @@ class Service
 
     public function reset(): void
     {
-        array_map(function (ServiceEndpoint $endpoint) {
-            $endpoint->resetStats();
-        }, $this->endpoints);
+        array_map(
+            function (ServiceEndpoint $endpoint) {
+                $endpoint->resetStats();
+            },
+            $this->endpoints
+        );
     }
 
     private function registerVerbs(): void
