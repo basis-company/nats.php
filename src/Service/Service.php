@@ -120,7 +120,7 @@ class Service
 
     public function addEndpoint(
         string $name,
-        EndpointHandler $endpointHandler,
+        string|EndpointHandler|callable $endpointHandler,
         array $options = []
     ): void {
         $subject = $name;
@@ -202,5 +202,17 @@ class Service
         }
 
         return "\$SRV.$verb.$name.$id";
+    }
+
+    public function run() : void
+    {
+        print_r("$this->name is ready to accept connections\n");
+        while(true) {
+            try {
+                $this->client->process();
+            } catch (\Exception $e) {
+                print_r("$this->name encountered an error:\n" . $e->getMessage() . "\n");
+            }
+        }
     }
 }

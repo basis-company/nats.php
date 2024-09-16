@@ -19,11 +19,11 @@ class ServiceEndpoint
     private Client|Queue $subscription;
 
     public function __construct(
-        private readonly Service         $service,
-        private readonly string          $name,
-        private readonly string          $subject,
-        private readonly EndpointHandler $endpointHandler,
-        private readonly string          $queue_group = 'q'
+        private readonly Service $service,
+        private readonly string  $name,
+        private readonly string  $subject,
+        private                  $endpointHandler,
+        private readonly string  $queue_group = 'q'
     )
     {
         $this->subscription = $this->service->client->subscribeQueue(
@@ -36,8 +36,30 @@ class ServiceEndpoint
                 // Update the endpoint metrics
                 $this->num_requests += 1;
 
-                // Run the handler
-                $response = $this->endpointHandler->handle($message);
+                // Setup the response
+                $response = "";
+
+                switch ($this->endpointHandler) {
+                    case is_string($this->endpointHandler):
+                        // Instantiate the endpointHandler
+                        $handler = new $this->endpointHandler();
+
+                        // Check to make sure that the class implements ServiceEndpoint
+                        if (!($handler instanceof EndpointHandler)) {
+                            throw new \LogicException("Class must implement EndpointHandler");
+                        }
+
+                        $response = $handler->handle($message);
+                        break;
+                    case is_callable($this->endpointHandler):
+                        $func = $this->endpointHandler;
+
+                        $response = $func($message);
+                        break;
+                    case $this->endpointHandler instanceof EndpointHandler:
+                        $response = $this->endpointHandler->handle($message);
+                        break;
+                }
 
                 // Add to the total processing time
                 $this->processing_time += microtime(true) - $start;
