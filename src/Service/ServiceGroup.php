@@ -20,7 +20,7 @@ class ServiceGroup
 
     public function addEndpoint(
         string   $name,
-        EndpointHandler $serviceHandler,
+        string|EndpointHandler|callable $serviceHandler,
         array    $options = []
     ): void
     {
