@@ -266,7 +266,9 @@ class Client
 
     public function service(string $name, string $description, string $version): Service
     {
-        $this->services[$name] = new Service($this, $name, $description, $version);
+        if (!array_key_exists($name, $this->services)) {
+            $this->services[$name] = new Service($this, $name, $description, $version);
+        }
 
         return $this->services[$name];
     }

@@ -13,7 +13,9 @@ class ServiceGroup
 
     public function addGroup(string $name): ServiceGroup
     {
-        $this->groups[$name] = new ServiceGroup($this->service, $this->name . '.' . $name);
+        if (!array_key_exists($name, $this->groups)) {
+            $this->groups[$name] = new ServiceGroup($this->service, $this->name . '.' . $name);
+        }
 
         return $this->groups[$name];
     }
