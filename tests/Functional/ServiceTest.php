@@ -10,14 +10,10 @@ use Tests\Utils\TestEndpoint;
 
 class ServiceTest extends FunctionalTestCase
 {
-    private bool $tested = false;
-
     private function createTestService(): Service
     {
         /** @var Client $client */
-        $client = $this->createClient([
-            'host' => 'hermes.internal'
-        ]);
+        $client = $this->createClient();
 
         /** @var Service $service */
         $service = $client->service(
@@ -68,7 +64,7 @@ class ServiceTest extends FunctionalTestCase
         $this->assertTrue($response['success']);
     }
 
-    public function testServiceRequestReplyClass()
+    public function testServiceRequestReplyInstance()
     {
         $service = $this->createTestService();
 
