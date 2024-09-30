@@ -20,12 +20,11 @@ class ServiceEndpoint
 
     public function __construct(
         private readonly Service $service,
-        private readonly string  $name,
-        private readonly string  $subject,
-        private                  $endpointHandler,
-        private readonly string  $queue_group = 'q'
-    )
-    {
+        private readonly string $name,
+        private readonly string $subject,
+        private $endpointHandler,
+        private readonly string $queue_group = 'q'
+    ) {
         $this->subscription = $this->service->client->subscribeQueue(
             $this->subject,
             $this->queue_group,
@@ -40,14 +39,9 @@ class ServiceEndpoint
                 $response = "";
 
                 switch ($this->endpointHandler) {
-                    case is_string($this->endpointHandler):
+                    case is_subclass_of($this->endpointHandler, EndpointHandler::class):
                         // Instantiate the endpointHandler
                         $handler = new $this->endpointHandler();
-
-                        // Check to make sure that the class implements ServiceEndpoint
-                        if (!($handler instanceof EndpointHandler)) {
-                            throw new \LogicException("Class must implement EndpointHandler");
-                        }
 
                         $response = $handler->handle($message);
                         break;
@@ -59,6 +53,8 @@ class ServiceEndpoint
                     case $this->endpointHandler instanceof EndpointHandler:
                         $response = $this->endpointHandler->handle($message);
                         break;
+                    default:
+                        throw new \LogicException("The provided endpoint handler is not a supported type.");
                 }
 
                 // Add to the total processing time

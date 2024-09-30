@@ -42,7 +42,8 @@ class Service
         $this->registerVerbs();
     }
 
-    private function generateId(): string {
+    private function generateId(): string
+    {
         $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
         $charactersLength = strlen($characters);
@@ -68,21 +69,23 @@ class Service
 
     private function info(): array
     {
+        $endpoints = [];
+
+        foreach ($this->endpoints as $endpoint) {
+            $endpoints[] = [
+                'name' => $endpoint->getName(),
+                'subject' => $endpoint->getSubject(),
+                'queue_group' => $endpoint->getQueueGroup(),
+            ];
+        }
+
         return [
             'type' => 'io.nats.micro.v1.info_response',
             'name' => $this->name,
             'id' => $this->id,
             'version' => $this->version,
             'description' => $this->description,
-            'endpoints' => array_reduce($this->endpoints, function ($carry, $endpoint) {
-                $carry[] = [
-                    'name' => $endpoint->getName(),
-                    'subject' => $endpoint->getSubject(),
-                    'queue_group' => $endpoint->getQueueGroup(),
-                ];
-
-                return $carry;
-            }, []),
+            'endpoints' => $endpoints
         ];
     }
 
@@ -213,14 +216,19 @@ class Service
         return "\$SRV.$verb.$name.$id";
     }
 
-    public function run() : void
+    public function run(): void
     {
-        print_r("$this->name is ready to accept connections\n");
-        while(true) {
+        $this->client
+            ->logger
+            ->info("$this->name is ready to accept connections\n");
+
+        while (true) {
             try {
                 $this->client->process();
             } catch (\Exception $e) {
-                print_r("$this->name encountered an error:\n" . $e->getMessage() . "\n");
+                $this->client
+                    ->logger
+                    ->error("$this->name encountered an error:\n" . $e->getMessage() . "\n");
             }
         }
     }
