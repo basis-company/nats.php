@@ -7,7 +7,6 @@ use Basis\Nats\Service\EndpointHandler;
 
 class TestEndpoint implements EndpointHandler
 {
-
     public function handle(Payload $payload): array
     {
         return [

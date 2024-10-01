@@ -8,8 +8,9 @@ class ServiceGroup
 
     public function __construct(
         private readonly Service $service,
-        private readonly string  $name
-    ) {}
+        private readonly string $name
+    ) {
+    }
 
     public function addGroup(string $name): ServiceGroup
     {
@@ -21,11 +22,10 @@ class ServiceGroup
     }
 
     public function addEndpoint(
-        string   $name,
+        string $name,
         string|EndpointHandler|callable $serviceHandler,
-        array    $options = []
-    ): void
-    {
+        array $options = []
+    ): void {
         $subject = $this->name . '.' . $name;
 
         if (array_key_exists('subject', $options)) {
