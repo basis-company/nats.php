@@ -24,18 +24,18 @@ class ServiceTest extends FunctionalTestCase
 
         return $service;
     }
-    public function testServiceRequestReplyString()
+    public function testServiceRequestReplyClass()
     {
         $service = $this->createTestService();
 
         $service
             ->addGroup('v1')
             ->addEndpoint(
-                'test',
+                'test_class',
                 TestEndpoint::class
             );
 
-        $service->client->publish('v1.test', '');
+        $service->client->publish('v1.test_class', '');
 
         $response = $service->client->process(1);
 
@@ -49,7 +49,7 @@ class ServiceTest extends FunctionalTestCase
         $service
             ->addGroup('v1')
             ->addEndpoint(
-                'test',
+                'test_callback',
                 function (Payload $payload) {
                     return [
                         'success' => true
@@ -57,7 +57,7 @@ class ServiceTest extends FunctionalTestCase
                 }
             );
 
-        $service->client->publish('v1.test', '');
+        $service->client->publish('v1.test_callback', '');
 
         $response = $service->client->process(1);
 
@@ -71,11 +71,11 @@ class ServiceTest extends FunctionalTestCase
         $service
             ->addGroup('v1')
             ->addEndpoint(
-                'test',
+                'test_instance',
                 new TestEndpoint()
             );
 
-        $service->client->publish('v1.test', '');
+        $service->client->publish('v1.test_instance', '');
 
         $response = $service->client->process(1);
 
