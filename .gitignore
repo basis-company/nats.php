@@ -7,3 +7,4 @@ vendor
 *.bak
 .idea
 .php-cs-fixer.cache
+phpunit.xml
