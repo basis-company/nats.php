@@ -12,6 +12,7 @@ Feel free to contribute or give any feedback.
 - [Publish Subscribe](#publish-subscribe)
 - [Request Response](#request-response)
 - [JetStream Api Usage](#jetstream-api-usage)
+- [Microservices](#microservices)
 - [Key Value Storage](#key-value-storage)
 - [Using NKeys with JWT](#using-nkeys-with-jwt)
 - [Performance](#performance)
