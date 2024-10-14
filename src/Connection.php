@@ -28,6 +28,7 @@ class Connection
     private float $pingAt = 0;
     private float $pongAt = 0;
     private float $prolongateTill = 0;
+    private int $paketSize = 1024;
 
     private ?Authenticator $authenticator;
     private Configuration $config;
@@ -128,27 +129,31 @@ class Connection
 
         $line = $message->render() . "\r\n";
         $length = strlen($line);
+        $total = 0;
 
         $this->logger?->debug('send ' . $line);
 
-        while (strlen($line)) {
+        while ($total < $length) {
             try {
-                $written = @fwrite($this->socket, $line, 1024);
+                $written = @fwrite($this->socket, substr($line, $total, $this->paketSize));
                 if ($written === false) {
                     throw new LogicException('Error sending data');
                 }
                 if ($written === 0) {
                     throw new LogicException('Broken pipe or closed connection');
                 }
-                if ($length == $written) {
+                $total += $written;
+
+                if ($length == $total) {
                     break;
                 }
-                $line = substr($line, $written);
             } catch (Throwable $e) {
                 $this->processException($e);
                 $line = $message->render() . "\r\n";
             }
         }
+
+        unset($line);
 
         if ($message instanceof Publish) {
             if (strpos($message->subject, '$JS.API.CONSUMER.MSG.NEXT.') === 0) {
@@ -289,6 +294,11 @@ class Connection
                 'subject' => $subscription['name'],
             ]));
         }
+    }
+
+    public function setPacketSize(int $size): void
+    {
+        $this->paketSize = $size;
     }
 
     public function close(): void
