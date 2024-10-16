@@ -28,7 +28,7 @@ class Connection
     private float $pingAt = 0;
     private float $pongAt = 0;
     private float $prolongateTill = 0;
-    private int $paketSize = 1024;
+    private int $packetSize = 1024;
 
     private ?Authenticator $authenticator;
     private Configuration $config;
@@ -135,7 +135,7 @@ class Connection
 
         while ($total < $length) {
             try {
-                $written = @fwrite($this->socket, substr($line, $total, $this->paketSize));
+                $written = @fwrite($this->socket, substr($line, $total, $this->packetSize));
                 if ($written === false) {
                     throw new LogicException('Error sending data');
                 }
@@ -298,7 +298,7 @@ class Connection
 
     public function setPacketSize(int $size): void
     {
-        $this->paketSize = $size;
+        $this->packetSize = $size;
     }
 
     public function close(): void
