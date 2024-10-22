@@ -101,9 +101,9 @@ class ServiceEndpoint
         return $this->num_requests;
     }
 
-    public function getProcessingTime(): float
+    public function getProcessingTime(): int
     {
-        return $this->processing_time * 1e9;
+        return round($this->processing_time * 1e9);
     }
 
     public function resetStats(): void
