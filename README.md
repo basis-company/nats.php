@@ -118,7 +118,7 @@ $client->publish('test_subject', 'world');
 $message1 = $queue->fetch();
 echo $message1->payload . PHP_EOL; // hello
 
-// locks untill message is fetched from subject
+// locks until message is fetched from subject
 // to limit lock timeout, pass optional timeout value
 $message2 = $queue->next();
 echo $message2->payload . PHP_EOL; // world
