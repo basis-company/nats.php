@@ -126,7 +126,7 @@ class Consumer
         return $queue;
     }
 
-    public function handle(Closure $messageHandler, Closure $emptyHandler = null, bool $ack = true): int
+    public function handle(Closure $messageHandler, ?Closure $emptyHandler = null, bool $ack = true): int
     {
         $queue = $this->create()->getQueue();
         $iterations = $this->getIterations();
