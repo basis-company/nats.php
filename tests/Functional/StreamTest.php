@@ -174,7 +174,8 @@ class StreamTest extends FunctionalTestCase
             ->setSubjects(['tester'])
             ->setDuplicateWindow(0.5); // 500ms windows duplicate
 
-        $stream->create();
+        $stream->createIfNotExists();
+        $stream->createIfNotExists(); // should not provide an error
 
         // windows value using nanoseconds
         $this->assertEquals(0.5 * 1_000_000_000, $stream->info()->getValue('config.duplicate_window'));
@@ -285,6 +286,7 @@ class StreamTest extends FunctionalTestCase
                 $this->empty = true;
             });
 
+        $this->assertSame($consumer->getDelay(), 0);
         $this->assertFalse($this->called);
         $this->assertTrue($this->empty);
     }
