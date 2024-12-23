@@ -8,6 +8,15 @@ use Tests\FunctionalTestCase;
 
 class ConfigurationTest extends FunctionalTestCase
 {
+    public function testClientDelayConfiguration()
+    {
+        $client = $this->getClient();
+
+        $delay = rand(1, 100);
+        $client->setDelay($delay);
+        $this->assertSame($delay, $client->configuration->getDelay());
+    }
+
     public function testClientConfigurationOverride()
     {
         $this->assertSame($this->getConfiguration()->host, getenv('NATS_HOST'));
