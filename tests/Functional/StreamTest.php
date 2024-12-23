@@ -296,11 +296,13 @@ class StreamTest extends FunctionalTestCase
         $api = $this->getClient()->getApi();
         $this->assertSame($api, $this->getClient()->getApi());
 
-        $stream = $api->getStream('tester');
+        $stream = $api->getStream('tester')->createIfNotExists();
         $this->assertSame($stream, $api->getStream('tester'));
 
         $consumer = $stream->getConsumer('worker');
         $this->assertSame($consumer, $stream->getConsumer('worker'));
+
+        $this->assertCount(1, $api->getStreamList());
     }
 
     public function testConfguration()
