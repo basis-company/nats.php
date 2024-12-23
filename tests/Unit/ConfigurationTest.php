@@ -9,6 +9,32 @@ use Tests\TestCase;
 
 class ConfigurationTest extends TestCase
 {
+    public function testExponentialDelay()
+    {
+        $configuration = new Configuration([
+            'delayMode' => Configuration::DELAY_EXPONENTIAL,
+        ]);
+
+        $this->assertSame($configuration->getDelayMode(), Configuration::DELAY_EXPONENTIAL);
+
+        $start = microtime(true);
+        $configuration->delay(0);
+        $this->assertLessThan(0.01, microtime(true) - $start);
+    }
+
+    public function testInvalidDelayConfiguration()
+    {
+        $configuration = new Configuration();
+        $this->expectExceptionMessage("Invalid mode: dreaming");
+        $configuration->setDelay(1, 'dreaming');
+    }
+
+    public function testInvalidConfiguration()
+    {
+        $this->expectExceptionMessage("Invalid config option hero");
+        new Configuration(['hero' => true]);
+    }
+
     public function testClientConfigurationToken()
     {
         $connection = new Configuration(['token' => 'zzz']);
