@@ -5,10 +5,32 @@ declare(strict_types=1);
 namespace Tests\Functional\KeyValue;
 
 use Basis\Nats\KeyValue\Entry;
+use Basis\Nats\Stream\Configuration;
 use Tests\FunctionalTestCase;
 
 class BucketTest extends FunctionalTestCase
 {
+    public function testBucketConfiguration()
+    {
+        $configuration = new Configuration("kv_config");
+
+        $bucket = $this->createClient()->getApi()->getBucket('configuration');
+        $bucket->getConfiguration()
+            ->setHistory(1000)
+            ->setMaxBytes(1024 * 1024)
+            ->setMaxValueSize(1024)
+            ->setReplicas(2)
+            ->setTtl(30)
+            ->configureStream($configuration);
+
+        $this->assertSame($configuration->getMaxMessagesPerSubject(), 1000);
+        $this->assertSame($configuration->getMaxBytes(), 1024 * 1024);
+        $this->assertSame($configuration->getMaxMessageSize(), 1024);
+        $this->assertSame($configuration->getReplicas(), 2);
+        $this->assertSame($configuration->getMaxAge(), 30);
+        $this->assertSame($configuration->getSubjects(), ["\$KV.configuration.*"]);
+    }
+
     public function testNullValues()
     {
         $bucket = $this->createClient()
