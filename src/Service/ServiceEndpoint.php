@@ -46,9 +46,7 @@ class ServiceEndpoint
                         $response = $handler->handle($message);
                         break;
                     case is_callable($this->endpointHandler):
-                        $func = $this->endpointHandler;
-
-                        $response = $func($message);
+                        $response = call_user_func($this->endpointHandler, $message);
                         break;
                     case $this->endpointHandler instanceof EndpointHandler:
                         $response = $this->endpointHandler->handle($message);
@@ -103,7 +101,7 @@ class ServiceEndpoint
 
     public function getProcessingTime(): int
     {
-        return round($this->processing_time * 1e9);
+        return intval(round($this->processing_time * 1e9));
     }
 
     public function resetStats(): void
