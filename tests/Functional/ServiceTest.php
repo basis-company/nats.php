@@ -52,16 +52,17 @@ class ServiceTest extends FunctionalTestCase
                 'test_callback',
                 function (Payload $payload) {
                     return [
-                        'success' => true
+                        'success' => true,
+                        'nick' => $payload->getValue('nick'),
                     ];
                 }
             );
 
-        $service->client->publish('v1.test_callback', '');
-
+        $service->client->publish('v1.test_callback', ['nick' => 'nekufa']);
         $response = $service->client->process(1);
 
         $this->assertTrue($response['success']);
+        $this->assertSame($response['nick'], 'nekufa');
     }
 
     public function testServiceRequestReplyInstance()
