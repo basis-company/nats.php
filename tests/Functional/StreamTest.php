@@ -44,12 +44,12 @@ class StreamTest extends FunctionalTestCase
         $message = $queue->fetch();
         $this->assertNotNull($message);
         $this->assertSame((string) $message->payload, 'first');
-        $message->nack(30);
+        $message->nack(0.5);
 
         $this->assertSame(1, $consumer->info()->num_ack_pending);
         $this->assertSame(1, $consumer->info()->num_pending);
 
-        $queue->setTimeout(1);
+        $queue->setTimeout(0.1);
         $messages = $queue->fetchAll();
         $this->assertCount(1, $messages);
         [$message] = $messages;
@@ -57,7 +57,19 @@ class StreamTest extends FunctionalTestCase
         $message->progress();
         $message->ack();
 
+        usleep(100_000);
+        $messages = $queue->fetchAll();
+        $this->assertCount(0, $messages);
         $this->assertSame(1, $consumer->info()->num_ack_pending);
+        $this->assertSame(0, $consumer->info()->num_pending);
+
+        usleep(500_000);
+        $messages = $queue->fetchAll();
+        $this->assertCount(1, $messages);
+        [$message] = $messages;
+        $message->ack();
+        usleep(100_000);
+        $this->assertSame(0, $consumer->info()->num_ack_pending);
         $this->assertSame(0, $consumer->info()->num_pending);
     }
 
