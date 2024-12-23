@@ -19,6 +19,42 @@ class StreamTest extends FunctionalTestCase
 
     private bool $empty;
 
+    public function testInvalidAckPolicy()
+    {
+        $this->expectExceptionMessage("Invalid ack policy: fast");
+
+        $this->createClient()
+            ->getApi()
+            ->getStream('acking')
+            ->getConsumer('tester')
+            ->getConfiguration()
+            ->setAckPolicy('fast');
+    }
+
+    public function testInvalidDeliverPolicy()
+    {
+        $this->expectExceptionMessage("Invalid deliver policy: turtle");
+
+        $this->createClient()
+            ->getApi()
+            ->getStream('acking')
+            ->getConsumer('tester')
+            ->getConfiguration()
+            ->setDeliverPolicy('turtle');
+    }
+
+    public function testInvalidReplayPolicy()
+    {
+        $this->expectExceptionMessage("Invalid replay policy: fast");
+
+        $this->createClient()
+            ->getApi()
+            ->getStream('acking')
+            ->getConsumer('tester')
+            ->getConfiguration()
+            ->setReplayPolicy('fast');
+    }
+
     public function testNack()
     {
         $client = $this->createClient();
