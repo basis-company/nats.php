@@ -286,7 +286,7 @@ class StreamTest extends FunctionalTestCase
                 $this->empty = true;
             });
 
-        $this->assertSame($consumer->getDelay(), 0);
+        $this->assertSame($consumer->getDelay(), floatval(0));
         $this->assertFalse($this->called);
         $this->assertTrue($this->empty);
     }

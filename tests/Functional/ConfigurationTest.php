@@ -12,7 +12,7 @@ class ConfigurationTest extends FunctionalTestCase
     {
         $client = $this->getClient();
 
-        $delay = rand(1, 100);
+        $delay = floatval(rand(1, 100));
         $client->setDelay($delay);
         $this->assertSame($delay, $client->configuration->getDelay());
     }
