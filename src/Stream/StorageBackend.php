@@ -6,7 +6,7 @@ namespace Basis\Nats\Stream;
 
 use DomainException;
 
-final class StorageBackend
+abstract class StorageBackend
 {
     public const FILE = 'file';
     public const MEMORY = 'memory';
@@ -23,9 +23,5 @@ final class StorageBackend
     public static function isValid(string $storage): bool
     {
         return in_array($storage, [self::FILE, self::MEMORY]);
-    }
-
-    private function __construct()
-    {
     }
 }

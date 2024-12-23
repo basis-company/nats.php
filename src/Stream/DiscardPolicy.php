@@ -6,7 +6,7 @@ namespace Basis\Nats\Stream;
 
 use DomainException;
 
-final class DiscardPolicy
+abstract class DiscardPolicy
 {
     public const OLD = 'old';
     public const NEW = 'new';
@@ -23,9 +23,5 @@ final class DiscardPolicy
     public static function isValid(string $policy): bool
     {
         return in_array($policy, [self::OLD, self::NEW]);
-    }
-
-    private function __construct()
-    {
     }
 }

@@ -6,7 +6,7 @@ namespace Basis\Nats\Consumer;
 
 use DomainException;
 
-final class AckPolicy
+abstract class AckPolicy
 {
     public const ALL = 'all';
     public const EXPLICIT = 'explicit';
@@ -24,9 +24,5 @@ final class AckPolicy
     public static function isValid(string $policy): bool
     {
         return in_array($policy, [self::EXPLICIT, self::NONE, self::ALL]);
-    }
-
-    private function __construct()
-    {
     }
 }

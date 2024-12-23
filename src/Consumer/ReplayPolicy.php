@@ -6,7 +6,7 @@ namespace Basis\Nats\Consumer;
 
 use DomainException;
 
-final class ReplayPolicy
+abstract class ReplayPolicy
 {
     public const INSTANT = 'instant';
     public const ORIGINAL = 'original';
@@ -23,9 +23,5 @@ final class ReplayPolicy
     public static function isValid(string $policy): bool
     {
         return in_array($policy, [self::INSTANT, self::ORIGINAL]);
-    }
-
-    private function __construct()
-    {
     }
 }

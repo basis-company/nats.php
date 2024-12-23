@@ -6,7 +6,7 @@ namespace Basis\Nats\Consumer;
 
 use DomainException;
 
-final class DeliverPolicy
+abstract class DeliverPolicy
 {
     public const ALL = 'all';
     public const BY_START_SEQUENCE = 'by_start_sequence';
@@ -34,9 +34,5 @@ final class DeliverPolicy
             self::LAST_PER_SUBJECT,
             self::NEW,
         ]);
-    }
-
-    private function __construct()
-    {
     }
 }

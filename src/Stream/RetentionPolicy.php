@@ -6,7 +6,7 @@ namespace Basis\Nats\Stream;
 
 use DomainException;
 
-final class RetentionPolicy
+abstract class RetentionPolicy
 {
     public const INTEREST = 'interest';
     public const LIMITS = 'limits';
@@ -24,9 +24,5 @@ final class RetentionPolicy
     public static function isValid(string $policy): bool
     {
         return in_array($policy, [self::LIMITS, self::INTEREST, self::WORK_QUEUE]);
-    }
-
-    private function __construct()
-    {
     }
 }
