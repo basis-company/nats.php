@@ -8,7 +8,6 @@ use Basis\Nats\Client;
 use Basis\Nats\Queue;
 use Basis\Nats\Message\Payload;
 use Basis\Nats\Message\Publish;
-use Closure;
 use Throwable;
 
 class Consumer
@@ -126,7 +125,7 @@ class Consumer
         return $queue;
     }
 
-    public function handle(Closure $messageHandler, ?Closure $emptyHandler = null, bool $ack = true): int
+    public function handle(callable $messageHandler, ?callable $emptyHandler = null, bool $ack = true): int
     {
         $queue = $this->create()->getQueue();
         $iterations = $this->getIterations();

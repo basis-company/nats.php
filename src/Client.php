@@ -10,7 +10,6 @@ use Basis\Nats\Message\Publish;
 use Basis\Nats\Message\Subscribe;
 use Basis\Nats\Message\Unsubscribe;
 use Basis\Nats\Service\Service;
-use Closure;
 use Exception;
 use LogicException;
 use Psr\Log\LoggerInterface;
@@ -21,7 +20,7 @@ class Client
 
     private string $name = '';
 
-    /** @var array<Closure|Queue> */
+    /** @var array<callable|Queue> */
     private array $handlers = [];
     private array $subscriptions = [];
 
@@ -40,7 +39,7 @@ class Client
         }
     }
 
-    public function api($command, array $args = [], ?Closure $callback = null): ?object
+    public function api($command, array $args = [], ?callable $callback = null): ?object
     {
         $subject = "\$JS.API.$command";
         $options = json_encode((object) $args);
@@ -111,7 +110,7 @@ class Client
         return $this;
     }
 
-    public function request(string $name, mixed $payload, Closure $handler): self
+    public function request(string $name, mixed $payload, callable $handler): self
     {
         $replyTo = $this->configuration->inboxPrefix . '.' . bin2hex(random_bytes(16));
 
@@ -126,12 +125,12 @@ class Client
         return $this;
     }
 
-    public function subscribe(string $name, ?Closure $handler = null): self|Queue
+    public function subscribe(string $name, ?callable $handler = null): self|Queue
     {
         return $this->doSubscribe($name, null, $handler);
     }
 
-    public function subscribeQueue(string $name, string $group, ?Closure $handler = null): self|Queue
+    public function subscribeQueue(string $name, string $group, ?callable $handler = null): self|Queue
     {
         return $this->doSubscribe($name, $group, $handler);
     }
@@ -196,7 +195,7 @@ class Client
         }
     }
 
-    private function doSubscribe(string $subject, ?string $group, ?Closure $handler = null): self|Queue
+    private function doSubscribe(string $subject, ?string $group, ?callable $handler = null): self|Queue
     {
         $sid = bin2hex(random_bytes(4));
         if ($handler == null) {
