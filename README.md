@@ -1,7 +1,7 @@
 # Nats client for php
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Testing](https://github.com/basis-company/nats.php/actions/workflows/tests.yml/badge.svg)](https://github.com/basis-company/nats.php/actions/workflows/tests.yml)
-[![Coverage Status](https://coveralls.io/repos/github/basis-company/nats.php/badge.svg)](https://coveralls.io/github/basis-company/nats.php)
+[![Coverage Status](https://coveralls.io/repos/github/basis-company/nats.php/badge.svg)](https://coveralls.io/github/basis-company)
 [![Latest Version](https://img.shields.io/github/release/basis-company/nats.php.svg)](https://github.com/basis-company/nats.php/releases)
 [![Total Downloads](https://img.shields.io/packagist/dt/basis-company/nats.svg)](https://packagist.org/packages/basis-company/nats)
 
