@@ -23,9 +23,5 @@ jobs:
       - run: vendor/bin/phpunit --testsuite Tests
       - name: Coverage text report
         run: cat coverage/report.txt
-      - name: Archive code coverage results
-        if: matrix.php == '8.4' && matrix.verbose == '1'
-        uses: actions/upload-artifact@v3
-        with:
-          name: code-coverage-report
-          path: ./coverage
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
