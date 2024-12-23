@@ -24,4 +24,7 @@ jobs:
       - name: Coverage text report
         run: cat coverage/report.txt
       - name: Coveralls
+        if: matrix.php == '8.4' && matrix.verbose == '1'
         uses: coverallsapp/github-action@v2
+        with:
+          files: coverage/report.clover
