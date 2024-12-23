@@ -68,6 +68,7 @@ class StreamTest extends FunctionalTestCase
         $this->assertCount(1, $messages);
         [$message] = $messages;
         $message->ack();
+
         usleep(100_000);
         $this->assertSame(0, $consumer->info()->num_ack_pending);
         $this->assertSame(0, $consumer->info()->num_pending);
