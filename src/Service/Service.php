@@ -41,14 +41,9 @@ class Service
         return $randomString;
     }
 
-    private function ping(): array
+    public function info(): Info
     {
-        return (array) new Ping($this->name, $this->id, $this->version);
-    }
-
-    private function info(): array
-    {
-        return (array) new Info(
+        return new Info(
             name: $this->name,
             id: $this->id,
             version: $this->version,
@@ -57,9 +52,14 @@ class Service
         );
     }
 
-    private function stats(): array
+    public function ping(): Ping
     {
-        return (array) new Stats(
+        return new Ping($this->name, $this->id, $this->version);
+    }
+
+    public function stats(): Stats
+    {
+        return new Stats(
             name: $this->name,
             id: $this->id,
             version: $this->version,
@@ -112,19 +112,15 @@ class Service
 
     private function registerVerbs(): void
     {
-        $verbs = [
-            'PING' => $this->ping(...),
-            'INFO' => $this->info(...),
-            'STATS' => $this->stats(...),
-        ];
-
-        foreach ($verbs as $verb => $handler) {
+        foreach (['ping', 'info', 'stats'] as $verb) {
+            $handler = function () use ($verb) {
+                return (array) $this->$verb();
+            };
+            $verb = strtoupper($verb);
             // Add the all handler
             $this->addInternalHandler($verb, '', '', "$verb-all", $handler);
-
             // Add the kind handler
             $this->addInternalHandler($verb, $this->name, '', "$verb-kind", $handler);
-
             // Add the service id handler
             $this->addInternalHandler($verb, $this->name, $this->id, $verb, $handler);
         }

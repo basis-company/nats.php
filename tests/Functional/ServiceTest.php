@@ -40,6 +40,8 @@ class ServiceTest extends FunctionalTestCase
 
         $this->assertCount(1, $info['endpoints']);
         $this->assertSame("v1.test_info", $info['endpoints']['test_info']['subject']);
+
+        $this->assertEquals((array) $service->info(), $info);
     }
 
     public function testServicePing()
@@ -55,6 +57,8 @@ class ServiceTest extends FunctionalTestCase
         $this->assertArrayHasKey('type', $ping);
         $this->assertSame($ping['type'], 'io.nats.micro.v1.ping_response');
         $this->assertSame($ping['name'], 'TestService');
+
+        $this->assertEquals((array) $service->ping(), $ping);
     }
 
     public function testServiceStats()
@@ -79,6 +83,8 @@ class ServiceTest extends FunctionalTestCase
         $service->client->publish('$SRV.STATS', '');
         $stats = $service->client->process(1);
         $this->assertNotSame($stats['endpoints'][0]['average_processing_time'], 0.0);
+
+        $this->assertEquals((array) $service->stats(), $stats);
     }
 
     public function testServiceRequestReplyClass()
