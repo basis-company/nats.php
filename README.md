@@ -9,13 +9,14 @@
 Feel free to contribute or give any feedback.
 
 - [Installation](#installation)
-- [Connection](#connection)
+- [Connection standard](#connection-standard)
+- [Connecting with TLS](#connecting-with-tls)
+- [Connecting with JWT](#connecting-with-jwt)
 - [Publish Subscribe](#publish-subscribe)
 - [Request Response](#request-response)
 - [JetStream Api Usage](#jetstream-api-usage)
 - [Microservices](#microservices)
 - [Key Value Storage](#key-value-storage)
-- [Using NKeys with JWT](#using-nkeys-with-jwt)
 - [Performance](#performance)
 - [Configuration Options](#configuration-options)
 
@@ -27,20 +28,19 @@ $ composer require basis-company/nats
 
 The NKeys functionality requires Ed25519, which is provided in `libsodium` extension or `sodium_compat` package.
 
-## Connection
+## Connection standard
 ```php
 use Basis\Nats\Client;
 use Basis\Nats\Configuration;
 
 // you can override any default configuraiton key using constructor
 $configuration = new Configuration(
-    host: 'nats-host',
+    host: 'nats-service',
     user: 'basis',
     pass: 'secret',
 );
 
-// delaya configuration options are changed via setters
-
+// delay configuration options are changed via setters
 // default delay mode is constant - first retry be in 1ms, second in 1ms, third in 1ms
 $configuration->setDelay(0.001);
 
@@ -56,7 +56,7 @@ $client->ping(); // true
 
 ```
 
-### Connecting to a cluster with TLS enabled
+### Connecting with TLS
 Typically, when connecting to a cluster with TLS enabled the connection settings do not change. The client lib will automatically switch over to TLS 1.2. However, if you're using a self-signed certificate you may have to point to your local CA file using the tlsCaFile setting.
 
 When connecting to a nats cluster that requires the client to provide TLS certificates use the tlsCertFile and tlsKeyFile to point at your local TLS certificate and private key file.
@@ -83,6 +83,25 @@ $configuration->setDelay(0.001);
 
 $client = new Client($configuration);
 $client->ping(); // true
+```
+
+## Connecting with JWT
+
+To use NKey with JWT, simply provide them in the `Configuration` options as `jwt` and `nkey`.
+You can also provide a credentials file with `CredentialsParser`
+
+```php
+use Basis\Nats\Client;
+use Basis\Nats\Configuration;
+use Basis\Nats\NKeys\CredentialsParser;
+
+$configuration = new Configuration(
+    CredentialsParser::fromFile($credentialPath)
+    host: 'localhost',
+    port: 4222,
+);
+
+$client = new Client($configuration);
 ```
 
 ## Publish Subscribe
@@ -361,25 +380,6 @@ $bucket->update('email', 'nekufa@gmail.com');
 var_dump($bucket->getAll()); // ['email' => 'nekufa@gmail.com', 'username' => 'nekufa']
 ```
 
-## Using NKeys with JWT
-
-To use NKeys with JWT, simply provide them in the `Configuration` options as `jwt` and `nkey`.
-You can also provide a credentials file with `CredentialsParser`
-
-```php
-use Basis\Nats\Client;
-use Basis\Nats\Configuration;
-use Basis\Nats\NKeys\CredentialsParser;
-
-$configuration = new Configuration(
-    CredentialsParser::fromFile($credentialPath)
-    host: 'localhost',
-    port: 4222,
-);
-
-$client = new Client($configuration);
-```
-
 ## Performance
 Testing on AMD Ryzen 5 3600X with nats running in docker gives about 400k rps for publish and 330k rps for receive in non-verbose mode.
 
@@ -434,7 +434,7 @@ The following is the list of configuration options and default values.
 | Option         | Default    | Description                                                                                                                                                                                                                   |
 |----------------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `inboxPrefix`  | `"_INBOX"` | Sets de prefix for automatically created inboxes                                                                                                                                                                              |
-| `jwt`          |            | Token for [JWT Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/jwt). Alternatively you can use [CredentialsParser](#using-nkeys-with-jwt)                                  |
+| `jwt`          |            | Token for [JWT Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/jwt). Alternatively you can use [CredentialsParser](#connecting-with-jwt)                                  |
 | `nkey`         |            | Ed25519 based public key signature used for [NKEY Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/nkey_auth).                                                              |
 | `pass`         |            | Sets the password for a connection.                                                                                                                                                                                           |
 | `pedantic`     | `false`    | Turns on strict subject format checks.                                                                                                                                                                                        |
