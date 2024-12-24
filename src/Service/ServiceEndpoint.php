@@ -34,19 +34,19 @@ class ServiceEndpoint
 
                 // Setup the response
                 $response = "";
+                $handler = $this->endpointHandler;
 
-                switch ($this->endpointHandler) {
-                    case is_subclass_of($this->endpointHandler, EndpointHandler::class):
+                switch (true) {
+                    case is_string($handler) && is_subclass_of($handler, EndpointHandler::class):
                         // Instantiate the endpointHandler
-                        $handler = new $this->endpointHandler();
-
+                        $handler = new $handler();
                         $response = $handler->handle($message);
                         break;
-                    case is_callable($this->endpointHandler):
-                        $response = call_user_func($this->endpointHandler, $message);
+                    case is_callable($handler):
+                        $response = call_user_func($handler, $message);
                         break;
-                    case $this->endpointHandler instanceof EndpointHandler:
-                        $response = $this->endpointHandler->handle($message);
+                    case $handler instanceof EndpointHandler:
+                        $response = $handler->handle($message);
                         break;
                     default:
                         throw new \LogicException("The provided endpoint handler is not a supported type.");
