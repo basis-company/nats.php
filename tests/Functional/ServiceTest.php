@@ -25,6 +25,13 @@ class ServiceTest extends FunctionalTestCase
         return $service;
     }
 
+    public function testNestedServiceGroups()
+    {
+        $service = $this->createTestService();
+        $service->addGroup('basis')->addGroup('v2')->addEndpoint('greet', TestEndpoint::class);
+        $this->assertSame($service->info()->endpoints['greet']['subject'], 'basis.v2.greet');
+    }
+
     public function testServiceInfo()
     {
         $service = $this->createTestService();
