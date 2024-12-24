@@ -5,6 +5,7 @@ namespace Tests\Functional;
 use Basis\Nats\Client;
 use Basis\Nats\Message\Payload;
 use Basis\Nats\Service\Service;
+use Exception;
 use Tests\FunctionalTestCase;
 use Tests\Utils\TestEndpoint;
 
@@ -105,6 +106,21 @@ class ServiceTest extends FunctionalTestCase
         $service->reset();
         $stats = $service->stats();
         $this->assertSame($stats->endpoints[0]['average_processing_time'], 0.0);
+    }
+
+    public function testServiceRunner()
+    {
+        $service = $this->createTestService();
+        $called = false;
+
+        $service->addGroup('v1')->addEndpoint('test_runner', function () use (&$called) {
+            $called = true;
+            throw new Exception("Runtime error");
+        });
+
+        $service->client->publish('v1.test_runner', []);
+        $service->run(0.1);
+        $this->assertTrue($called);
     }
 
     public function testServiceRequestReplyClass()

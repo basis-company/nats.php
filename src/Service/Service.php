@@ -154,11 +154,12 @@ class Service
         return "\$SRV.$verb.$name.$id";
     }
 
-    public function run(): void
+    public function run(?float $timeout = null): void
     {
         $this->client->logger->info("$this->name is ready to accept connections\n");
+        $start = microtime(true);
 
-        while (true) {
+        while ($timeout ? microtime(true) < $start + $timeout : true) {
             try {
                 $this->client->process();
             } catch (\Exception $e) {
