@@ -9,11 +9,8 @@ use Basis\Nats\Queue;
 class ServiceEndpoint
 {
     private int $num_requests = 1;
-
     private int $num_errors = 0;
-
     private string $last_error = '';
-
     private float $processing_time = 0;
 
     private Client|Queue $subscription;
