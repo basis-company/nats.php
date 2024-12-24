@@ -8,67 +8,55 @@ use InvalidArgumentException;
 
 class Configuration
 {
-    public readonly bool $pedantic;
-    public readonly bool $reconnect;
-    public readonly bool $verbose;
-    public readonly int $port;
-    public readonly string $host;
-    public readonly string $lang;
-    public readonly string $version;
-    public readonly float $timeout;
-    public readonly int $pingInterval;
-
-    public readonly string $inboxPrefix;
-
-    public readonly ?string $jwt;
-    public readonly ?string $pass;
-    public readonly ?string $token;
-    public readonly ?string $user;
-    public readonly ?string $nkey;
-
-    public readonly ?string $tlsKeyFile;
-    public readonly ?string $tlsCertFile;
-    public readonly ?string $tlsCaFile;
-
     public const DELAY_CONSTANT = 'constant';
     public const DELAY_LINEAR = 'linear';
     public const DELAY_EXPONENTIAL = 'exponential';
 
-    protected float $delay = 0.001;
-    protected string $delayMode = self::DELAY_CONSTANT;
-
-    protected array $defaults = [
-        'host' => 'localhost',
-        'jwt' => null,
-        'lang' => 'php',
-        'pass' => null,
-        'pedantic' => false,
-        'port' => 4222,
-        'reconnect' => true,
-        'timeout' => 1,
-        'token' => null,
-        'user' => null,
-        'nkey' => null,
-        'verbose' => false,
-        'version' => 'dev',
-        'pingInterval' => 2,
-        'inboxPrefix' => '_INBOX',
-        'tlsKeyFile' => null,
-        'tlsCertFile' => null,
-        'tlsCaFile' => null,
-    ];
+    protected float $delay;
+    protected string $delayMode;
 
     /**
-     * @param array<string, string|int|bool|null> ...$options
+     * @param array<string, string|int|bool|null> $options
      */
-    public function __construct(array ...$options)
-    {
-        $config = array_merge($this->defaults, ...$options);
-        foreach ($config as $k => $v) {
+    public function __construct(
+        array $options = [], // deprecated
+        array $options2 = [], // deprecated multi option array support
+        array $options3 = [], // deprecated multi option array support
+        public string $host = 'localhost',
+        public int $port = 4222,
+        public ?string $user = null,
+        public ?string $jwt = null,
+        public ?string $pass = null,
+        public ?string $token = null,
+        public ?string $nkey = null,
+        public ?string $tlsKeyFile = null,
+        public ?string $tlsCertFile = null,
+        public ?string $tlsCaFile = null,
+        public bool $pedantic = false,
+        public bool $reconnect = true,
+        public bool $verbose = false,
+        public float $timeout = 1,
+        public int $pingInterval = 2,
+        float $delay = 0.001,
+        string $delayMode = self::DELAY_CONSTANT,
+        public string $lang = 'php',
+        public string $version = 'dev',
+        public string $inboxPrefix = '_INBOX',
+    ) {
+
+        $this->setDelay($delay, $delayMode);
+
+        foreach (array_merge($options, $options2, $options3) as $k => $v) {
             if (!property_exists($this, $k)) {
                 throw new InvalidArgumentException("Invalid config option $k");
             }
-            $this->$k = $v;
+            if ($k == 'delayMode') {
+                $this->setDelay($this->delay, $v);
+            } elseif ($k == 'delay') {
+                $this->setDelay($k, $this->delayMode);
+            } else {
+                $this->$k = $v;
+            }
         }
     }
 

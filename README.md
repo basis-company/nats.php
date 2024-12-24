@@ -32,22 +32,14 @@ The NKeys functionality requires Ed25519, which is provided in `libsodium` exten
 use Basis\Nats\Client;
 use Basis\Nats\Configuration;
 
-// this is default options, you can override anyone
-$configuration = new Configuration([
-    'host' => 'localhost',
-    'jwt' => null,
-    'lang' => 'php',
-    'pass' => null,
-    'pedantic' => false,
-    'port' => 4222,
-    'reconnect' => true,
-    'timeout' => 1,
-    'token' => null,
-    'user' => null,
-    'nkey' => null,
-    'verbose' => false,
-    'version' => 'dev',
-]);
+// you can override any default configuraiton key using constructor
+$configuration = new Configuration(
+    host: 'nats-host',
+    user: 'basis',
+    pass: 'secret',
+);
+
+// delaya configuration options are changed via setters
 
 // default delay mode is constant - first retry be in 1ms, second in 1ms, third in 1ms
 $configuration->setDelay(0.001);
@@ -79,25 +71,13 @@ Connection settings when connecting to a nats server that has TLS and TLS Client
 use Basis\Nats\Client;
 use Basis\Nats\Configuration;
 
-// this is default options, you can override anyone
-$configuration = new Configuration([
-    'host' => 'localhost',
-    'jwt' => null,
-    'lang' => 'php',
-    'pass' => null,
-    'pedantic' => false,
-    'port' => 4222,
-    'reconnect' => true,
-    'timeout' => 1,
-    'token' => null,
-    'user' => null,
-    'nkey' => null,
-    'verbose' => false,
-    'version' => 'dev',
-    'tlsCertFile' => "./certs/client-cert.pem",
-    'tlsKeyFile'  => "./certs/client-key.pem",
-    'tlsCaFile'  => "./certs/client-key.pem",
-]);
+// you can override any default configuraiton key using constructor
+$configuration = new Configuration(
+    host: 'tls-service-endpoint',
+    tlsCertFile: "./certs/client-cert.pem",
+    tlsKeyFile': "./certs/client-key.pem",
+    tlsCaFile': "./certs/client-key.pem",
+);
 
 $configuration->setDelay(0.001);
 
@@ -392,11 +372,9 @@ use Basis\Nats\Configuration;
 use Basis\Nats\NKeys\CredentialsParser;
 
 $configuration = new Configuration(
-    [
-        'host' => 'localhost',
-        'port' => 4222
-    ],
     CredentialsParser::fromFile($credentialPath)
+    host: 'localhost',
+    port: 4222,
 );
 
 $client = new Client($configuration);

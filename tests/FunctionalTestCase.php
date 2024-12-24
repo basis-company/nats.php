@@ -33,14 +33,15 @@ abstract class FunctionalTestCase extends TestCase
 
     public function getConfiguration(array ...$options): Configuration
     {
-        return new Configuration([
-            'host' => getenv('NATS_HOST'),
-            'port' => +getenv('NATS_PORT'),
-            'delay' => 0.05,
-            'delayMode' => Configuration::DELAY_LINEAR,
-            'timeout' => 0.5,
-            'verbose' => getenv('NATS_CLIENT_VERBOSE') == '1',
-        ], ...$options);
+        return new Configuration(
+            array_merge(...$options),
+            host: getenv('NATS_HOST'),
+            port: +getenv('NATS_PORT'),
+            timeout: 0.5,
+            verbose: getenv('NATS_CLIENT_VERBOSE') == '1',
+            delay: 0.05,
+            delayMode: Configuration::DELAY_LINEAR,
+        );
     }
 
     public function setup(): void
