@@ -381,7 +381,7 @@ var_dump($bucket->getAll()); // ['email' => 'nekufa@gmail.com', 'username' => 'n
 ```
 
 ## Performance
-Testing on AMD Ryzen 5 3600X with nats running in docker gives about 400k rps for publish and 330k rps for receive in non-verbose mode.
+Testing on AMD Ryzen 5 3600X with nats running in docker gives about 370k rps for publish and 360k rps for receive in non-verbose mode.
 
 You can run tests on your environment.
 ```bash
