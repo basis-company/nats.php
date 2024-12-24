@@ -3,51 +3,35 @@
 namespace Basis\Nats\Service;
 
 use Basis\Nats\Client;
-use Basis\Nats\Message\Payload;
+use Basis\Nats\Service\Response\Info;
+use Basis\Nats\Service\Response\Ping;
+use Basis\Nats\Service\Response\Stats;
 
 class Service
 {
-    public Client $client;
-
     private string $id;
-
-    private string $name;
-
-    private string $description = '';
-
-    private string $version;
-
     private string $started;
 
+    /** @var array<ServiceEndpoint> */
     private array $endpoints = [];
-
     private array $groups = [];
-
     private array $subscriptions = [];
 
     public function __construct(
-        Client $client,
-        string $name,
-        string $description = 'Default Description',
-        string $version = '0.0.1'
+        public Client $client,
+        private string $name,
+        private string $description = 'Default Description',
+        private string $version = '0.0.1'
     ) {
-        $this->client = $client;
         $this->id = $this->generateId();
-        $this->name = $name;
-        $this->description = $description;
-        $this->version = $version;
         $this->started = date("Y-m-d\TH:i:s.v\Z");
-
-        // Register the service verbs to listen for
         $this->registerVerbs();
     }
 
     private function generateId(): string
     {
         $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
         $charactersLength = strlen($characters);
-
         $randomString = "";
 
         for ($i = 0; $i < 22; $i++) {
@@ -59,59 +43,29 @@ class Service
 
     private function ping(): array
     {
-        return [
-            'type' => 'io.nats.micro.v1.ping_response',
-            'name' => $this->name,
-            'id' => $this->id,
-            'version' => $this->version,
-        ];
+        return (array) new Ping($this->name, $this->id, $this->version);
     }
 
     private function info(): array
     {
-        $endpoints = [];
-
-        foreach ($this->endpoints as $endpoint) {
-            $endpoints[] = [
-                'name' => $endpoint->getName(),
-                'subject' => $endpoint->getSubject(),
-                'queue_group' => $endpoint->getQueueGroup(),
-            ];
-        }
-
-        return [
-            'type' => 'io.nats.micro.v1.info_response',
-            'name' => $this->name,
-            'id' => $this->id,
-            'version' => $this->version,
-            'description' => $this->description,
-            'endpoints' => $endpoints
-        ];
+        return (array) new Info(
+            name: $this->name,
+            id: $this->id,
+            version: $this->version,
+            description: $this->description,
+            endpoints: $this->endpoints,
+        );
     }
 
     private function stats(): array
     {
-        return [
-            'type' => 'io.nats.micro.v1.stats_response',
-            'name' => $this->name,
-            'id' => $this->id,
-            'version' => $this->version,
-            'endpoints' => array_reduce($this->endpoints, function ($carry, ServiceEndpoint $endpoint) {
-                $carry[] = [
-                    'name' => $endpoint->getName(),
-                    'subject' => $endpoint->getSubject(),
-                    'queue_group' => $endpoint->getQueueGroup(),
-                    'num_requests' => $endpoint->getNumRequests(),
-                    'num_errors' => $endpoint->getNumErrors(),
-                    'last_error' => $endpoint->getLastError(),
-                    'processing_time' => $endpoint->getProcessingTime(),
-                    'average_processing_time' => $endpoint->getAverageProcessingTime(),
-                ];
-
-                return $carry;
-            }, []),
-            'started' => $this->started,
-        ];
+        return (array) new Stats(
+            name: $this->name,
+            id: $this->id,
+            version: $this->version,
+            started: $this->started,
+            endpoints: $this->endpoints,
+        );
     }
 
     public function addGroup(string $name): ServiceGroup
@@ -143,13 +97,7 @@ class Service
             throw new \LogicException("Endpoint $name already is defined");
         }
 
-        $this->endpoints[$name] = new ServiceEndpoint(
-            $this,
-            $name,
-            $subject,
-            $endpointHandler,
-            $queue_group
-        );
+        $this->endpoints[$name] = new ServiceEndpoint($this, $name, $subject, $endpointHandler, $queue_group);
     }
 
     public function reset(): void
@@ -165,15 +113,9 @@ class Service
     private function registerVerbs(): void
     {
         $verbs = [
-            'PING' => function (Payload $payload) {
-                return $this->ping();
-            },
-            'INFO' => function (Payload $payload) {
-                return $this->info();
-            },
-            'STATS' => function (Payload $payload) {
-                return $this->stats();
-            },
+            'PING' => $this->ping(...),
+            'INFO' => $this->info(...),
+            'STATS' => $this->stats(...),
         ];
 
         foreach ($verbs as $verb => $handler) {
@@ -218,9 +160,7 @@ class Service
 
     public function run(): void
     {
-        $this->client
-            ->logger
-            ->info("$this->name is ready to accept connections\n");
+        $this->client->logger->info("$this->name is ready to accept connections\n");
 
         while (true) {
             try {

@@ -32,12 +32,8 @@ class ServiceGroup
             $subject = $this->name . '.' . $options['subject'];
         }
 
-        $this->service->addEndpoint(
-            $name,
-            $serviceHandler,
-            [
-                'subject' => $subject,
-            ]
-        );
+        $this->service->addEndpoint($name, $serviceHandler, [
+            'subject' => $subject,
+        ]);
     }
 }
