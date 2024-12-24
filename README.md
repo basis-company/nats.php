@@ -397,31 +397,29 @@ Installing dependencies from lock file (including require-dev)
  % export NATS_PORT=4222
  % export NATS_CLIENT_LOG=1
  % composer run perf-test
-PHPUnit 9.5.28 by Sebastian Bergmann and contributors.
+PHPUnit 9.6.18 by Sebastian Bergmann and contributors.
 
-Runtime:       PHP 8.3.3-1+ubuntu22.04.1+deb.sury.org+1
-Configuration: /home/nekufa/software/github/nats.php/phpunit.xml.dist
+Runtime:       PHP 8.3.11
+Configuration: /home/nekufa/software/github/nats.php/phpunit.xml
 Warning:       No code coverage driver available
 
-[2024-03-11T17:06:30.907277+00:00] PerformanceTest.testPerformance.DEBUG: send CONNECT {"headers":true,"pedantic":false,"verbose":false,"lang":"php","version":"dev"}  [] []
-[2024-03-11T17:06:30.907312+00:00] PerformanceTest.testPerformance.INFO: start performance test [] []
-[2024-03-11T17:06:32.135674+00:00] PerformanceTest.testPerformance.INFO: publishing {"rps":407072.0,"length":500000,"time":1.228281021118164} []
-[2024-03-11T17:06:33.412134+00:00] PerformanceTest.testPerformance.INFO: processing {"rps":391723.0,"length":500000,"time":1.2764089107513428} []
-
+[2024-12-24T12:07:04.063687+00:00] PerformanceTest.testPerformance.DEBUG: send CONNECT {"headers":true,"pedantic":false,"verbose":false,"lang":"php","version":"dev"}  [] []
+[2024-12-24T12:07:04.063725+00:00] PerformanceTest.testPerformance.INFO: start performance test [] []
+[2024-12-24T12:07:05.391707+00:00] PerformanceTest.testPerformance.INFO: publishing {"rps":376536.0,"length":500000,"time":1.3278908729553223} []
+[2024-12-24T12:07:06.762321+00:00] PerformanceTest.testPerformance.INFO: processing {"rps":364814.0,"length":500000,"time":1.3705589771270752} []
 
  % export NATS_CLIENT_VERBOSE=1
  % composer run perf-test
-PHPUnit 9.5.28 by Sebastian Bergmann and contributors.
+PHPUnit 9.6.18 by Sebastian Bergmann and contributors.
 
-Runtime:       PHP 8.3.3-1+ubuntu22.04.1+deb.sury.org+1
-Configuration: /home/nekufa/software/github/nats.php/phpunit.xml.dist
+Runtime:       PHP 8.3.11
+Configuration: /home/nekufa/software/github/nats.php/phpunit.xml
 Warning:       No code coverage driver available
 
-[2024-03-11T17:07:12.829135+00:00] PerformanceTest.testPerformance.DEBUG: send CONNECT {"headers":true,"pedantic":false,"verbose":true,"lang":"php","version":"dev"}  [] []
-[2024-03-11T17:07:12.829172+00:00] PerformanceTest.testPerformance.INFO: start performance test [] []
-[2024-03-11T17:07:14.069321+00:00] PerformanceTest.testPerformance.INFO: publishing {"rps":403207.0,"length":500000,"time":1.2400550842285156} []
-[2024-03-11T17:07:15.548207+00:00] PerformanceTest.testPerformance.INFO: processing {"rps":338104.0,"length":500000,"time":1.4788329601287842} []
-.                                                                   1 / 1 (100%)
+[2024-12-24T12:07:43.721568+00:00] PerformanceTest.testPerformance.DEBUG: send CONNECT {"headers":true,"pedantic":false,"verbose":true,"lang":"php","version":"dev"}  [] []
+[2024-12-24T12:07:43.721606+00:00] PerformanceTest.testPerformance.INFO: start performance test [] []
+[2024-12-24T12:07:45.053410+00:00] PerformanceTest.testPerformance.INFO: publishing {"rps":375456.0,"length":500000,"time":1.3317129611968994} []
+[2024-12-24T12:07:46.566548+00:00] PerformanceTest.testPerformance.INFO: processing {"rps":330450.0,"length":500000,"time":1.513084888458252} []
 
 nekufa@fasiga ~ % cat /proc/cpuinfo | grep AMD
 model name	: AMD Ryzen 5 3600X 6-Core Processor

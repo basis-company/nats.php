@@ -74,6 +74,6 @@ class PerformanceTest extends FunctionalTestCase
         ]);
 
         // at least 50rps should be enough for test
-        $this->assertGreaterThan(500, $this->bigMessageIterationLimit / $publishing);
+        $this->assertGreaterThan(50, $this->bigMessageIterationLimit / $publishing);
     }
 }
