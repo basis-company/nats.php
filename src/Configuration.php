@@ -53,7 +53,7 @@ class Configuration
             if ($k == 'delayMode') {
                 $this->setDelay($this->delay, $v);
             } elseif ($k == 'delay') {
-                $this->setDelay($k, $this->delayMode);
+                $this->setDelay($v, $this->delayMode);
             } else {
                 $this->$k = $v;
             }
