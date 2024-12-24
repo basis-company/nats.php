@@ -9,7 +9,7 @@
 Feel free to contribute or give any feedback.
 
 - [Installation](#installation)
-- [Connection standard](#connection-standard)
+- [Connecting](#connecting)
 - [Connecting with TLS](#connecting-with-tls)
 - [Connecting with JWT](#connecting-with-jwt)
 - [Publish Subscribe](#publish-subscribe)
@@ -28,7 +28,7 @@ $ composer require basis-company/nats
 
 The NKeys functionality requires Ed25519, which is provided in `libsodium` extension or `sodium_compat` package.
 
-## Connection standard
+## Connecting
 ```php
 use Basis\Nats\Client;
 use Basis\Nats\Configuration;
