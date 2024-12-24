@@ -32,6 +32,15 @@ class ServiceTest extends FunctionalTestCase
         $this->assertSame($service->info()->endpoints['greet']['subject'], 'basis.v2.greet');
     }
 
+    public function testServiceEndpointCustomSubject()
+    {
+        $service = $this->createTestService();
+        $service->addGroup('basis')->addEndpoint('empty', TestEndpoint::class, [
+            'subject' => 'greet',
+        ]);
+        $this->assertSame($service->info()->endpoints['empty']['subject'], 'basis.greet');
+    }
+
     public function testServiceInfo()
     {
         $service = $this->createTestService();
