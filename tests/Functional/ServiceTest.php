@@ -101,6 +101,10 @@ class ServiceTest extends FunctionalTestCase
         $this->assertNotSame($stats['endpoints'][0]['average_processing_time'], 0.0);
 
         $this->assertEquals((array) $service->stats(), $stats);
+
+        $service->reset();
+        $stats = $service->stats();
+        $this->assertSame($stats->endpoints[0]['average_processing_time'], 0.0);
     }
 
     public function testServiceRequestReplyClass()
