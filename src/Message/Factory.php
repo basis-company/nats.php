@@ -6,12 +6,8 @@ namespace Basis\Nats\Message;
 
 use LogicException;
 
-final class Factory
+abstract class Factory
 {
-    private function __construct()
-    {
-    }
-
     public static function create(string $line): Prototype
     {
         $message = match ($line) {
