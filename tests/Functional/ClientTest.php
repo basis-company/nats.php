@@ -33,7 +33,9 @@ class ClientTest extends FunctionalTestCase
     public function testReconnect()
     {
         $client = $this->getClient();
+        $client->subscribe("tester");
         $this->assertTrue($client->ping());
+        $this->assertCount(1, $client->getSubscriptions());
 
         $property = new ReflectionProperty(Connection::class, 'socket');
         $property->setAccessible(true);
@@ -41,6 +43,7 @@ class ClientTest extends FunctionalTestCase
         fclose($property->getValue($client->connection));
 
         $this->assertTrue($client->ping());
+        $this->assertCount(1, $client->getSubscriptions());
     }
 
     public function testPacketSizeSetter()
