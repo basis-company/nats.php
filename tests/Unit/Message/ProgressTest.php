@@ -13,7 +13,7 @@ class ProgressTest extends TestCase
             'subject' => '$JS.ACK.stream.consumer.1.3.18.1719992702186105579.0'
         ]);
 
-        $this->assertEquals("PUB \$JS.ACK.stream.consumer.1.3.18.1719992702186105579.0  4\r\n+WPI", $progress->render());
+        $command = "PUB \$JS.ACK.stream.consumer.1.3.18.1719992702186105579.0  4\r\n+WPI";
+        $this->assertEquals($command, $progress->render());
     }
-
 }
