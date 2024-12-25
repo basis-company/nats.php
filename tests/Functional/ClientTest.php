@@ -43,6 +43,16 @@ class ClientTest extends FunctionalTestCase
         $this->assertTrue($client->ping());
     }
 
+    public function testPacketSizeSetter()
+    {
+        $property = new ReflectionProperty(Connection::class, 'packetSize');
+        $property->setAccessible(true);
+
+        $client = $this->getClient();
+        $client->connection->setPacketSize(512);
+        $this->assertSame($property->getValue($client->connection), 512);
+    }
+
     public function testLazyConnection()
     {
         $this->createClient(['port' => -1]);
