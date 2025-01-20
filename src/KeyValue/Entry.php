@@ -11,7 +11,7 @@ class Entry
         public readonly string $key,
         public readonly mixed $value,
         public readonly int $revision,
-        public readonly string $time="",
+        public readonly string $time = "",
     ) {
     }
 }
