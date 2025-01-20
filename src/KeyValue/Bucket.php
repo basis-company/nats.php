@@ -53,7 +53,7 @@ class Bucket
         $revision = $response->message->seq;
         $value = base64_decode($response->message->data);
 
-        return new Entry($this->name, $key, $value, $revision,$response->message->time);
+        return new Entry($this->name, $key, $value, $revision, $response->message->time);
 
     }
 
