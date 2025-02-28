@@ -23,6 +23,7 @@ class Configuration
     private ?int $maxMessageSize = null;
     private ?int $maxMessagesPerSubject = null;
     private ?string $description = null;
+    private ?array $consumerLimits = null;
 
     public function __construct(
         public readonly string $name
@@ -196,6 +197,17 @@ class Configuration
         return $this;
     }
 
+    public function setConsumerLimits(array $consumerLimits): self
+    {
+        $this->consumerLimits = ConsumerLimits::validate($consumerLimits);
+        return $this;
+    }
+
+    public function getConsumerLimits(): ?array
+    {
+        return $this->consumerLimits;
+    }
+
     public function toArray(): array
     {
         $config = [
@@ -214,6 +226,7 @@ class Configuration
             'retention' => $this->getRetentionPolicy(),
             'storage' => $this->getStorageBackend(),
             'subjects' => $this->getSubjects(),
+            'consumer_limits' => $this->getConsumerLimits(),
         ];
 
         foreach ($config as $k => $v) {
