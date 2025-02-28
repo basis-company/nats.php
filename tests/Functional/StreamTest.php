@@ -425,6 +425,71 @@ class StreamTest extends FunctionalTestCase
         $this->assertNull($this->called);
     }
 
+    public function testConsumerInactiveThreshold()
+    {
+        $api = $this->getClient()
+            ->skipInvalidMessages(true)
+            ->getApi();
+
+        $this->assertSame($api->getInfo()->streams, 0);
+
+        $stream = $api->getStream('my_stream_with_threshold');
+
+        $stream->getConfiguration()
+            ->setRetentionPolicy(RetentionPolicy::WORK_QUEUE)
+            ->setSubjects(['tester.greet', 'tester.bye']);
+
+        $stream->create();
+
+        $this->called = null;
+        $consumer = $stream->getConsumer('greet_consumer');
+
+        $oneSecondInNanoseconds = 1000000000;
+        $consumer->getConfiguration()->setSubjectFilter('tester.greet')->setInactiveThreshold($oneSecondInNanoseconds);
+        $consumer->create();
+
+        $this->assertCount(1, $stream->getConsumerNames());
+
+        sleep(2);
+
+        $this->assertCount(0, $stream->getConsumerNames());
+    }
+
+    public function testStreamInactiveThreshold()
+    {
+        $api = $this->getClient()
+            ->skipInvalidMessages(true)
+            ->getApi();
+
+        $this->assertSame($api->getInfo()->streams, 0);
+
+        $stream = $api->getStream('my_stream_with_threshold');
+
+        $oneSecondInNanoseconds = 1000000000;
+        $stream->getConfiguration()
+            ->setRetentionPolicy(RetentionPolicy::WORK_QUEUE)
+            ->setSubjects(['tester.greet', 'tester.bye'])
+            ->setConsumerLimits(
+                [
+                    'inactive_threshold' => $oneSecondInNanoseconds,
+                ]
+            );
+
+        $stream->create();
+
+        $this->called = null;
+        $consumer = $stream->getConsumer('greet_consumer');
+
+        $consumer->getConfiguration()->setSubjectFilter('tester.greet');
+        $consumer->create();
+
+        $this->assertCount(1, $stream->getConsumerNames());
+
+        sleep(2);
+
+        $this->assertCount(0, $stream->getConsumerNames());
+    }
+
     public function testEphemeralConsumer()
     {
         $api = $this->getClient()

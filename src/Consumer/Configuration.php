@@ -205,9 +205,9 @@ class Configuration
         return $this;
     }
 
-    public function setInactiveThreshold(int $inactiveThreshold): self
+    public function setInactiveThreshold(int $inactiveThresholdNanoSeconds): self
     {
-        $this->inactiveThreshold = $inactiveThreshold;
+        $this->inactiveThreshold = $inactiveThresholdNanoSeconds;
         return $this;
     }
 
