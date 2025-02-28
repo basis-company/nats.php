@@ -119,6 +119,7 @@ class ServiceTest extends FunctionalTestCase
         });
 
         $service->client->publish('v1.test_runner', []);
+        $service->client->setLogger($this->getLogger());
         $service->run(0.1);
         $this->assertTrue($called);
     }
