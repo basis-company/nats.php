@@ -8,8 +8,8 @@ use DomainException;
 
 final class ConsumerLimits
 {
-    private const MAX_ACK_PENDING    = 'max_ack_pending';
-    private const INACTIVE_THRESHOLD = 'inactive_threshold';
+    public const MAX_ACK_PENDING = 'max_ack_pending';
+    public const INACTIVE_THRESHOLD = 'inactive_threshold';
 
 
     public static function validate(array $limits): array

@@ -9,6 +9,7 @@ use Basis\Nats\Consumer\Configuration;
 use Basis\Nats\Consumer\Consumer;
 use Basis\Nats\Consumer\ReplayPolicy;
 use Basis\Nats\Message\Payload;
+use Basis\Nats\Stream\ConsumerLimits;
 use Basis\Nats\Stream\RetentionPolicy;
 use Basis\Nats\Stream\StorageBackend;
 use Tests\FunctionalTestCase;
@@ -471,7 +472,7 @@ class StreamTest extends FunctionalTestCase
             ->setSubjects(['tester.greet', 'tester.bye'])
             ->setConsumerLimits(
                 [
-                    'inactive_threshold' => $oneSecondInNanoseconds,
+                    ConsumerLimits::INACTIVE_THRESHOLD => $oneSecondInNanoseconds,
                 ]
             );
 
