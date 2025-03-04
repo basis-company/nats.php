@@ -27,6 +27,7 @@ class Configuration
     private string $ackPolicy = AckPolicy::EXPLICIT;
     private string $deliverPolicy = DeliverPolicy::ALL;
     private string $replayPolicy = ReplayPolicy::INSTANT;
+    private ?int $inactiveThreshold = null;
 
     public function __construct(
         private readonly string $stream,
@@ -204,6 +205,17 @@ class Configuration
         return $this;
     }
 
+    public function setInactiveThreshold(int $inactiveThresholdNanoSeconds): self
+    {
+        $this->inactiveThreshold = $inactiveThresholdNanoSeconds;
+        return $this;
+    }
+
+    public function getInactiveThreshold(): ?int
+    {
+        return $this->inactiveThreshold;
+    }
+
     public function toArray(): array
     {
         $config = [
@@ -221,6 +233,7 @@ class Configuration
             'max_deliver' => $this->getMaxDeliver(),
             'max_waiting' => $this->getMaxWaiting(),
             'replay_policy' => $this->getReplayPolicy(),
+            'inactive_threshold' => $this->getInactiveThreshold(),
         ];
 
         switch ($this->getDeliverPolicy()) {
