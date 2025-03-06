@@ -32,6 +32,7 @@ class Configuration
         public ?string $tlsKeyFile = null,
         public ?string $tlsCertFile = null,
         public ?string $tlsCaFile = null,
+        public bool $tlsHandshakeFirst = false,
         public bool $pedantic = false,
         public bool $reconnect = true,
         public bool $verbose = false,

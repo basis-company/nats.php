@@ -81,9 +81,9 @@ class Connection
                 } elseif ($message instanceof Pong) {
                     $this->pongAt = $now;
                 } elseif ($message instanceof Info) {
-                    if (isset($message->tls_verify) && $message->tls_verify) {
+                    if (isset($message->tls_verify) && $message->tls_verify && !$this->config->tlsHandshakeFirst) {
                         $this->enableTls(true);
-                    } elseif (isset($message->tls_required) && $message->tls_required) {
+                    } elseif (isset($message->tls_required) && $message->tls_required && !$this->config->tlsHandshakeFirst) {
                         $this->enableTls(false);
                     }
                     return $message;
@@ -197,6 +197,10 @@ class Connection
         }
 
         $this->setTimeout($config->timeout);
+
+        if ($config->tlsHandshakeFirst) {
+            $this->enableTls(true);
+        }
 
         $this->connectMessage = new Connect($config->getOptions());
 
