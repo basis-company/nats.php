@@ -12,7 +12,7 @@ Feel free to contribute or give any feedback.
   - [Installation](#installation)
   - [Connecting](#connecting)
     - [Connecting with TLS](#connecting-with-tls)
-  - [Connecting with JWT](#connecting-with-jwt)
+    - [Connecting with JWT](#connecting-with-jwt)
   - [Publish Subscribe](#publish-subscribe)
   - [Request Response](#request-response)
   - [JetStream Api Usage](#jetstream-api-usage)
