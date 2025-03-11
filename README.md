@@ -8,17 +8,18 @@
 
 Feel free to contribute or give any feedback.
 
-- [Installation](#installation)
-- [Connecting](#connecting)
-- [Connecting with TLS](#connecting-with-tls)
-- [Connecting with JWT](#connecting-with-jwt)
-- [Publish Subscribe](#publish-subscribe)
-- [Request Response](#request-response)
-- [JetStream Api Usage](#jetstream-api-usage)
-- [Microservices](#microservices)
-- [Key Value Storage](#key-value-storage)
-- [Performance](#performance)
-- [Configuration Options](#configuration-options)
+- [Nats client for php](#nats-client-for-php)
+  - [Installation](#installation)
+  - [Connecting](#connecting)
+    - [Connecting with TLS](#connecting-with-tls)
+  - [Connecting with JWT](#connecting-with-jwt)
+  - [Publish Subscribe](#publish-subscribe)
+  - [Request Response](#request-response)
+  - [JetStream Api Usage](#jetstream-api-usage)
+  - [Microservices](#microservices)
+  - [Key Value Storage](#key-value-storage)
+  - [Performance](#performance)
+  - [Configuration Options](#configuration-options)
 
 ## Installation
 The recommended way to install the library is through [Composer](http://getcomposer.org):
@@ -429,19 +430,20 @@ model name	: AMD Ryzen 5 3600X 6-Core Processor
 
 The following is the list of configuration options and default values.
 
-| Option         | Default    | Description                                                                                                                                                                                                                   |
-|----------------|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `inboxPrefix`  | `"_INBOX"` | Sets de prefix for automatically created inboxes                                                                                                                                                                              |
-| `jwt`          |            | Token for [JWT Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/jwt). Alternatively you can use [CredentialsParser](#connecting-with-jwt)                                  |
-| `nkey`         |            | Ed25519 based public key signature used for [NKEY Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/nkey_auth).                                                              |
-| `pass`         |            | Sets the password for a connection.                                                                                                                                                                                           |
-| `pedantic`     | `false`    | Turns on strict subject format checks.                                                                                                                                                                                        |
-| `pingInterval` | `2`        | Number of seconds between client-sent pings.                                                                                                                                                                                  |
-| `port`         | `4222`     | Port to connect to (only used if `servers` is not specified).                                                                                                                                                                 |
-| `timeout`      | 1          | Number of seconds the client will wait for a connection to be established. |
-| `token`        |            | Sets a authorization token for a connection.                                                                                                                                                                                  |
-| `tlsKeyFile`   |            | TLS 1.2 Client key file path.                                                                                                                                                                                                 |
-| `tlsCertFile`  |            | TLS 1.2 Client certificate file path.                                                                                                                                                                                         |
-| `tlsCaFile`    |            | TLS 1.2 CA certificate filepath.                                                                                                                                                                                              |
-| `user`         |            | Sets the username for a connection.                                                                                                                                                                                           |
-| `verbose`      | `false`    | Turns on `+OK` protocol acknowledgements.                                                                                                                                                                                     |
+| Option              | Default    | Description                                                                                                                                                                                 |
+| ------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inboxPrefix`       | `"_INBOX"` | Sets de prefix for automatically created inboxes                                                                                                                                            |
+| `jwt`               |            | Token for [JWT Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/jwt). Alternatively you can use [CredentialsParser](#connecting-with-jwt) |
+| `nkey`              |            | Ed25519 based public key signature used for [NKEY Authentication](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/nkey_auth).                            |
+| `pass`              |            | Sets the password for a connection.                                                                                                                                                         |
+| `pedantic`          | `false`    | Turns on strict subject format checks.                                                                                                                                                      |
+| `pingInterval`      | `2`        | Number of seconds between client-sent pings.                                                                                                                                                |
+| `port`              | `4222`     | Port to connect to (only used if `servers` is not specified).                                                                                                                               |
+| `timeout`           | 1          | Number of seconds the client will wait for a connection to be established.                                                                                                                  |
+| `token`             |            | Sets a authorization token for a connection.                                                                                                                                                |
+| `tlsHandshakeFirst` | `false`    | If true, the client performs the TLS handshake immediately after connecting, without waiting for the server’s INFO message.                                                                 |
+| `tlsKeyFile`        |            | TLS 1.2 Client key file path.                                                                                                                                                               |
+| `tlsCertFile`       |            | TLS 1.2 Client certificate file path.                                                                                                                                                       |
+| `tlsCaFile`         |            | TLS 1.2 CA certificate filepath.                                                                                                                                                            |
+| `user`              |            | Sets the username for a connection.                                                                                                                                                         |
+| `verbose`           | `false`    | Turns on `+OK` protocol acknowledgements.                                                                                                                                                   |
