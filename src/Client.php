@@ -183,22 +183,18 @@ class Client
         $message = $this->connection->getMessage($timeout);
 
         if ($message instanceof Msg) {
-            if (!array_key_exists($message->sid, $this->handlers) and !array_key_exists(
-                $message->subject,
-                $this->handlers
-            )) {
-                if ($this->skipInvalidMessages) {
-                    return null;
-                }
-                throw new LogicException("No handler for message $message->sid");
+            if (array_key_exists($message->subject, $this->handlers)) {
+                $result = $this->processMsg($this->handlers[$message->subject], $message, $reply);
+                unset($this->handlers[$message->subject]);
+                return $result;
             }
-
             if (array_key_exists($message->sid, $this->handlers)) {
                 return $this->processMsg($this->handlers[$message->sid], $message, $reply);
             }
-            $result = $this->processMsg($this->handlers[$message->subject], $message, $reply);
-            unset($this->handlers[$message->subject]);
-            return $result;
+            if ($this->skipInvalidMessages) {
+                return null;
+            }
+            throw new LogicException("No handler for message $message->sid or $message->subject");
         } else {
             return $message;
         }
