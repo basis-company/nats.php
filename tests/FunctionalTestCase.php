@@ -53,11 +53,12 @@ abstract class FunctionalTestCase extends TestCase
 
     public function tearDown(): void
     {
-        $api = $this->createClient()->getApi();
+        $api = $this->getClient()->getApi();
 
         $api->client->logger = null;
         foreach ($api->getStreamNames() as $name) {
             $api->getStream($name)->delete();
         }
+        $this->client = null;
     }
 }
