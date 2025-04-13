@@ -59,6 +59,6 @@ abstract class FunctionalTestCase extends TestCase
         foreach ($api->getStreamNames() as $name) {
             $api->getStream($name)->delete();
         }
-        $this->client = null;
+        $this->client->disconnect();
     }
 }

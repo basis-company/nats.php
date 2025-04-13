@@ -51,11 +51,6 @@ class Client
         $this->requestsSid = '_REQS' . $this->getnextRid();
     }
 
-    public function __destruct()
-    {
-        $this->disconnect();
-    }
-
     public function api($command, array $args = [], ?callable $callback = null): ?object
     {
         $subject = "\$JS.API.$command";
@@ -200,9 +195,13 @@ class Client
             }
 
             if (array_key_exists($message->sid, $this->handlers)) {
-                return $this->processMsg($this->handlers[$message->sid], $message, $reply);
+                $result = $this->processMsg($this->handlers[$message->sid], $message, $reply);
+                unset($this->handlers[$message->sid]);
+                return $result;
             }
-            return $this->processMsg($this->handlers[$message->subject], $message, $reply);
+            $result = $this->processMsg($this->handlers[$message->subject], $message, $reply);
+            unset($this->handlers[$message->subject]);
+            return $result;
         } else {
             return $message;
         }
