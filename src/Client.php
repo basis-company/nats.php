@@ -35,7 +35,6 @@ class Client
     private int $nextRid = 0;
 
     private string $requestsSid = '';
-    private array $responseHandlers = [];
 
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
