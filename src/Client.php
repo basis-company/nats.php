@@ -28,6 +28,14 @@ class Client
 
     private bool $skipInvalidMessages = false;
 
+    private string $requestsSubject = '';
+
+    private bool $requestsSubscribed = false;
+
+    private int $nextRid = 0;
+
+    private string $requestsSid = '';
+
     public function __construct(
         public readonly Configuration $configuration = new Configuration(),
         public ?LoggerInterface $logger = null,
@@ -37,12 +45,15 @@ class Client
         if (!$connection) {
             $this->connection = new Connection(client: $this, logger: $logger);
         }
+
+        $this->requestsSubject = '_REQS' . bin2hex(random_bytes(16));
+        $this->requestsSid = '_REQS' . $this->getnextRid();
     }
 
     public function api($command, array $args = [], ?callable $callback = null): ?object
     {
         $subject = "\$JS.API.$command";
-        $options = json_encode((object) $args);
+        $options = json_encode((object)$args);
 
         if ($callback) {
             return $this->request($subject, $options, $callback);
@@ -67,7 +78,7 @@ class Client
             $timeout = $this->configuration->timeout;
         }
 
-        $context = (object) [
+        $context = (object)[
             'processed' => false,
             'result' => null,
             'threshold' => microtime(true) + $timeout,
@@ -112,12 +123,11 @@ class Client
 
     public function request(string $name, mixed $payload, callable $handler): self
     {
-        $replyTo = $this->configuration->inboxPrefix . '.' . bin2hex(random_bytes(16));
+        $this->subscribeRequests();
 
-        $this->subscribe($replyTo, function ($response) use ($replyTo, $handler) {
-            $this->unsubscribe($replyTo);
-            $handler($response);
-        });
+        $replyTo = $this->getNextReplyTo();
+
+        $this->handlers[$replyTo] = $handler;
 
         $this->publish($name, $payload, $replyTo);
         $this->process($this->configuration->timeout);
@@ -173,23 +183,18 @@ class Client
         $message = $this->connection->getMessage($timeout);
 
         if ($message instanceof Msg) {
-            if (!array_key_exists($message->sid, $this->handlers)) {
-                if ($this->skipInvalidMessages) {
-                    return null;
-                }
-                throw new LogicException("No handler for message $message->sid");
-            }
-            $handler = $this->handlers[$message->sid];
-            if ($handler instanceof Queue) {
-                $handler->handle($message);
-                return $handler;
-            } else {
-                $result = $handler($message->payload, $message->replyTo);
-                if ($reply && $message->replyTo) {
-                    $message->reply($result);
-                }
+            if (array_key_exists($message->subject, $this->handlers)) {
+                $result = $this->processMsg($this->handlers[$message->subject], $message, $reply);
+                unset($this->handlers[$message->subject]);
                 return $result;
             }
+            if (array_key_exists($message->sid, $this->handlers)) {
+                return $this->processMsg($this->handlers[$message->sid], $message, $reply);
+            }
+            if ($this->skipInvalidMessages) {
+                return null;
+            }
+            throw new LogicException("No handler for message $message->sid or $message->subject");
         } else {
             return $message;
         }
@@ -246,6 +251,8 @@ class Client
 
     public function unsubscribeAll(): self
     {
+        $this->unsubscribeRequests();
+
         foreach ($this->subscriptions as $index => $subscription) {
             unset($this->subscriptions[$index]);
             $this->connection->sendMessage(new Unsubscribe(['sid' => $subscription['sid']]));
@@ -257,9 +264,11 @@ class Client
 
     public function disconnect(): self
     {
-        $this->unsubscribeAll();
-        $this->connection->close();
-
+        if ($this->connection) {
+            $this->unsubscribeAll();
+            $this->connection->close();
+            $this->connection = null;
+        }
         return $this;
     }
 
@@ -270,5 +279,51 @@ class Client
         }
 
         return $this->services[$name];
+    }
+
+    private function getNextRid(): string
+    {
+        $this->nextRid++;
+
+        return (string)$this->nextRid;
+    }
+
+    private function getNextReplyTo(): string
+    {
+        return $this->requestsSubject . '.' . $this->getNextRid();
+    }
+
+    private function subscribeRequests(): void
+    {
+        if (!$this->requestsSubscribed) {
+            $this->connection->sendMessage(new Subscribe([
+                'sid' => $this->requestsSid,
+                'subject' => $this->requestsSubject . '.' . '*',
+            ]));
+
+            $this->requestsSubscribed = true;
+        }
+    }
+
+    private function unsubscribeRequests(): void
+    {
+        if (!$this->requestsSubscribed) {
+            $this->connection->sendMessage(new Unsubscribe(['sid' => (string)$this->requestsSid]));
+            $this->requestsSubscribed = true;
+        }
+    }
+
+    private function processMsg($handler, Msg $message, bool $reply): mixed
+    {
+        if ($handler instanceof Queue) {
+            $handler->handle($message);
+            return $handler;
+        } else {
+            $result = $handler($message->payload, $message->replyTo);
+            if ($reply && $message->replyTo) {
+                $message->reply($result);
+            }
+            return $result;
+        }
     }
 }
