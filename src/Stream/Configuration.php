@@ -8,22 +8,22 @@ use DomainException;
 
 class Configuration
 {
-    private array $subjects = [];
-    private bool $allowRollupHeaders = true;
-    private bool $denyDelete = true;
-    private int $maxAge = 0;
-    private int $maxConsumers = -1;
-    private int $replicas = 1;
-    private string $discardPolicy = DiscardPolicy::OLD;
-    private string $retentionPolicy = RetentionPolicy::LIMITS;
-    private string $storageBackend = StorageBackend::FILE;
-
-    private ?float $duplicateWindow = null;
-    private ?int $maxBytes = null;
-    private ?int $maxMessageSize = null;
-    private ?int $maxMessagesPerSubject = null;
+    private array   $subjects = [];
+    private bool    $allowRollupHeaders = true;
+    private bool    $denyDelete = true;
+    private int     $maxAge = 0;
+    private int     $maxConsumers = -1;
+    private int     $replicas = 1;
+    private string  $discardPolicy = DiscardPolicy::OLD;
+    private string  $retentionPolicy = RetentionPolicy::LIMITS;
+    private string  $storageBackend = StorageBackend::FILE;
+    private ?float  $duplicateWindow = null;
+    private ?int    $maxBytes = null;
+    private ?int    $maxMessageSize = null;
+    private ?int    $maxMessagesPerSubject = null;
     private ?string $description = null;
-    private ?array $consumerLimits = null;
+    private ?array  $consumerLimits = null;
+    private ?string $compression = null;
 
     public function __construct(
         public readonly string $name
@@ -116,6 +116,11 @@ class Configuration
         return $this->subjects;
     }
 
+    public function getCompression(): ?string
+    {
+        return $this->compression;
+    }
+
     public function setAllowRollupHeaders(bool $allowRollupHeaders): self
     {
         $this->allowRollupHeaders = $allowRollupHeaders;
@@ -203,6 +208,12 @@ class Configuration
         return $this;
     }
 
+    public function setCompression(?string $compression): self
+    {
+        $this->compression = $compression;
+        return $this;
+    }
+
     public function getConsumerLimits(): ?array
     {
         return $this->consumerLimits;
@@ -227,6 +238,7 @@ class Configuration
             'storage' => $this->getStorageBackend(),
             'subjects' => $this->getSubjects(),
             'consumer_limits' => $this->getConsumerLimits(),
+            'compression' => $this->getCompression(),
         ];
 
         foreach ($config as $k => $v) {
