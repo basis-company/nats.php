@@ -14,6 +14,7 @@ class Configuration
     private ?int $maxValueSize = null;
     private ?int $replicas = null;
     private ?int $ttl = null;
+    private bool $compression = false;
 
     public function __construct(private readonly string $name)
     {
@@ -30,7 +31,9 @@ class Configuration
             ->setMaxMessageSize($this->getMaxValueSize())
             ->setMaxMessagesPerSubject($this->getHistory() ?? 1)
             ->setReplicas($this->getReplicas() ?? 1)
-            ->setSubjects(["\$KV.$this->name.*"]);
+            ->setSubjects(["\$KV.$this->name.*"])
+            ->setCompression($this->getCompression() ? "s2" : null)
+        ;
 
         return $this;
     }
@@ -60,6 +63,11 @@ class Configuration
         return $this->ttl;
     }
 
+    public function getCompression(): bool
+    {
+        return $this->compression;
+    }
+
     public function setHistory(?int $history): self
     {
         $this->history = $history;
@@ -87,6 +95,12 @@ class Configuration
     public function setTtl(?int $ttl): self
     {
         $this->ttl = $ttl;
+        return $this;
+    }
+
+    public function setCompression(bool $compression = true): self
+    {
+        $this->compression = $compression;
         return $this;
     }
 }
