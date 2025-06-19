@@ -38,7 +38,7 @@ abstract class Factory
                 'UNSUBSCRIBE' => Unsubscribe::create($body),
                 'HMSG' => Msg::create($body),
                 'MSG' => Msg::create($body),
-                default => throw new RuntimeException('Unexpected message type: '.$type),
+                default => throw new RuntimeException('Unexpected message type: ' . $type),
             };
         }
 
