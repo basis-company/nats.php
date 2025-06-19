@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Basis\Nats\Message;
 
 use LogicException;
+use RuntimeException;
 
 abstract class Factory
 {
@@ -37,6 +38,7 @@ abstract class Factory
                 'UNSUBSCRIBE' => Unsubscribe::create($body),
                 'HMSG' => Msg::create($body),
                 'MSG' => Msg::create($body),
+                default => throw new RuntimeException('Unexpected message type: '.$type),
             };
         }
 
