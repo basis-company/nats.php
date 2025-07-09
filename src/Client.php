@@ -46,8 +46,8 @@ class Client
             $this->connection = new Connection(client: $this, logger: $logger);
         }
 
-        $this->requestsSubject = '_REQS' . bin2hex(random_bytes(16));
-        $this->requestsSid = '_REQS' . $this->getnextRid();
+        $this->requestsSubject = '_REQS.' . bin2hex(random_bytes(16));
+        $this->requestsSid = '_REQS.' . $this->getnextRid();
     }
 
     public function api($command, array $args = [], ?callable $callback = null): ?object
