@@ -42,7 +42,7 @@ class ClientTest extends FunctionalTestCase
         }
 
         assert($client->connection->logger instanceof Logger);
-        $client->connection->logger->pushHandler($spy = new class('') extends StreamHandler {
+        $client->connection->logger->pushHandler($spy = new class ('') extends StreamHandler {
             public array $records = [];
             protected function write(array $record): void
             {
@@ -50,7 +50,7 @@ class ClientTest extends FunctionalTestCase
             }
         });
 
-        $client->subscribe('hello.request', fn ($name)  => "Hello, " . $name);
+        $client->subscribe('hello.request', fn ($name) => "Hello, " . $name);
         $client->dispatch('hello.request', 'Nekufa1', 1);
 
         // check requests were subscribed
