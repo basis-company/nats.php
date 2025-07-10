@@ -54,7 +54,13 @@ class ClientTest extends FunctionalTestCase
         $client->dispatch('hello.request', 'Nekufa1', 1);
 
         // check requests were subscribed
-        $requestSubscriptionLog = array_find($spy->records, fn ($row) => str_contains($row, 'send SUB _REQS.'));
+        $requestSubscriptionLog = null;
+        foreach ($spy->records as $row) {
+            if (str_contains($row, 'send SUB _REQS.')) {
+                $requestSubscriptionLog = $row;
+            }
+        }
+
         $this->assertNotNull($requestSubscriptionLog);
 
         $this->assertTrue($client->ping());
