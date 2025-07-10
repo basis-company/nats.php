@@ -50,11 +50,11 @@ class ClientTest extends FunctionalTestCase
             }
         });
 
-        $client->subscribe('hello.request', fn($name)  => "Hello, " . $name);
+        $client->subscribe('hello.request', fn ($name)  => "Hello, " . $name);
         $client->dispatch('hello.request', 'Nekufa1', 1);
 
         // check requests were subscribed
-        $requestSubscriptionLog = array_find($spy->records, fn($row) => str_contains($row, 'send SUB _REQS.'));
+        $requestSubscriptionLog = array_find($spy->records, fn ($row) => str_contains($row, 'send SUB _REQS.'));
         $this->assertNotNull($requestSubscriptionLog);
 
         $this->assertTrue($client->ping());
