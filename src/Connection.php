@@ -135,7 +135,7 @@ class Connection
 
         while ($total < $length) {
             try {
-                $written = @fwrite($this->socket, substr($line, $total, $this->packetSize));
+                $written = fwrite($this->socket, substr($line, $total, $this->packetSize));
                 if ($written === false) {
                     throw new LogicException('Error sending data');
                 }
