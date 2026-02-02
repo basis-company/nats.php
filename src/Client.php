@@ -189,6 +189,9 @@ class Client
                 return $result;
             }
             if (array_key_exists($message->sid, $this->handlers)) {
+                if(isset($message->payload->headers['Status-Code']) && $message->payload->headers['Status-Code'] === '404') {
+                    return null;
+                }
                 return $this->processMsg($this->handlers[$message->sid], $message, $reply);
             }
             if ($this->skipInvalidMessages) {
