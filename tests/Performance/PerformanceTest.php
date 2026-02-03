@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Performance;
 
+use Basis\Nats\Consumer\DeliverPolicy;
+use Basis\Nats\Stream\RetentionPolicy;
+use Basis\Nats\Stream\StorageBackend;
 use Tests\FunctionalTestCase;
 
 class PerformanceTest extends FunctionalTestCase
 {
+    private const CONSUMER_BATCH_SIZE = 50;
     private int $limit = 500_000;
     private int $counter = 0;
     private int $bigMessageIterationLimit = 1000;
@@ -74,6 +78,49 @@ class PerformanceTest extends FunctionalTestCase
         ]);
 
         // at least 50rps should be enough for test
-        $this->assertGreaterThan(50, $this->bigMessageIterationLimit / $publishing);
+        $this->assertGreaterThan(self::CONSUMER_BATCH_SIZE, $this->bigMessageIterationLimit / $publishing);
+    }
+
+    public function testFetchNoWait()
+    {
+        $client = $this->createClient(['timeout' => 10])->setDelay(0);
+        $stream = $client->getApi()->getStream('test_fetch_no_wait');
+        $stream
+            ->getConfiguration()
+            ->setRetentionPolicy(RetentionPolicy::INTEREST)
+            ->setStorageBackend(StorageBackend::MEMORY)
+            ->setSubjects(['test']);
+
+        $stream->create();
+
+        $consumer = $stream->getConsumer('fetch_no_waiter');
+        $consumer->getConfiguration()
+            ->setSubjectFilter('test')
+            ->setDeliverPolicy(DeliverPolicy::NEW);
+        $consumer->create();
+        $consumer
+            ->setBatching(self::CONSUMER_BATCH_SIZE)
+            ->setExpires(0);
+
+
+
+        foreach (range(1, 10) as $n) {
+            $stream->put('test', 'Hello, NATS JetStream '.date(DATE_RFC3339_EXTENDED).'!');
+        }
+
+        $fetching = microtime(true);
+        // fetch more than available messages to test no-wait behavior
+        $messages = $consumer->getQueue()->fetchAll($consumer->getBatching());
+        $fetching = microtime(true) - $fetching;
+
+        $messages = array_filter($messages, static fn ($message) => !$message->payload->isEmpty());
+
+        $this->logger?->info('fetched with no-wait', [
+            'length' => count($messages),
+            'time' => $fetching,
+        ]);
+
+        $this->assertCount(10, $messages);
+        $this->assertLessThan(1, $fetching, 'Fetching with no-wait should be fast enough');
     }
 }

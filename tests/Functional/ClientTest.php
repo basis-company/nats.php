@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Functional;
 
 use Basis\Nats\Connection;
+use Basis\Nats\Message\Factory;
+use Basis\Nats\Message\Subscribe;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use ReflectionProperty;
@@ -172,5 +174,33 @@ class ClientTest extends FunctionalTestCase
 
         // Assert that the socket is closed and set to null
         self::assertNull($property->getValue($connection));
+    }
+
+    public function testProcessNotFound()
+    {
+        $client = $this->createClient([]);
+        $sid = null;
+
+        /** @var Connection $connectionMock */
+        $connectionMock = $this->createMock(Connection::class);
+
+        $connectionMock
+            ->method('sendMessage')
+            ->willReturnCallback(function (Subscribe $subscribe) use (&$sid) {
+                $sid = $subscribe->sid;
+            });
+        $client->connection = $connectionMock;
+
+        $client->subscribe('hello.request', fn ($name) => "Hello, " . $name);
+
+        $message = Factory::create('HMSG handler.' . $sid . ' ' . $sid . ' 28 28');
+        $message->parse('NATS/1.0 404 No Messages');
+
+        $connectionMock
+            ->method('getMessage')
+            ->willReturn($message);
+
+        $result = $client->process();
+        $this->assertNull($result);
     }
 }
