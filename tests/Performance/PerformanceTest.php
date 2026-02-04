@@ -102,10 +102,8 @@ class PerformanceTest extends FunctionalTestCase
             ->setBatching(self::CONSUMER_BATCH_SIZE)
             ->setExpires(0);
 
-
-
         foreach (range(1, 10) as $n) {
-            $stream->put('test', 'Hello, NATS JetStream '.date(DATE_RFC3339_EXTENDED).'!');
+            $stream->publish('test', 'Hello, NATS JetStream '.$n.'!');
         }
 
         $fetching = microtime(true);
@@ -113,14 +111,14 @@ class PerformanceTest extends FunctionalTestCase
         $messages = $consumer->getQueue()->fetchAll($consumer->getBatching());
         $fetching = microtime(true) - $fetching;
 
-        $messages = array_filter($messages, static fn ($message) => !$message->payload->isEmpty());
-
         $this->logger?->info('fetched with no-wait', [
             'length' => count($messages),
             'time' => $fetching,
         ]);
 
-        $this->assertCount(10, $messages);
-        $this->assertLessThan(1, $fetching, 'Fetching with no-wait should be fast enough');
+        // 10 messages were published + 1 404 message to signal the empty stream
+        $this->assertCount(11, $messages);
+        $this->assertEquals('404', end($messages)->payload->getHeader('Status-Code'), 'Last message should be 404');
+        $this->assertLessThan(1, (int)$fetching, 'Fetching with no-wait should be faster than the timeout');
     }
 }

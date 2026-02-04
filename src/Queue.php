@@ -13,6 +13,7 @@ class Queue
     private array $queue = [];
     private float $timeout;
     private ?Publish $launcher = null;
+    private ?Msg $lastMessage = null;
 
     public function __construct(
         public readonly Client $client,
@@ -51,6 +52,13 @@ class Queue
                 // stop when clients got message for another handler or there are no more messages
                 break;
             }
+
+            if (
+                $this->lastMessage?->payload->isEmpty()
+                && $this->lastMessage->payload->getHeader('Status-Code') === '404'
+            ) {
+                break;
+            }
         }
 
         $result = [];
@@ -64,7 +72,7 @@ class Queue
 
     public function handle(Msg $message)
     {
-        $this->queue[] = $message;
+        $this->queue[] = $this->lastMessage = $message;
     }
 
     public function next(float $timeout = 0): Msg
