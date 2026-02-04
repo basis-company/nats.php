@@ -48,7 +48,7 @@ class Queue
             }
 
             if ($this->client->process($processingTimeout) !== $this) {
-                // stop when clients got message for another handler
+                // stop when clients got message for another handler or there are no more messages
                 break;
             }
         }
