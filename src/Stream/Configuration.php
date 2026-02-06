@@ -238,7 +238,7 @@ class Configuration
             'storage' => $this->getStorageBackend(),
             'subjects' => $this->getSubjects(),
             'consumer_limits' => $this->getConsumerLimits(),
-            'allow_msg_schedules' => $this->getallowMsgSchedules(),
+            'allow_msg_schedules' => $this->getAllowMsgSchedules(),
         ];
 
         foreach ($config as $k => $v) {
