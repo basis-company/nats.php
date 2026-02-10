@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nats: ['2.8.4-alpine', 'alpine']
+        nats: ['2.8.4-alpine', '2.11.4-alpine', 'alpine']
         php: ['8.1', '8.2', '8.3', '8.4', '8.5']
         verbose: ['0', '1']
     steps:
@@ -22,7 +22,7 @@ jobs:
       - run: docker compose up -d
         working-directory: docker
         env:
-          NATS_IMAGE_TAG: ${{ matrix.nats }}
+          NATS_IMAGE_TAG: ${ matrix.nats }
       - run: vendor/bin/phpunit --testsuite Tests
       - name: Coverage text report
         run: cat coverage/report.txt
