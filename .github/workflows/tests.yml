@@ -17,13 +17,14 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          NATS_CLIENT_VERBOSE: ${{ matrix.verbose }}
       - uses: php-actions/composer@v6
       - run: docker compose up -d
         working-directory: docker
         env:
           NATS_IMAGE_TAG: ${{ matrix.nats }}
       - run: vendor/bin/phpunit --testsuite Tests
+        env:
+          NATS_CLIENT_VERBOSE: ${{ matrix.verbose }}
       - name: Coverage text report
         run: cat coverage/report.txt
       - name: Coveralls
