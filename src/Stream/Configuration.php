@@ -24,6 +24,7 @@ class Configuration
     private ?int $maxMessagesPerSubject = null;
     private ?string $description = null;
     private ?array $consumerLimits = null;
+    private ?bool $allowMsgSchedules = null;
 
     public function __construct(
         public readonly string $name
@@ -208,6 +209,16 @@ class Configuration
         return $this->consumerLimits;
     }
 
+    public function setAllowMsgSchedules(?bool $allowMsgSchedules): void
+    {
+        $this->allowMsgSchedules = $allowMsgSchedules;
+    }
+
+    public function getAllowMsgSchedules(): ?bool
+    {
+        return $this->allowMsgSchedules;
+    }
+
     public function toArray(): array
     {
         $config = [
@@ -227,6 +238,7 @@ class Configuration
             'storage' => $this->getStorageBackend(),
             'subjects' => $this->getSubjects(),
             'consumer_limits' => $this->getConsumerLimits(),
+            'allow_msg_schedules' => $this->getAllowMsgSchedules(),
         ];
 
         foreach ($config as $k => $v) {
