@@ -209,12 +209,12 @@ class Configuration
         return $this->consumerLimits;
     }
 
-    public function setAllowMsgSchedules(bool $allowMsgSchedules): void
+    public function setAllowMsgSchedules(?bool $allowMsgSchedules): void
     {
         $this->allowMsgSchedules = $allowMsgSchedules;
     }
 
-    public function getAllowMsgSchedules(): bool
+    public function getAllowMsgSchedules(): ?bool
     {
         return $this->allowMsgSchedules;
     }
