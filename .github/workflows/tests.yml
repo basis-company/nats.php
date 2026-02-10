@@ -22,7 +22,7 @@ jobs:
       - run: docker compose up -d
         working-directory: docker
         env:
-          NATS_IMAGE_TAG: ${ matrix.nats }
+          NATS_IMAGE_TAG: ${{ matrix.nats }}
       - run: vendor/bin/phpunit --testsuite Tests
       - name: Coverage text report
         run: cat coverage/report.txt

@@ -1,14 +1,14 @@
 version: '3'
 services:
   nats:
-    image: nats:{$NATS_IMAGE_TAG}
+    image: nats:$NATS_IMAGE_TAG
     restart: unless-stopped
     ports:
       - "4222:4222"
       - "8222:8222"
     command: -js -m 8222
   nats-with-jwt-nkey:
-    image: nats:{$NATS_IMAGE_TAG}
+    image: nats:$NATS_IMAGE_TAG
     restart: unless-stopped
     ports:
       - "4221:4222"
@@ -20,7 +20,7 @@ services:
       credentials-generator:
         condition: service_completed_successfully
   nats-with-certs:
-    image: nats:{$NATS_IMAGE_TAG}
+    image: nats:$NATS_IMAGE_TAG
     restart: unless-stopped
     ports:
       - "4220:4222"
