@@ -61,7 +61,7 @@ class Connection
 
         while (true) {
             if (!is_resource($this->socket) || feof($this->socket)) {
-                $this->processException(new LogicException('Socket read timeout'));
+                throw new LogicException('supplied resource is not a valid stream resource');
             }
             $message = null;
             $line = stream_get_line($this->socket, 1024, "\r\n");
