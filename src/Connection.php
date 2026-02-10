@@ -60,6 +60,9 @@ class Connection
         $iteration = 0;
 
         while (true) {
+            if (!is_resource($this->socket) || feof($this->socket)) {
+                $this->processException(new LogicException('Socket read timeout'));
+            }
             $message = null;
             $line = stream_get_line($this->socket, 1024, "\r\n");
             $now = microtime(true);
