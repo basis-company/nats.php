@@ -21,8 +21,8 @@ jobs:
       - uses: php-actions/composer@v6
       - run: docker compose up -d
         working-directory: docker
-        with:
-          NATS_IMAGE_TAG: ${ matrix.nats }}
+        env:
+          NATS_IMAGE_TAG: ${{ matrix.nats }}
       - run: vendor/bin/phpunit --testsuite Tests
       - name: Coverage text report
         run: cat coverage/report.txt
