@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nats: ['2.8.4-alpine', '2.11.4-alpine', 'alpine']
+        nats: ['2.8', '2.9', '2.10', '2.11','2.12', 'latest']
         php: ['8.1', '8.2', '8.3', '8.4', '8.5']
         verbose: ['0', '1']
     steps:
