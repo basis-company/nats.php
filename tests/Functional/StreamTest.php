@@ -13,6 +13,7 @@ use Basis\Nats\Message\Payload;
 use Basis\Nats\Stream\ConsumerLimits;
 use Basis\Nats\Stream\RetentionPolicy;
 use Basis\Nats\Stream\StorageBackend;
+use Exception;
 use Tests\FunctionalTestCase;
 
 class StreamTest extends FunctionalTestCase
@@ -666,6 +667,13 @@ class StreamTest extends FunctionalTestCase
 
         // 10 messages were published + 1 404 message to signal the empty stream
         $this->assertCount(11, $messages);
-        $this->assertEquals('404', end($messages)->payload->getHeader('Status-Code'), 'Last message should be 404');
+        $last = end($messages);
+
+        try {
+            $this->assertEquals('404', $last->payload->getHeader('Status-Code'), 'Last message should be 404');
+        } catch (Exception) {
+            // https://github.com/nats-io/nats-server/pull/7466
+            $this->assertEquals('408', $last->payload->getHeader('Status-Code'), 'Last message should be 408 for legacy nats installations');
+        }
     }
 }
