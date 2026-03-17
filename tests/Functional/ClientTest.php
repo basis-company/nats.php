@@ -19,6 +19,22 @@ class ClientTest extends FunctionalTestCase
         $this->assertTrue($this->createClient()->ping());
     }
 
+    public function testPingWithTimeout()
+    {
+        $client = $this->createClient(['timeout' => 10]);
+
+        $start = microtime(true);
+        $result = $client->ping();
+        $elapsed = microtime(true) - $start;
+
+        $this->assertTrue($result, 'ping() should return true');
+        $this->assertLessThan(
+            1.0,
+            $elapsed,
+            "ping() should complete faster than configured timeout (10s). Took: {$elapsed}s"
+        );
+    }
+
     public function testConnectionTimeout(): void
     {
         $client = $this->createClient([

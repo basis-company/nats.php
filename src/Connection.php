@@ -114,6 +114,7 @@ class Connection
                     $this->sendMessage(new Pong([]));
                 } elseif ($message instanceof Pong) {
                     $this->pongAt = $now;
+                    return $message;
                 } elseif ($message instanceof Info) {
                     if (isset($message->tls_verify) && $message->tls_verify && !$this->config->tlsHandshakeFirst) {
                         $this->enableTls(true);
