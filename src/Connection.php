@@ -55,8 +55,13 @@ class Connection
 
     public function getMessage(null|int|float $timeout = 0): ?Message
     {
+        // null means use config timeout, 0 means non-blocking check
+        if ($timeout === null) {
+            $timeout = $this->config->timeout;
+        }
+        
         $now = microtime(true);
-        $max = $now + $timeout;
+        $max = $timeout > 0 ? $now + $timeout : PHP_FLOAT_MAX;
         $iteration = 0;
 
         while (true) {
@@ -72,8 +77,16 @@ class Connection
             $read = [$this->socket];
             $write = null;
             $except = null;
-            $seconds = (int) floor($remainingTimeout);
-            $microseconds = (int) (($remainingTimeout - $seconds) * 1_000_000);
+
+            // Calculate timeout for stream_select
+            if ($timeout == 0) {
+                // Non-blocking check - just poll once
+                $seconds = 0;
+                $microseconds = 0;
+            } else {
+                $seconds = (int) floor($remainingTimeout);
+                $microseconds = (int) (($remainingTimeout - $seconds) * 1_000_000);
+            }
 
             $result = stream_select($read, $write, $except, $seconds, $microseconds);
 
