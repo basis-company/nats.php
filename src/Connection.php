@@ -178,9 +178,9 @@ class Connection
     {
         $this->init();
         $seconds = (int) floor($value);
-        $milliseconds = (int) (1000 * ($value - $seconds));
+        $microseconds = (int) (1000000 * ($value - $seconds));
 
-        stream_set_timeout($this->socket, $seconds, $milliseconds);
+        stream_set_timeout($this->socket, $seconds, $microseconds);
     }
 
     protected function init()
