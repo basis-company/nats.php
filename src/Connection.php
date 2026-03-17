@@ -59,7 +59,7 @@ class Connection
         if ($timeout === null) {
             $timeout = $this->config->timeout;
         }
-        
+
         $now = microtime(true);
         $max = $timeout > 0 ? $now + $timeout : PHP_FLOAT_MAX;
         $iteration = 0;
