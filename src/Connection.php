@@ -59,7 +59,7 @@ class Connection
         if ($timeout === null) {
             $timeout = $this->config->timeout;
         }
-
+        
         $now = microtime(true);
         $max = $timeout > 0 ? $now + $timeout : PHP_FLOAT_MAX;
         $iteration = 0;
@@ -80,9 +80,9 @@ class Connection
 
             // Calculate timeout for stream_select
             if ($timeout == 0) {
-                // Non-blocking check - use minimal poll interval
+                // Non-blocking check - use stream_select with 0 timeout to check if data is available
                 $seconds = 0;
-                $microseconds = 100; // 0.1ms - minimal reasonable poll
+                $microseconds = 0;
             } else {
                 $seconds = (int) floor($remainingTimeout);
                 $microseconds = (int) (($remainingTimeout - $seconds) * 1_000_000);
@@ -91,7 +91,12 @@ class Connection
             $result = stream_select($read, $write, $except, $seconds, $microseconds);
 
             if ($result === false || $result === 0) {
-                break;
+                // For non-blocking check (timeout=0), exit immediately
+                if ($timeout == 0) {
+                    break;
+                }
+                // For blocking calls, continue waiting
+                continue;
             }
 
             $message = null;
