@@ -63,6 +63,24 @@ class Connection
             if (!is_resource($this->socket) || feof($this->socket)) {
                 throw new LogicException('supplied resource is not a valid stream resource');
             }
+
+            $remainingTimeout = $max - microtime(true);
+            if ($remainingTimeout <= 0) {
+                break;
+            }
+
+            $read = [$this->socket];
+            $write = null;
+            $except = null;
+            $seconds = (int) floor($remainingTimeout);
+            $microseconds = (int) (($remainingTimeout - $seconds) * 1_000_000);
+
+            $result = stream_select($read, $write, $except, $seconds, $microseconds);
+
+            if ($result === false || $result === 0) {
+                break;
+            }
+
             $message = null;
             $line = stream_get_line($this->socket, 1024, "\r\n");
             $now = microtime(true);
@@ -97,9 +115,6 @@ class Connection
                         $this->sendMessage(new Ping());
                     }
                 }
-            }
-            if ($now > $max) {
-                break;
             }
             if ($message && $now < $max) {
                 $this->logger?->debug('sleep', compact('max', 'now'));
