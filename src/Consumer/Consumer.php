@@ -134,7 +134,6 @@ class Consumer
         while (!$this->interrupt && $iterations--) {
             $messages = $queue->fetchAll($this->getBatching());
             foreach ($messages as $message) {
-                $processed++;
                 $payload = $message->payload;
                 if ($payload->isEmpty()) {
                     if ($emptyHandler && !in_array($payload->getHeader('KV-Operation'), ['DEL', 'PURGE'])) {
@@ -142,6 +141,7 @@ class Consumer
                     }
                     continue;
                 }
+                $processed++;
                 try {
                     $messageHandler($payload, $message->replyTo);
                     if ($ack) {
