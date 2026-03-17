@@ -80,9 +80,9 @@ class Connection
 
             // Calculate timeout for stream_select
             if ($timeout == 0) {
-                // Non-blocking check - just poll once
+                // Non-blocking check - use minimal poll interval
                 $seconds = 0;
-                $microseconds = 0;
+                $microseconds = 100; // 0.1ms - minimal reasonable poll
             } else {
                 $seconds = (int) floor($remainingTimeout);
                 $microseconds = (int) (($remainingTimeout - $seconds) * 1_000_000);
