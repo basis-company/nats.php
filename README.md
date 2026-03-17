@@ -211,7 +211,7 @@ $greeter->handle(function ($address) {
 var_dump($greeter->info()); // can consumer info
 
 $goodbyer = $stream->getConsumer('goodbyer');
-$goodbyer->getConfiguration()->setSubjectFilter('mailer.bye');
+$goodbyer->getConfiguration()->setSubjectFilters(['mailer.bye']);
 $goodbyer->create(); // create consumer if you don't want to handle anything right now
 $goodbyer->handle(function ($address) {
     mail($address, "See you later");

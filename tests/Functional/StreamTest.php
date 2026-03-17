@@ -615,6 +615,56 @@ class StreamTest extends FunctionalTestCase
         $this->assertSame(0, $consumer->handle($this->persistMessage(...)));
     }
 
+    public function testMultipleSubjectFilters()
+    {
+        $client = $this->createClient();
+        $stream = $client->getApi()->getStream('multi_subject_test');
+        $stream->getConfiguration()
+            ->setSubjects(['orders.*', 'payments.*'])
+            ->setRetentionPolicy(RetentionPolicy::INTEREST);
+        $stream->create();
+
+        $consumer = $stream->getConsumer('multi_consumer');
+        $consumer->setExpires(5)->setBatching(10);
+        $consumer->getConfiguration()
+            ->setSubjectFilters(['orders.created', 'payments.completed'])
+            ->setReplayPolicy(ReplayPolicy::INSTANT)
+            ->setAckPolicy(AckPolicy::EXPLICIT);
+
+        $consumer->create();
+
+        // Publish to subjects that match the filters
+        $stream->publish('orders.created', 'order-1');
+        $stream->publish('payments.completed', 'payment-1');
+        $stream->publish('orders.created', 'order-2');
+
+        // Publish to subject that does NOT match the filter
+        $stream->publish('orders.cancelled', 'order-3');
+
+        $this->assertSame(3, $consumer->info()->num_pending);
+
+        $queue = $consumer->getQueue();
+        $queue->setTimeout(0.5);
+        $messages = $queue->fetchAll(3);
+
+        $this->assertCount(3, $messages);
+
+        $payloads = array_map(fn($m) => (string) $m->payload, $messages);
+        $this->assertContains('order-1', $payloads);
+        $this->assertContains('payment-1', $payloads);
+        $this->assertContains('order-2', $payloads);
+        $this->assertNotContains('order-3', $payloads);
+
+        // ACK all messages
+        foreach ($messages as $message) {
+            $message->ack();
+        }
+
+        usleep(200_000);
+        $this->assertSame(0, $consumer->info()->num_pending);
+        $this->assertSame(0, $consumer->info()->num_ack_pending);
+    }
+
     private function assertWrongNumPending(Consumer $consumer, ?int $expected = null, int $loops = 100): void
     {
         for ($i = 1; $i <= $loops; $i++) {

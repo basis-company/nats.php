@@ -24,6 +24,7 @@ class Configuration
     private ?string $deliverSubject = null;
     private ?string $description = null;
     private ?string $subjectFilter = null;
+    private ?array $subjectFilters = null;
     private string $ackPolicy = AckPolicy::EXPLICIT;
     private string $deliverPolicy = DeliverPolicy::ALL;
     private string $replayPolicy = ReplayPolicy::INSTANT;
@@ -205,6 +206,17 @@ class Configuration
         return $this;
     }
 
+    public function setSubjectFilters(array $subjectFilters): self
+    {
+        $this->subjectFilters = $subjectFilters;
+        return $this;
+    }
+
+    public function getSubjectFilters(): ?array
+    {
+        return $this->subjectFilters;
+    }
+
     public function setInactiveThreshold(int $inactiveThresholdNanoSeconds): self
     {
         $this->inactiveThreshold = $inactiveThresholdNanoSeconds;
@@ -246,7 +258,9 @@ class Configuration
                 break;
         }
 
-        if ($this->getSubjectFilter()) {
+        if ($this->getSubjectFilters()) {
+            $config['filter_subjects'] = $this->getSubjectFilters();
+        } elseif ($this->getSubjectFilter()) {
             $config['filter_subject'] = $this->getSubjectFilter();
         }
 
