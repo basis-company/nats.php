@@ -16,7 +16,7 @@
         "paragonie/sodium_compat": "Provides Ed25519 for nkey authentication if sodium is not available",
         "ext-sodium": "Provides Ed25519 for nkey authentication"
     },
-    "license": "mit",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Basis\\Nats\\": "src/"
