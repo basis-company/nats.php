@@ -127,6 +127,23 @@ class Msg extends Prototype
         ]));
     }
 
+    /**
+     * Terminally reject this message so the server never redelivers it.
+     *
+     * Unlike nack() which schedules a redelivery, term() tells the server that
+     * this message is permanently unprocessable (e.g. malformed payload, schema
+     * mismatch) and should be removed from the consumer's pending set immediately.
+     *
+     * @param string $reason Optional human-readable reason for the termination.
+     */
+    public function term(string $reason = ''): void
+    {
+        $this->reply(new Term([
+            'subject' => $this->replyTo,
+            'reason' => $reason,
+        ]));
+    }
+
     public function render(): string
     {
         return 'MSG ' . json_encode($this);
