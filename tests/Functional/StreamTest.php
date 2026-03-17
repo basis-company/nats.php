@@ -649,7 +649,7 @@ class StreamTest extends FunctionalTestCase
 
         $this->assertCount(3, $messages);
 
-        $payloads = array_map(fn($m) => (string) $m->payload, $messages);
+        $payloads = array_map(fn ($m) => (string) $m->payload, $messages);
         $this->assertContains('order-1', $payloads);
         $this->assertContains('payment-1', $payloads);
         $this->assertContains('order-2', $payloads);
