@@ -11,16 +11,15 @@ use Basis\Nats\Consumer\Configuration as ConsumerConfiguration;
 class Stream
 {
     private array $consumers = [];
-    private readonly Configuration $configuration;
+    private ?Configuration $configuration = null;
 
-    public function __construct(public readonly Client $client, string $name)
+    public function __construct(public readonly Client $client, private string $name)
     {
-        $this->configuration = new Configuration($name);
     }
 
     public function create(): self
     {
-        $this->client->api("STREAM.CREATE." . $this->getName(), $this->configuration->toArray());
+        $this->client->api("STREAM.CREATE." . $this->getName(), $this->getConfiguration()->toArray());
 
         return $this;
     }
@@ -58,12 +57,20 @@ class Stream
 
     public function getConfiguration(): Configuration
     {
+        if ($this->configuration === null) {
+            if ($this->exists()) {
+                $this->configuration = Configuration::fromObject($this->info()->getValues()->config);
+            } else {
+                $this->configuration = new Configuration($this->getName());
+            }
+        }
         return $this->configuration;
     }
 
     public function createEphemeralConsumer(ConsumerConfiguration $configuration): Consumer
     {
-        $consumer = new Consumer($this->client, $configuration->ephemeral());
+        $consumer = new Consumer($this->client, $this->getName());
+        $consumer->setConfiguration($configuration);
         $consumer->create();
 
         $this->consumers[$consumer->getName()] = $consumer;
@@ -73,8 +80,7 @@ class Stream
     public function getConsumer(string $name): Consumer
     {
         if (!array_key_exists($name, $this->consumers)) {
-            $configuration = new ConsumerConfiguration($this->getName(), $name);
-            $this->consumers[$name] = new Consumer($this->client, $configuration);
+            $this->consumers[$name] = new Consumer($this->client, $this->getName(), $name);
         }
 
         return $this->consumers[$name];
@@ -94,7 +100,7 @@ class Stream
 
     public function getName(): string
     {
-        return $this->configuration->getName();
+        return $this->name;
     }
 
     public function info()
@@ -115,6 +121,6 @@ class Stream
 
     public function update()
     {
-        $this->client->api("STREAM.UPDATE." . $this->getName(), $this->configuration->toArray());
+        $this->client->api("STREAM.UPDATE." . $this->getName(), $this->getConfiguration()->toArray());
     }
 }

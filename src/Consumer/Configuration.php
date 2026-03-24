@@ -137,6 +137,12 @@ class Configuration
         return $this;
     }
 
+    public function setEphemeral(bool $ephemeral): self
+    {
+        $this->ephemeral = $ephemeral;
+        return $this;
+    }
+
     public function setAckPolicy(string $ackPolicy): self
     {
         $this->ackPolicy = AckPolicy::validate($ackPolicy);
@@ -149,9 +155,45 @@ class Configuration
         return $this;
     }
 
+    public function setDeliverGroup(?string $deliverGroup): self
+    {
+        $this->deliverGroup = $deliverGroup;
+        return $this;
+    }
+
     public function setDeliverPolicy(string $deliverPolicy): self
     {
         $this->deliverPolicy = DeliverPolicy::validate($deliverPolicy);
+        return $this;
+    }
+
+    public function setDeliverSubject(?string $deliverSubject): self
+    {
+        $this->deliverSubject = $deliverSubject;
+        return $this;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function setFlowControl(?bool $flowControl): self
+    {
+        $this->flowControl = $flowControl;
+        return $this;
+    }
+
+    public function setHeadersOnly(?bool $headersOnly): self
+    {
+        $this->headersOnly = $headersOnly;
+        return $this;
+    }
+
+    public function setIdleHeartbeat(?int $idleHeartbeat): self
+    {
+        $this->idleHeartbeat = $idleHeartbeat;
         return $this;
     }
 
@@ -226,6 +268,92 @@ class Configuration
     public function getInactiveThreshold(): ?int
     {
         return $this->inactiveThreshold;
+    }
+
+    public static function fromObject(object $object): static
+    {
+        $config = $object->config;
+        $name = $object->name ?? null;
+
+        $instance = new static($object->stream_name, $name);
+
+        // Set ephemeral if no durable name (name is null or not set)
+        if ($name === null || !isset($config->durable_name)) {
+            $instance->setEphemeral(true);
+        }
+
+        $instance->setAckPolicy($config->ack_policy);
+
+        if (isset($config->ack_wait)) {
+            $instance->setAckWait($config->ack_wait);
+        }
+
+        if (isset($config->deliver_group)) {
+            $instance->setDeliverGroup($config->deliver_group);
+        }
+
+        $instance->setDeliverPolicy($config->deliver_policy);
+
+        if (isset($config->deliver_subject)) {
+            $instance->setDeliverSubject($config->deliver_subject);
+        }
+
+        if (isset($config->description)) {
+            $instance->setDescription($config->description);
+        }
+
+        if (isset($config->flow_control)) {
+            $instance->setFlowControl($config->flow_control);
+        }
+
+        if (isset($config->headers_only)) {
+            $instance->setHeadersOnly($config->headers_only);
+        }
+
+        if (isset($config->idle_heartbeat)) {
+            $instance->setIdleHeartbeat($config->idle_heartbeat);
+        }
+
+        if (isset($config->max_ack_pending)) {
+            $instance->setMaxAckPending($config->max_ack_pending);
+        }
+
+        if (isset($config->max_deliver)) {
+            $instance->setMaxDeliver($config->max_deliver);
+        }
+
+        if (isset($config->max_waiting)) {
+            $instance->setMaxWaiting($config->max_waiting);
+        }
+
+        if (isset($config->replay_policy)) {
+            $instance->setReplayPolicy($config->replay_policy);
+        }
+
+        if (isset($config->inactive_threshold)) {
+            $instance->setInactiveThreshold($config->inactive_threshold);
+        }
+
+        // Handle start sequence / start time based on deliver policy
+        if (isset($config->opt_start_seq)) {
+            $instance->setStartSequence($config->opt_start_seq);
+        }
+
+        if (isset($config->opt_start_time)) {
+            $startTime = \DateTime::createFromFormat(self::OPT_START_TIME_FORMAT, $config->opt_start_time);
+            if ($startTime !== false) {
+                $instance->setStartTime($startTime);
+            }
+        }
+
+        // Handle subject filters (filter_subjects takes precedence over filter_subject)
+        if (isset($config->filter_subjects)) {
+            $instance->setSubjectFilters($config->filter_subjects);
+        } elseif (isset($config->filter_subject)) {
+            $instance->setSubjectFilter($config->filter_subject);
+        }
+
+        return $instance;
     }
 
     public function toArray(): array

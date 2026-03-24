@@ -663,6 +663,14 @@ class StreamTest extends FunctionalTestCase
         usleep(200_000);
         $this->assertSame(0, $consumer->info()->num_pending);
         $this->assertSame(0, $consumer->info()->num_ack_pending);
+
+        // validate stream configuration reflection
+        $stream = $this->createClient()->getApi()->getStream('multi_subject_test');
+        $this->assertSame($stream->getConfiguration()->getSubjects(), ['orders.*', 'payments.*']);
+
+        // validate consumer configuration reflection
+        $consumer = $stream->getConsumer('multi_consumer');
+        $this->assertSame($consumer->getConfiguration()->getSubjectFilters(), ['orders.created', 'payments.completed']);
     }
 
     private function assertWrongNumPending(Consumer $consumer, ?int $expected = null, int $loops = 100): void
