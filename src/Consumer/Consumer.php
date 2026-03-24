@@ -62,7 +62,11 @@ class Consumer
         if ($this->exists !== null) {
             return $this->exists;
         }
-        $consumers = $this->client->getApi()->getStream($this->getStream())->getConsumerNames();
+        $stream = $this->client->getApi()->getStream($this->getStream());
+        if (!$stream->exists()) {
+            return false;
+        }
+        $consumers = $stream->getConsumerNames();
         return $this->exists = in_array($this->getName(), $consumers);
     }
 
