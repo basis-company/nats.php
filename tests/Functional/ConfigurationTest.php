@@ -63,7 +63,7 @@ class ConfigurationTest extends FunctionalTestCase
     {
         $api = $this->createClient()->getApi();
         $stream = $api->getStream('cfg_restore');
-        
+
         $config = $stream->getConfiguration();
         $config->setSubjects(['test.subject.*', 'test.another.>'])
             ->setRetentionPolicy(RetentionPolicy::INTEREST)
@@ -80,11 +80,11 @@ class ConfigurationTest extends FunctionalTestCase
             ->setAllowRollupHeaders(false)
             ->setDenyDelete(false)
             ->setAllowMsgSchedules(true);
-        
+
         $stream->create();
-        
+
         $restored = $api->getStream('cfg_restore')->getConfiguration();
-        
+
         $this->assertSame('cfg_restore', $restored->getName());
         $this->assertSame(['test.subject.*', 'test.another.>'], $restored->getSubjects());
         $this->assertSame(RetentionPolicy::INTEREST, $restored->getRetentionPolicy());
@@ -109,7 +109,7 @@ class ConfigurationTest extends FunctionalTestCase
         $stream = $api->getStream('consumer_cfg');
         $stream->getConfiguration()->setSubjects(['consumer.test.*']);
         $stream->create();
-        
+
         $consumer = $stream->getConsumer('test_consumer');
         $config = $consumer->getConfiguration();
         $config->setAckPolicy(AckPolicy::ALL)
@@ -126,11 +126,11 @@ class ConfigurationTest extends FunctionalTestCase
             ->setDescription('Test consumer')
             ->setSubjectFilter('consumer.test.*')
             ->setInactiveThreshold(60_000_000_000);
-        
+
         $consumer->create();
-        
+
         $restored = $stream->getConsumer('test_consumer')->getConfiguration();
-        
+
         $this->assertSame('test_consumer', $restored->getName());
         $this->assertSame('consumer_cfg', $restored->getStream());
         $this->assertSame(AckPolicy::ALL, $restored->getAckPolicy());
@@ -156,20 +156,20 @@ class ConfigurationTest extends FunctionalTestCase
         $stream = $api->getStream('ephemeral_cfg');
         $stream->getConfiguration()->setSubjects(['ephemeral.test.*']);
         $stream->create();
-        
+
         $config = new \Basis\Nats\Consumer\Configuration($stream->getName());
         $config->ephemeral()
             ->setAckPolicy(AckPolicy::EXPLICIT)
             ->setDeliverPolicy(DeliverPolicy::LAST);
-        
+
         $consumer = $stream->createEphemeralConsumer($config);
         $consumerName = $consumer->getName();
-        
+
         $this->assertNotNull($consumerName);
         $this->assertNotSame('test_consumer', $consumerName);
-        
+
         $restored = $stream->getConsumer($consumerName)->getConfiguration();
-        
+
         $this->assertSame($consumerName, $restored->getName());
         $this->assertTrue($restored->isEphemeral());
         $this->assertSame(AckPolicy::EXPLICIT, $restored->getAckPolicy());
@@ -182,18 +182,18 @@ class ConfigurationTest extends FunctionalTestCase
         $stream = $api->getStream('start_time_cfg');
         $stream->getConfiguration()->setSubjects(['start.time.*']);
         $stream->create();
-        
+
         $startTime = new \DateTime('2024-01-01T00:00:00Z');
-        
+
         $consumer = $stream->getConsumer('start_time_consumer');
         $config = $consumer->getConfiguration();
         $config->setDeliverPolicy(DeliverPolicy::BY_START_TIME)
             ->setStartTime($startTime);
-        
+
         $consumer->create();
-        
+
         $restored = $stream->getConsumer('start_time_consumer')->getConfiguration();
-        
+
         $this->assertSame(DeliverPolicy::BY_START_TIME, $restored->getDeliverPolicy());
         $this->assertEquals($startTime, $restored->getStartTime());
     }
@@ -204,16 +204,16 @@ class ConfigurationTest extends FunctionalTestCase
         $stream = $api->getStream('start_seq_cfg');
         $stream->getConfiguration()->setSubjects(['start.seq.*']);
         $stream->create();
-        
+
         $consumer = $stream->getConsumer('start_seq_consumer');
         $config = $consumer->getConfiguration();
         $config->setDeliverPolicy(DeliverPolicy::BY_START_SEQUENCE)
             ->setStartSequence(42);
-        
+
         $consumer->create();
-        
+
         $restored = $stream->getConsumer('start_seq_consumer')->getConfiguration();
-        
+
         $this->assertSame(DeliverPolicy::BY_START_SEQUENCE, $restored->getDeliverPolicy());
         $this->assertSame(42, $restored->getStartSequence());
     }
@@ -224,15 +224,15 @@ class ConfigurationTest extends FunctionalTestCase
         $stream = $api->getStream('filters_cfg');
         $stream->getConfiguration()->setSubjects(['filter.test.*']);
         $stream->create();
-        
+
         $consumer = $stream->getConsumer('filters_consumer');
         $config = $consumer->getConfiguration();
         $config->setSubjectFilters(['filter.test.a', 'filter.test.b']);
-        
+
         $consumer->create();
-        
+
         $restored = $stream->getConsumer('filters_consumer')->getConfiguration();
-        
+
         $this->assertSame(['filter.test.a', 'filter.test.b'], $restored->getSubjectFilters());
         $this->assertNull($restored->getSubjectFilter());
     }
@@ -241,18 +241,18 @@ class ConfigurationTest extends FunctionalTestCase
     {
         $api = $this->createClient()->getApi();
         $stream = $api->getStream('limits_cfg');
-        
+
         $config = $stream->getConfiguration();
         $config->setSubjects(['limits.test.*'])
             ->setConsumerLimits([
                 'max_ack_pending' => 50,
                 'inactive_threshold' => 30_000_000_000,
             ]);
-        
+
         $stream->create();
-        
+
         $restored = $api->getStream('limits_cfg')->getConfiguration();
-        
+
         $this->assertSame([
             'max_ack_pending' => 50,
             'inactive_threshold' => 30_000_000_000,
