@@ -82,7 +82,7 @@ class Consumer
         return $this->configuration;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
