@@ -84,6 +84,10 @@ class Consumer
 
     public function getName(): ?string
     {
+        // For ephemeral consumers, get name from configuration after creation
+        if ($this->name === null && $this->configuration !== null) {
+            return $this->configuration->getName();
+        }
         return $this->name;
     }
 

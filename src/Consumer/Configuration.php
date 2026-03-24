@@ -131,10 +131,12 @@ class Configuration
         return $this->ephemeral;
     }
 
+    /**
+     * @deprected
+     */
     public function ephemeral(): self
     {
-        $this->ephemeral = true;
-        return $this;
+        return $this->setEphemeral(true);
     }
 
     public function setEphemeral(bool $ephemeral): self
@@ -273,12 +275,14 @@ class Configuration
     public static function fromObject(object $object): static
     {
         $config = $object->config;
-        $name = $object->name ?? null;
+        // For ephemeral consumers, durable_name is not set
+        // Use name from config if durable_name exists, otherwise null (ephemeral)
+        $name = isset($config->durable_name) ? $config->durable_name : null;
 
         $instance = new static($object->stream_name, $name);
 
-        // Set ephemeral if no durable name (name is null or not set)
-        if ($name === null || !isset($config->durable_name)) {
+        // Set ephemeral if no durable name
+        if ($name === null) {
             $instance->setEphemeral(true);
         }
 

@@ -69,6 +69,8 @@ class Stream
 
     public function createEphemeralConsumer(ConsumerConfiguration $configuration): Consumer
     {
+        $configuration->setEphemeral(true);
+
         $consumer = new Consumer($this->client, $this->getName());
         $consumer->setConfiguration($configuration);
         $consumer->create();
