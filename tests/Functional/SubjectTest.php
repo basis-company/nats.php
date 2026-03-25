@@ -134,15 +134,14 @@ class SubjectTest extends FunctionalTestCase
 
     public function testUnsubscribe()
     {
-        $property = new ReflectionProperty(Client::class, 'handlers');
-        $property->setAccessible(true);
-
         $client = $this->createClient();
-
+        
         $subjects = ['hello.request1', 'hello.request2'];
         foreach ($subjects as $subject) {
             $client->subscribe($subject, $this->greet(...));
         }
+
+        $property = new ReflectionProperty(Client::class, 'handlers');
         $this->assertCount(2, $property->getValue($client));
 
         foreach ($subjects as $subject) {
@@ -158,15 +157,13 @@ class SubjectTest extends FunctionalTestCase
 
     public function testUnsubscribeAll(): void
     {
-        $property = new ReflectionProperty(Client::class, 'handlers');
-        $property->setAccessible(true);
-
         $client = $this->createClient();
-
         $subjects = ['hello.request1', 'hello.request2'];
         foreach ($subjects as $subject) {
             $client->subscribe($subject, $this->greet(...));
         }
+
+        $property = new ReflectionProperty(Client::class, 'handlers');
         self::assertCount(2, $property->getValue($client));
 
         $client->unsubscribeAll();
@@ -175,25 +172,22 @@ class SubjectTest extends FunctionalTestCase
 
     public function testDisconnect(): void
     {
-        $property = new ReflectionProperty(Client::class, 'handlers');
-        $property->setAccessible(true);
-
         $client = $this->createClient();
         $connection = $client->connection;
-
+        
         $subjects = ['hello.request1', 'hello.request2'];
         foreach ($subjects as $subject) {
             $client->subscribe($subject, $this->greet(...));
         }
+
+        $property = new ReflectionProperty(Client::class, 'handlers');
         self::assertCount(2, $property->getValue($client));
 
         $client->disconnect();
         self::assertCount(0, $property->getValue($client));
 
-        $property = new ReflectionProperty(Connection::class, 'socket');
-        $property->setAccessible(true);
-
         // Assert that the socket is closed and set to null
+        $property = new ReflectionProperty(Connection::class, 'socket');
         self::assertNull($property->getValue($connection));
     }
 }
