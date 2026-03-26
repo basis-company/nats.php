@@ -174,7 +174,7 @@ class SubjectTest extends FunctionalTestCase
     {
         $client = $this->createClient();
         $connection = $client->connection;
-        
+
         $subjects = ['hello.request1', 'hello.request2'];
         foreach ($subjects as $subject) {
             $client->subscribe($subject, $this->greet(...));
@@ -189,5 +189,45 @@ class SubjectTest extends FunctionalTestCase
         // Assert that the socket is closed and set to null
         $property = new ReflectionProperty(Connection::class, 'socket');
         self::assertNull($property->getValue($connection));
+    }
+
+    public function testWildcard(): void
+    {
+        $client = $this->createClient();
+
+        $messages = [];
+
+        // Subscribe to all user events using * wildcard (matches exactly one token)
+        $client->subscribe('events.user.*', function ($message) use (&$messages) {
+            $messages[] = $message->subject . ':' . $message->body;
+        });
+
+        // Subscribe to all nested events using > wildcard (matches one or more tokens)
+        $client->subscribe('events.>', function ($message) use (&$messages) {
+            $messages[] = 'all:' . $message->subject . ':' . $message->body;
+        });
+
+        // Publish various events
+        $client->publish('events.user.created', 'Alice');
+        $client->publish('events.user.deleted', 'Bob');
+        $client->publish('events.user.profile.updated', 'Charlie');
+        $client->publish('events.system.started', 'v1.0');
+
+        // Process all messages (process() handles one message at a time)
+        while (count($messages) < 6) {
+            $client->process(0.1);
+        }
+
+        // * wildcard matches: events.user.created, events.user.deleted (exactly one token after events.user)
+        // > wildcard matches all: events.user.created, events.user.deleted, events.user.profile.updated, events.system.started
+        $this->assertContains('events.user.created:Alice', $messages);
+        $this->assertContains('events.user.deleted:Bob', $messages);
+        $this->assertContains('all:events.user.created:Alice', $messages);
+        $this->assertContains('all:events.user.deleted:Bob', $messages);
+        $this->assertContains('all:events.user.profile.updated:Charlie', $messages);
+        $this->assertContains('all:events.system.started:v1.0', $messages);
+
+        // * wildcard should NOT match nested subjects (events.user.profile.updated has two tokens after events.user)
+        $this->assertNotContains('events.user.profile.updated:Charlie', $messages);
     }
 }
