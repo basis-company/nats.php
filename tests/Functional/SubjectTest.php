@@ -135,7 +135,7 @@ class SubjectTest extends FunctionalTestCase
     public function testUnsubscribe()
     {
         $client = $this->createClient();
-        
+
         $subjects = ['hello.request1', 'hello.request2'];
         foreach ($subjects as $subject) {
             $client->subscribe($subject, $this->greet(...));
