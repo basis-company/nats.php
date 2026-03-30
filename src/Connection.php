@@ -160,7 +160,7 @@ class Connection
         return $this->pingAt <= $this->pongAt;
     }
 
-    public function sendMessage(Message $message)
+    public function sendMessage(Message $message): void
     {
         $this->init();
 
@@ -203,12 +203,12 @@ class Connection
         }
     }
 
-    public function setLogger(?LoggerInterface $logger)
+    public function setLogger(?LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
 
-    public function setTimeout(float $value)
+    public function setTimeout(float $value): void
     {
         $this->init();
         $seconds = (int) floor($value);
@@ -308,7 +308,7 @@ class Connection
         return $payload;
     }
 
-    private function processException(Throwable $e)
+    private function processException(Throwable $e): void
     {
         $this->logger?->error($e->getMessage(), ['exception' => $e]);
 

@@ -25,7 +25,7 @@ class Api
         return $this->buckets[$name];
     }
 
-    public function getInfo()
+    public function getInfo(): object
     {
         return $this->client->api('INFO');
     }
