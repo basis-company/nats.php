@@ -682,7 +682,7 @@ class StreamTest extends FunctionalTestCase
                 break;
             }
 
-            if ($i == $loops) {
+            if ($i === $loops) {
                 $this->assertSame($expected, $actual);
             }
         }

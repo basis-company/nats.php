@@ -19,7 +19,7 @@ trait Logger
             $reflection = new ReflectionClass(get_class($this));
             $name = $reflection->getShortName();
             foreach (debug_backtrace() as $trace) {
-                if ($trace['class'] == __CLASS__) {
+                if ($trace['class'] === __CLASS__) {
                     continue;
                 }
                 $name .= '.' . $trace['function'];

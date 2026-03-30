@@ -79,7 +79,7 @@ class Connection
             $except = null;
 
             // Calculate timeout for stream_select
-            if ($timeout == 0) {
+            if ($timeout === 0) {
                 // Non-blocking check - use stream_select with 0 timeout to check if data is available
                 $seconds = 0;
                 $microseconds = 0;
@@ -92,7 +92,7 @@ class Connection
 
             if ($result === false || $result === 0) {
                 // For non-blocking check (timeout=0), exit immediately
-                if ($timeout == 0) {
+                if ($timeout === 0) {
                     break;
                 }
                 // For blocking calls, continue waiting
@@ -181,7 +181,7 @@ class Connection
                 }
                 $total += $written;
 
-                if ($length == $total) {
+                if ($length === $total) {
                     break;
                 }
             } catch (Throwable $e) {
@@ -298,7 +298,7 @@ class Connection
                 $this->config->delay($iteration++);
                 continue;
             }
-            if (strlen($payloadLine) != $length) {
+            if (strlen($payloadLine) !== $length) {
                 $this->logger?->debug(
                     'got ' . strlen($payloadLine) . '/' . $length . ': ' . $payloadLine
                 );

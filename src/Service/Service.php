@@ -145,11 +145,11 @@ class Service
 
     private function controlSubject(string $verb, string $name, string $id): string
     {
-        if ($name == '' && $id == '') {
+        if ($name === '' && $id === '') {
             return "\$SRV.$verb";
         }
 
-        if ($id == '') {
+        if ($id === '') {
             return "\$SRV.$verb.$name";
         }
 

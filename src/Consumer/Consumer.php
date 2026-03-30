@@ -72,7 +72,7 @@ class Consumer
 
     public function getConfiguration(): Configuration
     {
-        if ($this->configuration == null) {
+        if ($this->configuration === null) {
             if ($this->exists()) {
                 $this->configuration = Configuration::fromObject($this->info()->getValues());
             } else {
