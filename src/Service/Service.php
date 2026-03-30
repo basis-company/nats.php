@@ -158,7 +158,7 @@ class Service
 
     public function run(?float $timeout = null): void
     {
-        $this->client->logger->info("$this->name is ready to accept connections\n");
+        $this->client->logger?->info("$this->name is ready to accept connections\n");
         $start = microtime(true);
 
         while ($timeout ? microtime(true) < $start + $timeout : true) {
@@ -167,7 +167,7 @@ class Service
             } catch (\Exception $e) {
                 $this->client
                     ->logger
-                    ->error("$this->name encountered an error:\n" . $e->getMessage() . "\n");
+                    ?->error("$this->name encountered an error:\n" . $e->getMessage() . "\n");
             }
         }
     }
