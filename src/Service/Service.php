@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Basis\Nats\Service;
 
 use Basis\Nats\Client;
