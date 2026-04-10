@@ -97,7 +97,10 @@ class Configuration
                 break;
         }
 
-        usleep($milliseconds * 1_000);
+        $microseconds = $milliseconds * 1_000;
+        // Avoid type errors from integers overflowing to floats
+        $microseconds = is_float($microseconds) ? PHP_INT_MAX : $microseconds;
+        usleep($microseconds);
     }
 
     public function setDelay(float $delay, string $mode = self::DELAY_CONSTANT): self
