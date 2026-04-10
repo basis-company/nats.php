@@ -18,7 +18,7 @@ abstract class Factory
             default => null,
         };
 
-        if ($message == null) {
+        if ($message === null) {
             if (!str_contains($line, ' ')) {
                 throw new LogicException("Parse message failure: $line");
             }

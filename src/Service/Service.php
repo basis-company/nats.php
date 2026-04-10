@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Basis\Nats\Service;
 
 use Basis\Nats\Client;
@@ -143,11 +145,11 @@ class Service
 
     private function controlSubject(string $verb, string $name, string $id): string
     {
-        if ($name == '' && $id == '') {
+        if ($name === '' && $id === '') {
             return "\$SRV.$verb";
         }
 
-        if ($id == '') {
+        if ($id === '') {
             return "\$SRV.$verb.$name";
         }
 
@@ -156,7 +158,7 @@ class Service
 
     public function run(?float $timeout = null): void
     {
-        $this->client->logger->info("$this->name is ready to accept connections\n");
+        $this->client->logger?->info("$this->name is ready to accept connections\n");
         $start = microtime(true);
 
         while ($timeout ? microtime(true) < $start + $timeout : true) {
@@ -165,7 +167,7 @@ class Service
             } catch (\Exception $e) {
                 $this->client
                     ->logger
-                    ->error("$this->name encountered an error:\n" . $e->getMessage() . "\n");
+                    ?->error("$this->name encountered an error:\n" . $e->getMessage() . "\n");
             }
         }
     }

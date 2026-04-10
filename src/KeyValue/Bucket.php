@@ -29,7 +29,7 @@ class Bucket
             $entry = $this->getEntry($key);
             return $entry ? $entry->value : null;
         } catch (Exception $e) {
-            if ($e->getMessage() == 'no message found') {
+            if ($e->getMessage() === 'no message found') {
                 return null;
             }
             throw $e;

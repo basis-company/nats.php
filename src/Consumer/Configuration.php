@@ -56,72 +56,72 @@ class Configuration
         return $this->subjectFilter;
     }
 
-    public function getAckWait()
+    public function getAckWait(): ?int
     {
         return $this->ackWait;
     }
 
-    public function getDeliverGroup()
+    public function getDeliverGroup(): ?string
     {
         return $this->deliverGroup;
     }
 
-    public function getDeliverPolicy()
+    public function getDeliverPolicy(): string
     {
         return $this->deliverPolicy;
     }
 
-    public function getDeliverSubject()
+    public function getDeliverSubject(): ?string
     {
         return $this->deliverSubject;
     }
 
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    public function getFlowControl()
+    public function getFlowControl(): ?bool
     {
         return $this->flowControl;
     }
 
-    public function getHeadersOnly()
+    public function getHeadersOnly(): ?bool
     {
         return $this->headersOnly;
     }
 
-    public function getIdleHeartbeat()
+    public function getIdleHeartbeat(): ?int
     {
         return $this->idleHeartbeat;
     }
 
-    public function getMaxAckPending()
+    public function getMaxAckPending(): ?int
     {
         return $this->maxAckPending;
     }
 
-    public function getMaxDeliver()
+    public function getMaxDeliver(): ?int
     {
         return $this->maxDeliver;
     }
 
-    public function getMaxWaiting()
+    public function getMaxWaiting(): ?int
     {
         return $this->maxWaiting;
     }
 
-    public function getStartSequence()
+    public function getStartSequence(): ?int
     {
         return $this->startSequence;
     }
 
-    public function getStartTime()
+    public function getStartTime(): ?DateTimeInterface
     {
         return $this->startTime;
     }
 
-    public function getReplayPolicy()
+    public function getReplayPolicy(): string
     {
         return $this->replayPolicy;
     }

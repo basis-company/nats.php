@@ -151,7 +151,7 @@ class Client
             $name = $name->subject;
         }
         foreach ($this->subscriptions as $i => $subscription) {
-            if ($subscription['name'] == $name) {
+            if ($subscription['name'] === $name) {
                 unset($this->subscriptions[$i]);
                 $this->connection->sendMessage(new Unsubscribe(['sid' => $subscription['sid']]));
                 unset($this->handlers[$subscription['sid']]);
@@ -203,7 +203,7 @@ class Client
     private function doSubscribe(string $subject, ?string $group, ?callable $handler = null): self|Queue
     {
         $sid = bin2hex(random_bytes(4));
-        if ($handler == null) {
+        if ($handler === null) {
             $this->handlers[$sid] = new Queue($this, $subject);
         } else {
             $this->handlers[$sid] = $handler;
@@ -220,7 +220,7 @@ class Client
             'sid' => $sid,
         ];
 
-        if ($handler == null) {
+        if ($handler === null) {
             return $this->handlers[$sid];
         }
         return $this;

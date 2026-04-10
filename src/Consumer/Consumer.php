@@ -72,7 +72,7 @@ class Consumer
 
     public function getConfiguration(): Configuration
     {
-        if ($this->configuration == null) {
+        if ($this->configuration === null) {
             if ($this->exists()) {
                 $this->configuration = Configuration::fromObject($this->info()->getValues());
             } else {
@@ -193,7 +193,7 @@ class Consumer
         return $this->client->api("CONSUMER.INFO." . $this->getStream() . '.' . $this->getName());
     }
 
-    public function interrupt()
+    public function interrupt(): void
     {
         $this->interrupt = true;
     }
@@ -205,7 +205,7 @@ class Consumer
         return $this;
     }
 
-    public function setConfiguration(Configuration $configuration)
+    public function setConfiguration(Configuration $configuration): void
     {
         $this->configuration = $configuration;
     }

@@ -70,7 +70,7 @@ class Queue
         return $result;
     }
 
-    public function handle(Msg $message)
+    public function handle(Msg $message): void
     {
         $this->queue[] = $this->lastMessage = $message;
     }

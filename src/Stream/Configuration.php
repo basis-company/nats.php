@@ -146,7 +146,7 @@ class Configuration
         return $this->maxMessagesPerSubject;
     }
 
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
