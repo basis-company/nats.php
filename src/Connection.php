@@ -217,10 +217,10 @@ class Connection
         stream_set_timeout($this->socket, $seconds, $microseconds);
     }
 
-    protected function init()
+    protected function init(): void
     {
         if ($this->socket) {
-            return $this;
+            return;
         }
 
         $config = $this->config;
@@ -245,8 +245,14 @@ class Connection
             $this->connectMessage->name = $this->client->getName();
         }
 
-        $this->infoMessage = $this->getMessage($config->timeout);
-        assert($this->infoMessage instanceof Info);
+        $infoMessage = $this->getMessage($config->timeout);
+        if (is_null($infoMessage)) {
+            throw new Exception("Timeout waiting for message from server.");
+        }
+        if (!$infoMessage instanceof Info) {
+            throw new Exception("Received unexpected message type: " . $infoMessage::class);
+        }
+        $this->infoMessage = $infoMessage;
 
         if (isset($this->infoMessage->nonce) && $this->authenticator) {
             $this->connectMessage->sig = $this->authenticator->sign($this->infoMessage->nonce);
