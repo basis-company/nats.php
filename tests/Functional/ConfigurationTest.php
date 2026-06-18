@@ -67,7 +67,7 @@ class ConfigurationTest extends FunctionalTestCase
         $config = $stream->getConfiguration();
         $config->setSubjects(['test.subject.*', 'test.another.>'])
             ->setRetentionPolicy(RetentionPolicy::INTEREST)
-            ->setDiscardPolicy(DiscardPolicy::NEW)
+            ->setDiscardPolicy(DiscardPolicy::OLD)
             ->setStorageBackend(StorageBackend::MEMORY)
             ->setReplicas(1)
             ->setMaxConsumers(100)
@@ -88,7 +88,7 @@ class ConfigurationTest extends FunctionalTestCase
         $this->assertSame('cfg_restore', $restored->getName());
         $this->assertSame(['test.subject.*', 'test.another.>'], $restored->getSubjects());
         $this->assertSame(RetentionPolicy::INTEREST, $restored->getRetentionPolicy());
-        $this->assertSame(DiscardPolicy::NEW, $restored->getDiscardPolicy());
+        $this->assertSame(DiscardPolicy::OLD, $restored->getDiscardPolicy());
         $this->assertSame(StorageBackend::MEMORY, $restored->getStorageBackend());
         $this->assertSame(1, $restored->getReplicas());
         $this->assertSame(100, $restored->getMaxConsumers());
