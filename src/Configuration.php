@@ -43,6 +43,7 @@ class Configuration
         public string $lang = 'php',
         public string $version = 'dev',
         public string $inboxPrefix = '_INBOX',
+        public int $maxReconnectAttempts = -1,
     ) {
 
         $this->setDelay($delay, $delayMode);

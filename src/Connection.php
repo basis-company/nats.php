@@ -322,14 +322,22 @@ class Connection
             throw $e;
         }
 
+        $maxAttempts = $this->config->maxReconnectAttempts;
         $iteration = 0;
 
         while (true) {
+            if ($maxAttempts >= 0 && $iteration >= $maxAttempts) {
+                // reconnect attempts exhausted: rethrow the last connection error
+                throw $e;
+            }
+            if ($iteration > 0) {
+                $this->config->delay($iteration - 1);
+            }
             try {
                 $this->socket = null;
                 $this->init();
             } catch (Throwable $e) {
-                $this->config->delay($iteration++);
+                $iteration++;
                 continue;
             }
             break;

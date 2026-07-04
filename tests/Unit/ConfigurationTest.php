@@ -35,6 +35,23 @@ class ConfigurationTest extends TestCase
         new Configuration(['hero' => true]);
     }
 
+    public function testMaxReconnectAttemptsDefault()
+    {
+        $this->assertSame(-1, (new Configuration())->maxReconnectAttempts);
+    }
+
+    public function testMaxReconnectAttemptsNamedArgument()
+    {
+        $configuration = new Configuration(maxReconnectAttempts: 5);
+        $this->assertSame(5, $configuration->maxReconnectAttempts);
+    }
+
+    public function testMaxReconnectAttemptsDeprecatedArray()
+    {
+        $configuration = new Configuration(['maxReconnectAttempts' => 3]);
+        $this->assertSame(3, $configuration->maxReconnectAttempts);
+    }
+
     public function testClientConfigurationToken()
     {
         $connection = new Configuration(['token' => 'zzz']);
