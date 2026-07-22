@@ -66,7 +66,7 @@ class Connection
 
         while (true) {
             if (!is_resource($this->socket) || feof($this->socket)) {
-                throw new LogicException('supplied resource is not a valid stream resource');
+                $this->processException(new LogicException('supplied resource is not a valid stream resource'));
             }
 
             $remainingTimeout = $max - microtime(true);
