@@ -284,6 +284,10 @@ class Connection
                 throw new Exception("tlsCaFile file does not exist: " . $this->config->tlsCaFile);
             }
             stream_context_set_option($this->context, 'ssl', 'cafile', $this->config->tlsCaFile);
+            stream_context_set_option($this->context, 'ssl', 'verify_peer', true);
+            stream_context_set_option($this->context, 'ssl', 'verify_peer_name', false);
+        } else {
+            stream_context_set_option($this->context, 'ssl', 'verify_peer', false);
         }
 
         if (!stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT)) {

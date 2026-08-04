@@ -34,6 +34,24 @@ class Base32Test extends TestCase
         $this->assertEquals($expected, $result);
     }
 
+    public function testEncodeWithPadding(): void
+    {
+        $base32 = new Base32();
+        $encoded = $base32->encode('test', true);
+        
+        // With padding, should have "=" characters
+        $this->assertStringContainsString('=', $encoded);
+    }
+
+    public function testEncodeWithoutPadding(): void
+    {
+        $base32 = new Base32();
+        $encoded = $base32->encode('test', false);
+        
+        // Without padding, should not have "=" characters
+        $this->assertStringNotContainsString('=', $encoded);
+    }
+
     /**
      * @dataProvider dataProvider
      */
