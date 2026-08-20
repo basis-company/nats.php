@@ -18,14 +18,14 @@ class ConsumerLimitsTest extends FunctionalTestCase
         ];
 
         $result = ConsumerLimits::validate($limits);
-        
+
         $this->assertSame($limits, $result);
     }
 
     public function testValidateWithEmptyLimits(): void
     {
         $result = ConsumerLimits::validate([]);
-        
+
         $this->assertEmpty($result);
     }
 
@@ -57,7 +57,7 @@ class ConsumerLimitsTest extends FunctionalTestCase
         ];
 
         $result = ConsumerLimits::validate($limits);
-        
+
         $this->assertSame($limits, $result);
     }
 }

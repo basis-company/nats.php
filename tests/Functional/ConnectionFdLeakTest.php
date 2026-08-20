@@ -117,7 +117,10 @@ class ConnectionFdLeakTest extends FunctionalTestCase
                 "otherwise the process crosses PHP's FD_SETSIZE limit (1024) and " .
                 "stream_select() starts reporting 'You MUST recompile PHP with a " .
                 "larger value of FD_SETSIZE'.",
-                self::ITERATIONS, $before, $after, $leaked
+                self::ITERATIONS,
+                $before,
+                $after,
+                $leaked
             )
         );
     }

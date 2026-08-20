@@ -66,7 +66,7 @@ class MsgTest extends FunctionalTestCase
         // Invalid data just creates a message with fewer fields, doesn't always throw
         // This test verifies the message is created without crashing
         $message = Msg::create('just one field');
-        
+
         $this->assertInstanceOf(Msg::class, $message);
     }
 
@@ -75,7 +75,7 @@ class MsgTest extends FunctionalTestCase
         // Headers: "NATS/1.0 100 200\r\ntest: value\r\n\r\n" = 33 bytes
         $data = 'test.subject 1 reply.to 33 5';
         $message = Msg::create($data);
-        
+
         $payload = "NATS/1.0 100 200\r\ntest: value\r\n\r\nbody";
         $message->parse($payload);
 
@@ -89,7 +89,7 @@ class MsgTest extends FunctionalTestCase
     {
         $data = 'test.subject 1 5';
         $message = Msg::create($data);
-        
+
         $payload = 'simple body';
         $message->parse($payload);
 
@@ -110,17 +110,17 @@ class MsgTest extends FunctionalTestCase
     public function testReplyWithReplyTo(): void
     {
         $message = Msg::create('test.subject 1 reply.to 5');
-        
+
         $client = $this->createClient();
         $message->setClient($client);
-        
+
         // Mock the connection to avoid actual network calls
         $connection = new Connection($client);
         $client->connection = $connection;
-        
+
         // This should call publish on the client
         $message->reply('test reply');
-        
+
         // Just verify it doesn't throw - actual publish would be tested elsewhere
         $this->assertTrue(true);
     }
@@ -130,14 +130,14 @@ class MsgTest extends FunctionalTestCase
         $message = Msg::create('test.subject 1 reply.to 5');
         $client = $this->createClient();
         $message->setClient($client);
-        
+
         // Mock the connection
         $connection = new Connection($client);
         $client->connection = $connection;
-        
+
         // Reply with a message object
         $message->reply(new \Basis\Nats\Message\Ack(['subject' => 'reply.to']));
-        
+
         $this->assertTrue(true);
     }
 
@@ -152,10 +152,10 @@ class MsgTest extends FunctionalTestCase
     public function testGetClient(): void
     {
         $message = Msg::create('test.subject 1 5');
-        
+
         $client = $this->createClient();
         $message->setClient($client);
-        
+
         $this->assertSame($client, $message->getClient());
     }
 
@@ -164,11 +164,11 @@ class MsgTest extends FunctionalTestCase
         $message = Msg::create('test.subject 1 reply.to 5');
         $client = $this->createClient();
         $message->setClient($client);
-        
+
         // Mock connection
         $connection = new Connection($client);
         $client->connection = $connection;
-        
+
         $message->ack();
         $this->assertTrue(true);
     }
@@ -178,10 +178,10 @@ class MsgTest extends FunctionalTestCase
         $message = Msg::create('test.subject 1 reply.to 5');
         $client = $this->createClient();
         $message->setClient($client);
-        
+
         $connection = new Connection($client);
         $client->connection = $connection;
-        
+
         $message->nack(1.5);
         $this->assertTrue(true);
     }
@@ -191,10 +191,10 @@ class MsgTest extends FunctionalTestCase
         $message = Msg::create('test.subject 1 reply.to 5');
         $client = $this->createClient();
         $message->setClient($client);
-        
+
         $connection = new Connection($client);
         $client->connection = $connection;
-        
+
         $message->progress();
         $this->assertTrue(true);
     }
@@ -204,10 +204,10 @@ class MsgTest extends FunctionalTestCase
         $message = Msg::create('test.subject 1 reply.to 5');
         $client = $this->createClient();
         $message->setClient($client);
-        
+
         $connection = new Connection($client);
         $client->connection = $connection;
-        
+
         $message->term('test reason');
         $this->assertTrue(true);
     }
@@ -217,10 +217,10 @@ class MsgTest extends FunctionalTestCase
         $message = Msg::create('test.subject 1 reply.to 5');
         $client = $this->createClient();
         $message->setClient($client);
-        
+
         $connection = new Connection($client);
         $client->connection = $connection;
-        
+
         $message->term();
         $this->assertTrue(true);
     }
@@ -228,9 +228,9 @@ class MsgTest extends FunctionalTestCase
     public function testRender(): void
     {
         $message = Msg::create('test.subject 1 5');
-        
+
         $rendered = $message->render();
-        
+
         $this->assertStringStartsWith('MSG', $rendered);
     }
 
@@ -239,7 +239,7 @@ class MsgTest extends FunctionalTestCase
         $reflection = new \ReflectionClass(Msg::class);
         $method = $reflection->getMethod('tryParseMessageTime');
         $method->setAccessible(true);
-        
+
         $values = [
             'subject' => 'test',
             'sid' => '1',
@@ -247,9 +247,9 @@ class MsgTest extends FunctionalTestCase
             'hlength' => 0,
             'length' => 5,
         ];
-        
+
         $result = $method->invoke(null, $values);
-        
+
         $this->assertArrayHasKey('timestampNanos', $result);
         $this->assertIsInt($result['timestampNanos']);
         $this->assertGreaterThan(0, $result['timestampNanos']);
@@ -260,7 +260,7 @@ class MsgTest extends FunctionalTestCase
         $reflection = new \ReflectionClass(Msg::class);
         $method = $reflection->getMethod('tryParseMessageTime');
         $method->setAccessible(true);
-        
+
         $values = [
             'subject' => 'test',
             'sid' => '1',
@@ -268,9 +268,9 @@ class MsgTest extends FunctionalTestCase
             'hlength' => 0,
             'length' => 5,
         ];
-        
+
         $result = $method->invoke(null, $values);
-        
+
         $this->assertArrayNotHasKey('timestampNanos', $result);
     }
 
@@ -279,16 +279,16 @@ class MsgTest extends FunctionalTestCase
         $reflection = new \ReflectionClass(Msg::class);
         $method = $reflection->getMethod('tryParseMessageTime');
         $method->setAccessible(true);
-        
+
         $values = [
             'subject' => 'test',
             'sid' => '1',
             'hlength' => 0,
             'length' => 5,
         ];
-        
+
         $result = $method->invoke(null, $values);
-        
+
         $this->assertArrayNotHasKey('timestampNanos', $result);
     }
 }

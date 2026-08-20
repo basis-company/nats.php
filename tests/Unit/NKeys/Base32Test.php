@@ -38,7 +38,7 @@ class Base32Test extends TestCase
     {
         $base32 = new Base32();
         $encoded = $base32->encode('test', true);
-        
+
         // With padding, should have "=" characters
         $this->assertStringContainsString('=', $encoded);
     }
@@ -47,7 +47,7 @@ class Base32Test extends TestCase
     {
         $base32 = new Base32();
         $encoded = $base32->encode('test', false);
-        
+
         // Without padding, should not have "=" characters
         $this->assertStringNotContainsString('=', $encoded);
     }
