@@ -338,6 +338,12 @@ class Connection
                 $this->config->delay($iteration - 1);
             }
             try {
+                // Explicitly close the old socket, otherwise every reconnection
+                // leaks its file descriptor and the process eventually
+                // crosses PHP's FD_SETSIZE limit (1024) see #139
+                if (is_resource($this->socket)) {
+                    fclose($this->socket);
+                }
                 $this->socket = null;
                 $this->init();
             } catch (Throwable $e) {
