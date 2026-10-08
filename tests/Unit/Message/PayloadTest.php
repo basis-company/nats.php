@@ -145,4 +145,24 @@ class PayloadTest extends FunctionalTestCase
         $this->assertSame('value', $payload->key);
         $this->assertNull($payload->nonexistent);
     }
+
+    public function testMagicIsset(): void
+    {
+        $payload = new Payload('{"key": "value", "empty": null}');
+
+        $this->assertTrue(isset($payload->key));
+        $this->assertFalse(isset($payload->empty));
+        $this->assertFalse(isset($payload->nonexistent));
+        $this->assertFalse(isset((new Payload('not json'))->key));
+        $this->assertFalse(isset((new Payload(''))->key));
+    }
+
+    public function testNullCoalescingReadsJsonFields(): void
+    {
+        $ack = new Payload('{"error": {"code": 400, "err_code": 10058, "description": "maximum messages exceeded"}}');
+
+        $this->assertSame(10058, $ack->error->err_code);
+        $this->assertNotNull($ack->error ?? null);
+        $this->assertSame('fallback', (new Payload('{"seq": 1}'))->error ?? 'fallback');
+    }
 }

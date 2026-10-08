@@ -50,6 +50,18 @@ class Payload
         return null;
     }
 
+    /**
+     * Without this, isset(), empty() and the ?? operator never reach __get
+     * and treat every JSON field as unset, so `$payload->error ?? null`
+     * is always null even when the body carries an error.
+     */
+    public function __isset(string $name): bool
+    {
+        $values = $this->getValues();
+
+        return is_object($values) && property_exists($values, $name) && $values->$name !== null;
+    }
+
     public function __toString(): string
     {
         return $this->body;
