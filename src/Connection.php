@@ -187,6 +187,7 @@ class Connection
             } catch (Throwable $e) {
                 $this->processException($e);
                 $line = $message->render() . "\r\n";
+                $total = 0; // reset so the full message is resent on the fresh socket
             }
         }
 
