@@ -8,6 +8,7 @@ use Basis\Nats\Service\Service;
 use Exception;
 use Tests\FunctionalTestCase;
 use Tests\Utils\TestEndpoint;
+use Tests\Utils\TestPayloadEndpoint;
 
 class ServiceTest extends FunctionalTestCase
 {
@@ -162,5 +163,33 @@ class ServiceTest extends FunctionalTestCase
         $service->client->publish('v1.test_instance', '');
         $response = $service->client->process(1);
         $this->assertTrue($response['success']);
+    }
+
+    public function testServiceRequestReplyPayloadHandlerClass()
+    {
+        $service = $this->createTestService();
+
+        $service->addGroup('v1')->addEndpoint('test_payload_class', TestPayloadEndpoint::class);
+
+        $service->client->publish('v1.test_payload_class', '');
+        $response = $service->client->process(1);
+
+        $this->assertInstanceOf(Payload::class, $response);
+        $this->assertSame('{"success":true}', $response->body);
+        $this->assertSame('example error', $response->getHeader('Nats-Service-Error'));
+    }
+
+    public function testServiceRequestReplyPayloadHandlerInstance()
+    {
+        $service = $this->createTestService();
+
+        $service->addGroup('v1')->addEndpoint('test_payload_instance', new TestPayloadEndpoint());
+
+        $service->client->publish('v1.test_payload_instance', '');
+        $response = $service->client->process(1);
+
+        $this->assertInstanceOf(Payload::class, $response);
+        $this->assertSame('{"success":true}', $response->body);
+        $this->assertSame('example error', $response->getHeader('Nats-Service-Error'));
     }
 }

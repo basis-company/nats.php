@@ -23,7 +23,7 @@ class ServiceGroup
 
     public function addEndpoint(
         string $name,
-        string|EndpointHandler|callable $serviceHandler,
+        string|EndpointHandler|PayloadEndpointHandler|callable $serviceHandler,
         array $options = []
     ): void {
         $subject = $this->name . '.' . $name;

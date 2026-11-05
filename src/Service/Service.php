@@ -81,7 +81,7 @@ class Service
 
     public function addEndpoint(
         string $name,
-        string|EndpointHandler|callable $endpointHandler,
+        string|EndpointHandler|PayloadEndpointHandler|callable $endpointHandler,
         array $options = []
     ): void {
         $subject = $name;

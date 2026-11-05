@@ -37,7 +37,10 @@ class ServiceEndpoint
                 $handler = $this->endpointHandler;
 
                 switch (true) {
-                    case is_string($handler) && is_subclass_of($handler, EndpointHandler::class):
+                    case is_string($handler) && (
+                        is_subclass_of($handler, EndpointHandler::class)
+                        || is_subclass_of($handler, PayloadEndpointHandler::class)
+                    ):
                         // Instantiate the endpointHandler
                         $handler = new $handler();
                         $response = $handler->handle($message);
@@ -45,7 +48,7 @@ class ServiceEndpoint
                     case is_callable($handler):
                         $response = call_user_func($handler, $message);
                         break;
-                    case $handler instanceof EndpointHandler:
+                    case $handler instanceof EndpointHandler || $handler instanceof PayloadEndpointHandler:
                         $response = $handler->handle($message);
                         break;
                     default:
