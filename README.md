@@ -353,6 +353,34 @@ $posts->addEndpoint(
 $service->run();
 ```
 
+### Returning errors with PayloadEndpointHandler
+`EndpointHandler` can only return an array, which is sent as the response body. To control the whole response
+(for example to return the standard `Nats-Service-Error` headers), implement `PayloadEndpointHandler` and return a
+`Payload` instead.
+```php
+class CreatePost implements \Basis\Nats\Service\PayloadEndpointHandler {
+
+    public function handle(\Basis\Nats\Message\Payload $payload): \Basis\Nats\Message\Payload
+    {
+        try {
+            // Your application logic
+            return \Basis\Nats\Message\Payload::parse([]);
+        } catch (\Throwable $ex) {
+            // Standard NATS micro error response
+            return new \Basis\Nats\Message\Payload(
+                body: '',
+                headers: [
+                    'Nats-Service-Error' => $ex->getMessage(),
+                    'Nats-Service-Error-Code' => $ex->getCode(),
+                ]
+            );
+        }
+    }
+}
+
+$version->addEndpoint("create_post", CreatePost::class);
+```
+
 
 ## Key Value Storage
 ```php
