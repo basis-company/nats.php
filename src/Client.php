@@ -218,6 +218,7 @@ class Client
         $this->subscriptions[] = [
             'name' => $subject,
             'sid' => $sid,
+            'group' => $group,
         ];
 
         if ($handler === null) {
