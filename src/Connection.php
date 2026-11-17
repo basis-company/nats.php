@@ -358,6 +358,7 @@ class Connection
             $this->sendMessage(new Subscribe([
                 'sid' => $subscription['sid'],
                 'subject' => $subscription['name'],
+                'group' => $subscription['group'] ?? null,
             ]));
         }
 
