@@ -18,7 +18,7 @@ class SubscriptionReconnectTest extends TestCase
     public function testQueueGroupIsRestoredAfterReconnect(): void
     {
         $client = new Client(new Configuration());
-        $connection = new class($client) extends Connection {
+        $connection = new class ($client) extends Connection {
             /** @var list<Message> */
             public array $messages = [];
 
