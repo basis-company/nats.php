@@ -189,8 +189,7 @@ class Base32
             $binaryString .= $this->decodeEightBits($bitCount, $eightBits);
         }
 
-        // Converting a binary (\0 terminated) string to a PHP string
-        return rtrim($binaryString, "\0");
+        return $binaryString;
     }
 
     /**
@@ -228,6 +227,10 @@ class Base32
         $binaryString = '';
 
         for ($z = 0; $z < $bitCount; $z++) {
+            // Leftover bits at the end are padding, not a byte
+            if (strlen($eightBits[$z]) < 8) {
+                continue;
+            }
             $binaryString .= (($y = chr((int) base_convert($eightBits[$z], 2, 10))) || ord($y) === 48) ? $y : '';
         }
 
