@@ -118,7 +118,10 @@ class ClientTest extends FunctionalTestCase
 
     public function testInvalidConnection()
     {
-        $this->expectExceptionMessageMatches('/^Connection refused$|^A connection attempt failed/');
+        // Newer PHP versions reject negative ports while parsing the "host:port"
+        // DSN, so the failure can surface as a parse error instead of a socket
+        // error (whose message differs per platform).
+        $this->expectExceptionMessageMatches('/^Connection refused$|^A connection attempt failed|^Failed to parse port of address/');
         $this->createClient(['port' => -1])->ping();
     }
 
